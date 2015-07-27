@@ -1,0 +1,4 @@
+Generating test runner configuration '__test__library__' for 'library' (library).
+Building rbfd ~master configuration "__test__library__", build type unittest.
+Compiling using dmd...
+FAIL .dub/build/__test__library__-unittest-linux.posix-x86_64-dmd_2067-225C7844E0503E19B8668831A98AACC7/ __test__library__ executable
