@@ -15,7 +15,7 @@ import rbf.hot.overpunch;
 void main(string[] argv)
 {
 	
-	auto reader = new Reader("/home/m330421/data/files/bsp/SE.STO.057.PROD.1505281131", r"/home/m330421/data/local/xml/hot203.xml", (line => line[0..3] ~ line[11..13]));
+	auto reader = new Reader("/home/m330421/data/files/bsp/test1", r"/home/m330421/data/local/xml/hot203.xml", (line => line[0..3] ~ line[11..13]));
 	reader.register_mapper = &overpunch;
 
 	foreach (rec; reader) 
