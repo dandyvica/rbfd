@@ -26,7 +26,7 @@ private:
 	immutable string _description;	/// record descrption
 
 	Field[] _field_list;	/// dynamic array used to store elements
-	Field[][string] _field_map; 
+	Field[][string] _field_map; /// hash map to store fields (key is field name)
 	
 	ulong _length;           /// length of record = sum of field lengths
 	
@@ -70,6 +70,13 @@ public:
 	{
 		// s length should equal record length
 		//enforce(length == s.length, "line (%s) length = %d is over record length (%d)".format(s, s.length, length));
+		// add or strip chars from string if string has not the same length as record
+		if (s.length < _length) {
+			s = s.leftJustify(_length);
+		}
+		else if (s.length > _length) {
+			s = s[0.._length];
+		}
 
 		// loop for each element and set each value
 		ushort offset = 0;
@@ -117,6 +124,7 @@ public:
 	 			// rename each field
 	 			auto i = 1;
 	 			foreach (ref field; _field_map[fieldName]) {
+	 				// build new field name
 	 				field.name = field.name ~ to!string(i++);
 	 				
 	 				// rebuld map
@@ -131,10 +139,10 @@ public:
 
 	
 	/**
-	 * add a new Element object. 
+	 * add a new Field object. 
 	 *
 	 * Params:
-	 * 	e = element object to be added
+	 * 	field = field object to be added
 	 * 
 	 */	
 	void opOpAssign(string op)(Field field)
@@ -155,12 +163,14 @@ public:
     }
 
 	/**
-	 * [] operator to retrieve i-th element object
+	 * [] operator to retrieve i-th field object
 	 *
 	 * Params:
 	 * 	i = index of the i-th field object to retrieve
 	 * 
-	 * Examples: auto f = record[0]  // returns the first field object
+	 * Examples: 
+	 
+	 * auto f = record[0]  // returns the first field object
 	 */	
 	Field opIndex(size_t i) 
 	{
@@ -170,7 +180,7 @@ public:
 	}
 	
 	/**
-	 * [] operator to retrieve element object whose name is passed as an argument
+	 * [] operator to retrieve field object whose name is passed as an argument
 	 *
 	 * Params:
 	 * 	fieldName = name of the field to retrieve
@@ -186,10 +196,10 @@ public:
 	}
 	
 	/**
-	 * in operator: test if element whose name is passed as argument is found in record
+	 * in operator: test if field whose name is passed as argument is found in record
 	 *
 	 * Params:
-	 * 	fieldName = name of the element to retrieve
+	 * 	fieldName = name of the field to retrieve
 	 * 
 	 * Examples: if ("FIELD1" in record) ...      // test if FIELD1 is in record
 	 */	
@@ -202,7 +212,7 @@ public:
 	
 	
 	/**
-	 * to loop with foreach on all elements
+	 * to loop with foreach loop on all fields
 	 *
 	 * Examples: foreach (Field f; record) { writeln(f); }????????
 	 */	
@@ -220,7 +230,7 @@ public:
     }
     
 	/**
-	 * to match an attribute
+	 * to match an attribute more easily
 	 *
 	 * Examples: rec.FIELD1 returns the value of the field named FIELD1 in the record
 	 */
@@ -231,7 +241,7 @@ public:
 	}
   
     /**
-	 * duplicate a record with all its elements and values
+	 * duplicate a record with all its fields and values
 	 */	
     Record dup()
     {
@@ -265,7 +275,7 @@ public:
 
 	
 	/**
-	 * print out Record properties with all field or record data
+	 * print out Record properties with all field and record data
 	 */
 	override string toString() {
 		auto s = "\nname=<%s>, description=<%s>, length=<%u>\n".format(name, description, length);

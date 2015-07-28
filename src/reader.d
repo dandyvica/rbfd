@@ -21,7 +21,7 @@ import rbf.format;
 
 // definition of useful aliases
 alias GET_RECORD_FUNCTION = string function(string);   /// alias for a function pointer which identifies a record
-alias STRING_MAPPER = void delegate(Record);           /// alias to a delegate used to change field values
+alias STRING_MAPPER = void function(Record);           /// alias to a delegate used to change field values
 
 
 /***********************************
@@ -117,7 +117,8 @@ public:
 			_fmt[recordName].value = line;
 			
 			// is a mapper registered? so we need to call it
-			if (_mapper) _mapper(_fmt[recordName]);
+			if (_mapper) 
+				_mapper(_fmt[recordName]);
 			
 			// save line
 			_fmt[recordName].line = line;			
