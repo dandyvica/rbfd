@@ -10,6 +10,7 @@ import std.file;
 import std.string;
 import std.conv;
 import std.exception;
+import std.regex;
 
 
 import rbf.field;
@@ -18,8 +19,10 @@ import rbf.format;
 
 //import util.common;
 
+// definition of useful aliases
+alias GET_RECORD_FUNCTION = string function(string);   /// alias for a function pointer which identifies a record
+alias STRING_MAPPER = void delegate(Record);           /// alias to a delegate used to change field values
 
-alias GetRecordFunc = string function(string);   /// alias for a function pointer which identifies a record
 
 /***********************************
  * RB file reader used to loop on record for a RB-file
@@ -38,7 +41,13 @@ private:
 	Format _fmt;
 	
 	/// this function will identify a record name from the line read
-	GetRecordFunc _recIdent;
+	GET_RECORD_FUNCTION _recIdent;
+	
+	/// regex ignore pattern: don't read those lines matching this regex
+	string _ignore_pattern;
+	
+	/// mapper function
+	STRING_MAPPER _mapper;
 	
 public:	
 	/**
@@ -49,7 +58,7 @@ public:
 	 *  xmlFile = xml file containing fields & records definitions 
 	 *  recIndentifier = function used to return the record identifier
 	 */	
-	this(string rbFile, string xmlFile, GetRecordFunc recIndentifier)
+	this(string rbFile, string xmlFile, GET_RECORD_FUNCTION recIndentifier)
 	{
 		// check arguments
 		enforce(exists(rbFile), "File %s not found".format(rbFile));		
@@ -68,6 +77,10 @@ public:
 		_recIdent = recIndentifier;
 
 	}
+	
+	/// properties
+	@property void ignore_pattern(string pattern) { _ignore_pattern = pattern; }
+	@property void register_mapper(STRING_MAPPER func) { _mapper = func; }
 
 	/**
 	 * used to loop on foreach on all records of the file
@@ -77,20 +90,39 @@ public:
     int opApply(int delegate(ref Record) dg)
     {
         int result = 0;
-        string s, recordName;
+        string line, recordName;
 
-        foreach (string line; lines(_fh))
+		// read each line of the ascii file
+        foreach (string line_read; lines(File(_rbFile, "r")))
         {
 			// get rid of \n
-			s = chomp(line);
+			line = chomp(line_read);
 			
-			// fetch corresponding record name for s
-			recordName = _recIdent(s);
+			// if line is matching the ignore pattern, just loop
+			if (_ignore_pattern != "" && matchFirst(line, regex(_ignore_pattern))) {
+				continue;
+			}
+			
+			// try to fetch corresponding record name for line we've read
+			recordName = _recIdent(line);
+			
+			// record not found ? So loop
+			if (recordName !in _fmt.records) {
+				writefln("record name <%s> not found!!", recordName);
+				continue;
+			}
 			
 			// now we can safely save our values
-			_fmt[recordName].value = s;
+			// set record value (and fields)
+			_fmt[recordName].value = line;
 			
-			// this is conventional way of opApply
+			// is a mapper registered? so we need to call it
+			if (_mapper) _mapper(_fmt[recordName]);
+			
+			// save line
+			_fmt[recordName].line = line;			
+			
+			// this is conventional way of opApply()
             result = dg(_fmt[recordName]);
             if (result)
                 break;
@@ -146,14 +178,21 @@ Reader ReaderFactory(in InputFormat rbFileType, in string inputFile)
 
 unittest {
 	
+	void mapper(Record rec) {
+		foreach (f; rec) { f.value = "TTT"; }
+	}
+	
 	auto rbf = new Reader("/home/m330421/data/files/bsp/SE.STO.057.PROD.1505281131", r"/home/m330421/data/local/xml/hot203.xml", (line => line[0..3] ~ line[11..13]));
-	//auto rbf = ReaderFactory("hot203", r"..\..\..\data\hot\BSP~~~~~~098961");
 	
 	//auto conditions = rbf.readCondition("conds.txt");
 	//writeln(conditions);
 	
+	rbf.ignore_pattern = "^BKS";
+	rbf.register_mapper = &mapper;
+	
 	foreach (rec; rbf) {
 		//if (rec.matchCondition(conditions)) writeln(rec.toTxt);
+		//writeln(rec.toTxt()());
 		writeln(rec.toTxt());
 	}
 	

@@ -222,12 +222,13 @@ public:
 	/**
 	 * to match an attribute
 	 *
-	 * Examples: foreach (Field f; record) { writeln(f); }????????
+	 * Examples: rec.FIELD1 returns the value of the field named FIELD1 in the record
 	 */
-    
-auto opDispatch(string name)() {
-   return mixin("rec.[\"" ~ name ~ "\"][0].value");
-}
+	@property string opDispatch(string name)() 
+	{
+		//writefln("attr=%s", this[name][0].value);
+		return this[name][0].value;
+	}
   
     /**
 	 * duplicate a record with all its elements and values
@@ -391,11 +392,18 @@ unittest {
 	//writeln("FIELD_B1" in rec);
 	assert("FIELD21" in rec_renamed);	
 	
-	writeln(rec_renamed.toTxt());
-
-
+	//writeln(rec_renamed.toTxt());
+	struct S {
+		string _a;
+		this(string a) { _a = a; }
+		@property string opDispatch(string attr)() {
+			enum s = attr;
+			return "toto";
+		}
+	}
 	
-	writeln(rec.FIELD1);
+	auto s1 = new S("aaa");
+	writefln("passed values=%s, %s", rec.FIELD1, rec_renamed.FIELD21);
 		
 
 }
