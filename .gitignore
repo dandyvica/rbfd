@@ -1,2 +1,6 @@
 __test__library__
 rbfd
+bin/*
+obj/*
+unittest/*
+.dub/*

@@ -251,6 +251,17 @@ public:
 		}
 		return copied;
     }
+
+    /**
+	 * get the i-th field whose is passed as argument (in case of duplicate
+	 * field names (starting from 0)
+	 */	
+    Field get(string fieldName, ushort index) {
+    	enforce(fieldName in this, "field %s is not found in record %s".format(fieldName, name));
+    	enforce(0 <= index && index < _field_map[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
+    	
+    	return _field_map[fieldName][index];
+    }
     
 	/**
 	 * just print out a record with field names and field values
@@ -272,6 +283,11 @@ public:
 		// write out table
 		return ("%s\n%s\n".format(join(fields,"|"), join(values,"|")));
 	}
+    
+    string opDispatch(string fieldName)(ushort index)
+    {
+        return fieldName;
+    }
 
 	
 	/**
@@ -413,7 +429,8 @@ unittest {
 	}
 	
 	auto s1 = new S("aaa");
-	writefln("passed values=%s, %s", rec.FIELD1, rec_renamed.FIELD21);
+	writefln("passed values=%s, %s, %s", 
+		rec.FIELD1, rec_renamed.FIELD21, rec_renamed.FIELD2(2));
 		
 
 }

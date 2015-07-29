@@ -189,7 +189,7 @@ unittest {
 	//writeln(conditions);
 	
 	rbf.ignore_pattern = "^BKS";
-	rbf.register_mapper = &mapper;
+	//rbf.register_mapper = &mapper;
 	
 	foreach (rec; rbf) {
 		//if (rec.matchCondition(conditions)) writeln(rec.toTxt);
