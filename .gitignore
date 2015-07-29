@@ -1,6 +1,7 @@
 __test__library__
 rbfd
 bin/*
+local/*
 obj/*
 unittest/*
 .dub/*
