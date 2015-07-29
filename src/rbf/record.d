@@ -308,6 +308,7 @@ public:
 	 */
 	string opDispatch(string fieldName)(ushort index)
 	{
+		enforce(0 <= index && index < _field_map[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
 		return this[fieldName][index].value;
 	}
 

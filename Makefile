@@ -39,9 +39,6 @@ $(objdir)/writer.o: $(srcdir)/rbf/writer.d
 $(objdir)/xlsxwriter.o: $(srcdir)/rbf/xlsxwriter.d
 	dmd $(DFLAGS) -J$(xlsimportdir) $< -od$(objdir)
 	
-$(objdir)/overpunch.o: $(srcdir)/rbf/hot/overpunch.d	
-	dmd $(DFLAGS) -J$(xlsimportdir) $< -od$(objdir)
-	
 $(objdir)/args.o: $(srcdir)/util/args.d	
 	dmd $(DFLAGS) -J$(xlsimportdir) $< -od$(objdir)
 
@@ -51,8 +48,8 @@ $(objdir)/logger.o: $(srcdir)/util/logger.d
 #-----------------------------------------------------------------
 # lib creation
 #-----------------------------------------------------------------
-$(libdir)/rbf.lib: $(objdir)/element.o $(objdir)/field.o $(objdir)/record.o $(objdir)/format.o $(objdir)/reader.o /
-	$(objdir)/writer.o $(objdir)/xlsxwriter.o $(objdir)/args.o
+rbflib: $(libdir)/rbf.a
+$(libdir)/rbf.a: $(objdir)/field.o $(objdir)/record.o $(objdir)/format.o $(objdir)/reader.o
 	dmd -lib -od$(libdir) $^ -of$@
 
 $(libdir)/util.lib: $(objdir)/args.o $(objdir)/logger.o
@@ -62,15 +59,24 @@ rbf: $(libdir)/rbf.lib
 util:$(libdir)/util.lib
 
 #-----------------------------------------------------------------
-# exe creation
+# hot specific stuff
 #-----------------------------------------------------------------
-$(objdir)/rbfreader.o: $(srcdir)/rbfreader.d
+$(objdir)/hotdocument.o: $(srcdir)/hot/hotdocument.d
 	dmd $(DFLAGS) $< -od$(objdir)
 
-$(exedir)/rbfreader: $(objdir)/rbfreader.o $(objdir)/overpunch.o $(libdir)/rbf.lib $(libdir)/util.lib
+$(objdir)/overpunch.o: $(srcdir)/hot/overpunch.d
+	dmd $(DFLAGS) $< -od$(objdir)
+
+$(objdir)/readhot.o: $(srcdir)/hot/readhot.d
+	dmd $(DFLAGS) $< -od$(objdir)
+
+#-----------------------------------------------------------------
+# readhot
+#-----------------------------------------------------------------
+$(exedir)/readhot: $(objdir)/readhot.o $(objdir)/overpunch.o $(objdir)/hotdocument.o $(libdir)/rbf.a
 	dmd  $^ -of$@
 
-rbfreader: $(exedir)/rbfreader
+readhot: $(exedir)/readhot
 
 
 
