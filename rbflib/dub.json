@@ -1,0 +1,13 @@
+{
+	"name": "rbf",
+	"description": "A record-based file library",
+	"authors": ["Alain Viguier"],
+	"homepage": "https://github.com/dandyvica/rbfd",
+	"license": "GPL-2.0",
+	"dependencies": {
+	},
+	"targetPath": "lib",
+	"targetType": "staticLibrary",
+	"dflags-dmd": ["-H"],
+	"postBuildCommands": ["mv *.di ./interface"],
+}
