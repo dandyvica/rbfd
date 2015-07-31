@@ -17,8 +17,12 @@ template genWriteProperty(string pName)
 	    const char[] genWriteProperty = "@property void " ~ pName ~ "(string " ~ pName ~ ") { _" ~ pName ~ " = " ~ pName ~ "; }";
 }
 
+// useful enums
 enum TicketIndicator {
 	PRIMARY, CONJUNCTION
+}
+enum DocumentType {
+	TICKET, EMDS, EMDA
 }
 
 struct Transaction {
@@ -128,7 +132,8 @@ struct FareCal {
 	string fare_cal_area;				// FRCA
 
 	string toString() {
-		return "fare_cal_area: <%s>".format(fare_cal_area);
+//		return "fare_cal_area: <%s>".format(fare_cal_area);
+		return "%s".format(fare_cal_area);
 	}
 }
 
@@ -146,7 +151,8 @@ struct Tax {
 */
 
 	string toString() {
-		return "tax_fee_type: <%s>, tax_fee_amount: <%f>, currency: <%s>".format(tax_fee_type, tax_fee_amount, currency.currency_name);
+//		return "tax_fee_type: <%s>, tax_fee_amount: <%f>, currency: <%s>".format(tax_fee_type, tax_fee_amount, currency.currency_name);
+		return "%.10s\t%.2f\t%.10s".format(tax_fee_type, tax_fee_amount, currency.currency_name);
 	}
 }
 
@@ -215,7 +221,7 @@ struct Agency {
 
 
 struct DocumentID {
-	string document_number;		// TDNR
+	immutable string document_number;		// TDNR
 	string check_digit;			// CDGT
 
 	string date_of_issue;			// DAIS
@@ -236,6 +242,15 @@ struct DocumentID {
 		return s.format(document_number, check_digit, trx_code, date_of_issue, coupon_use_indicator, conjonction_indicator,
 					tour_code, true_ond, pnr_ref);
 	}
+
+	// specific and not in HOT files
+	string doc_type;		// whether its a ticket, emds, emda, refund, ...
+	string primary_doc_number;	// the doc number of the first ticket in the journey (empty if a primary ticket)
+	TicketIndicator ticket_indicator; // whether it's a primary of conjunction ticket
+	ushort ticket_index;		// index for the ticket (0=primary, 1 for the first cnj found, ...)
+
+	// list of subsequent tickets
+	string[] cnj_tickets;
 }
 
 struct SaleInfo {
@@ -310,7 +325,6 @@ public:
 		writefln("%s", _id);
 		writefln("\tPax: %s", _pax);
 		writefln("\tFOP: %s", _fop);
-		writefln("\tFare:%s", _fareCal);
 		writefln("\tSale:%s", _sale);
 		writefln("\t%s", _fare);
 
@@ -333,8 +347,23 @@ public:
 			}
 		}
 
+		// if cnj tickets?
+		if (_id.cnj_tickets.length > 0) {
+			writefln("\tConjunctions tickets: \n\t\t%s", id.cnj_tickets);
+		}
+	
+		writefln("\tFare calculation:\n\t\t%s", _fareCal);
+
+		// primary reference?
+		if (_id.primary_doc_number != "") {
+			writefln("\tPrimary ticket: <%s>", _id.primary_doc_number);
+		}
+
 	}
 	// read properties
+	@property DocumentID id() { return _id; }
+
+	@property string ticket_number() { return _id.document_number; }
 	/*
 	mixin(genReadProperty!("document_number"));
 	mixin(genReadProperty!("check_digit"));
@@ -361,7 +390,8 @@ public:
 	*/
 
 	// from from record types
-	void fromBKS24(Record rec) {
+	void fromBKS24(Record rec, in string primary_ticket_number = "") {
+		// data from record
 		_id.coupon_use_indicator = rec.CPUI;
 		_id.conjonction_indicator = rec.CJCP;
 		_id.date_of_issue = rec.DAIS;
@@ -370,7 +400,22 @@ public:
 		_id.trx_code = rec.TRNC;
 		_id.true_ond = rec.TODC;
 
+		// AGTN is the IATA agency number
 		_agency.iata_number = rec.AGTN;
+
+		// set specific data
+		_id.doc_type = _id.trx_code;
+
+		// CNJ?
+		if (_id.conjonction_indicator == "CNJ") {
+			_id.ticket_indicator = TicketIndicator.CONJUNCTION;
+			_id.primary_doc_number = primary_ticket_number;
+		} 
+		// otherwise primary
+		else {
+			_id.ticket_indicator = TicketIndicator.PRIMARY;
+			_id.primary_doc_number = "";
+		}
 	}
 
 	void fromBKS46(Record rec) {
@@ -489,5 +534,11 @@ public:
 		return join(s,",");
 	}
 	*/
+
+	// keep track of all the cnj tickets
+	void addCnjTicket(string cnj_number) {
+		_id.cnj_tickets ~= cnj_number;
+		_id.ticket_index = to!ushort(_id.cnj_tickets.length);
+	}
 
 }
