@@ -2,15 +2,15 @@
 # base directories
 #-----------------------------------------------------------------
 basedir = $(shell pwd)
-srcdir = $(basedir)/src
-objdir = $(basedir)/obj
-exedir = $(basedir)/bin
-libdir = $(basedir)/lib
-xlsimportdir = $(srcdir)/rbf/xls
+srcdir = $(basedir)/source
+objdir = $(basedir)/temp
+exedir = $(basedir)/temp
+libdir = $(basedir)/temp
+xlsimportdir = $(basedir)/views
 docdir = $(basedir)/doc
 
-ut_objdir = $(basedir)/unittest/obj
-ut_exedir = $(basedir)/unittest/bin
+ut_objdir = $(basedir)/temp
+ut_exedir = $(basedir)/temp
 mainobj = $(ut_objdir)/__main.o
 
 #-----------------------------------------------------------------
@@ -21,22 +21,22 @@ DFLAGS = -w -c -I$(srcdir)
 #-----------------------------------------------------------------
 # object modules
 #-----------------------------------------------------------------
-$(objdir)/field.o: $(srcdir)/rbf/field.d
+$(objdir)/field.o: $(srcdir)/field.d
 	dmd $(DFLAGS) $< -od$(objdir)
 
-$(objdir)/record.o: $(srcdir)/rbf/record.d
+$(objdir)/record.o: $(srcdir)/record.d
 	dmd $(DFLAGS) $< -od$(objdir)
 
-$(objdir)/format.o: $(srcdir)/rbf/format.d
+$(objdir)/format.o: $(srcdir)/format.d
 	dmd $(DFLAGS) $< -od$(objdir)
 
-$(objdir)/reader.o: $(srcdir)/rbf/reader.d
+$(objdir)/reader.o: $(srcdir)/reader.d
 	dmd $(DFLAGS) $< -od$(objdir)
 	
-$(objdir)/writer.o: $(srcdir)/rbf/writer.d
+$(objdir)/writer.o: $(srcdir)/writer.d
 	dmd $(DFLAGS) $< -od$(objdir)
 	
-$(objdir)/xlsxwriter.o: $(srcdir)/rbf/xlsxwriter.d
+$(objdir)/xlsxwriter.o: $(srcdir)/xlsxwriter.d
 	dmd $(DFLAGS) -J$(xlsimportdir) $< -od$(objdir)
 	
 $(objdir)/args.o: $(srcdir)/util/args.d	
@@ -49,7 +49,7 @@ $(objdir)/logger.o: $(srcdir)/util/logger.d
 # lib creation
 #-----------------------------------------------------------------
 rbflib: $(libdir)/rbf.a
-$(libdir)/rbf.a: $(objdir)/field.o $(objdir)/record.o $(objdir)/format.o $(objdir)/reader.o
+$(libdir)/rbf.a: $(objdir)/field.o $(objdir)/record.o $(objdir)/format.o $(objdir)/reader.o $(objdir)/writer.o $(objdir)/xlsxwriter.o
 	dmd -lib -od$(libdir) $^ -of$@
 
 $(libdir)/util.lib: $(objdir)/args.o $(objdir)/logger.o
