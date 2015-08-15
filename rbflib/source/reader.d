@@ -25,83 +25,83 @@ alias STRING_MAPPER = void function(Record);           /// alias to a delegate u
 
 
 /***********************************
- * record-base file reader used to loop on each record 
+ * record-base file reader used to loop on each record
  */
 class Reader {
-	
+
 private:
-	
+
 	/// filename to read
 	immutable string _rbFile;
-	
+
 	/// file handle when opened
 	//File _fh;
-	
+
 	/// list of all records read from XML definition file
 	Format _fmt;
-	
+
 	/// this function will identify a record name from the line read
 	GET_RECORD_FUNCTION _recIdent;
-	
+
 	/// regex ignore pattern: don't read those lines matching this regex
 	string _ignore_pattern;
-	
+
 	/// mapper function
 	STRING_MAPPER _mapper;
-	
-public:	
+
+public:
 	/**
 	 * creates a new Reader object for rb files
 	 *
 	 * Params:
 	 *  rbFile = path/name of the file to read
-	 *  xmlFile = xml file containing fields & records definitions 
+	 *  xmlFile = xml file containing fields & records definitions
 	 *  recIndentifier = function used to map each record
-	 */	
+	 */
 	this(string rbFile, string xmlFile, GET_RECORD_FUNCTION recIndentifier)
 	{
 		// check arguments
-		enforce(exists(rbFile), "File %s not found".format(rbFile));		
-		enforce(exists(xmlFile), "XML definition file %s not found".format(xmlFile));				
-		
+		enforce(exists(rbFile), "File %s not found".format(rbFile));
+		enforce(exists(xmlFile), "XML definition file %s not found".format(xmlFile));
+
 		// save file name and opens file for reading
 		_rbFile = rbFile;
-		
+
 		// open file for reading
-		//_fh = File(rbFile, "r"); 
-		
+		//_fh = File(rbFile, "r");
+
 		// build all records but defining a new format
 		_fmt = new Format(xmlFile);
-		
+
 		// save record identifier lambda
 		_recIdent = recIndentifier;
 
 	}
-	
+
 	/**
 	 * register a regex pattern to ignore line matching this pattern
-	 * 
-	 * Examples: 
+	 *
+	 * Examples:
 	 * -----------------------------
 	 * reader.ignore_pattern("^#")		// ignore lines starting with #
 	 * -----------------------------
-	 */	
+	 */
 	@property void ignore_pattern(string pattern) { _ignore_pattern = pattern; }
 
 	/**
 	 * register a callback function which will be called for each fetched record
-	 */	
+	 */
 	@property void register_mapper(STRING_MAPPER func) { _mapper = func; }
 
 	/**
 	 * used to loop on foreach on all records of the file
-	 * 
-	 * Examples: 
+	 *
+	 * Examples:
 	 * -----------------------------
-	 * foreach (Record rec; rbfile) 
+	 * foreach (Record rec; rbfile)
 	 * 	{ writeln(rec); }
 	 * -----------------------------
-	 */	
+	 */
 	int opApply(int delegate(ref Record) dg)
 	{
 		int result = 0;
@@ -112,32 +112,32 @@ public:
 		{
 			// get rid of \n
 			line = chomp(line_read);
-			
+
 			// if line is matching the ignore pattern, just loop
 			if (_ignore_pattern != "" && matchFirst(line, regex(_ignore_pattern))) {
 				continue;
 			}
-			
+
 			// try to fetch corresponding record name for line we've read
 			recordName = _recIdent(line);
-			
+
 			// record not found ? So loop
 			if (recordName !in _fmt.records) {
 				writefln("record name <%s> not found!!", recordName);
 				continue;
 			}
-			
+
 			// now we can safely save our values
 			// set record value (and fields)
 			_fmt[recordName].value = line;
-			
+
 			// is a mapper registered? so we need to call it
-			if (_mapper) 
+			if (_mapper)
 				_mapper(_fmt[recordName]);
-			
+
 			// save line
-			_fmt[recordName].line = line;			
-			
+			_fmt[recordName].line = line;
+
 			// this is conventional way of opApply()
 			result = dg(_fmt[recordName]);
 			if (result)
@@ -145,13 +145,13 @@ public:
 		}
 		return result;
 	}
-	
+
 	/**
 	 * destructor: close the file
 	~this() {
 		_fh.close();
 	}
-	
+
 	*/
 	/**
 	 * read the condition file and return an array of string, one string
@@ -161,18 +161,18 @@ public:
 	string[] readCondition(string fileName)
 	{
 		string[] cond;
-		
-		enforce(exists(fileName), "Condition file %s not found".format(fileName));		
+
+		enforce(exists(fileName), "Condition file %s not found".format(fileName));
 
 		foreach (string line; File(fileName, "r").lines)
 		{
 			if (!startsWith(line, "#")) cond ~= line.stripRight();
 		}
-		
+
 		return cond;
 	} */
-			
-	
+
+
 }
 
 
@@ -187,27 +187,31 @@ Reader ReaderFactory(in InputFormat rbFileType, in string inputFile)
 	}
 }
 */
-		
+
 
 unittest {
-	
+
+	writefln("-------------------------------------------------------------");
+	writeln(__FILE__);
+	writefln("-------------------------------------------------------------");
+
 	void mapper(Record rec) {
 		foreach (f; rec) { f.value = "TTT"; }
 	}
-	
-	auto rbf = new Reader("./local/test1", r"./local/hot203.xml", (line => line[0..3] ~ line[11..13]));
-	
+
+	auto rbf = new Reader("../test/world.data", "../test/world_data.xml", (line => line[0..4] ));
+
 	//auto conditions = rbf.readCondition("conds.txt");
 	//writeln(conditions);
-	
-	rbf.ignore_pattern = "^BKS";
+
+	rbf.ignore_pattern = "^#";
 	//rbf.register_mapper = &mapper;
-	
+
 	foreach (rec; rbf) {
 		//if (rec.matchCondition(conditions)) writeln(rec.toTxt);
 		//writeln(rec.toTxt()());
 		writeln(rec.toTxt());
 	}
-	
+
 
 }

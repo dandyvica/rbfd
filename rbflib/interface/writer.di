@@ -20,6 +20,7 @@ abstract class Writer
 		{
 			this(in string outputFileName);
 			abstract void write(Record rec);
+			abstract void close();
 		}
 	}
 }
@@ -27,18 +28,18 @@ class HTMLWriter : Writer
 {
 	this(in string outputFileName);
 	override void write(Record rec);
-	~this();
+	override void close();
 }
 class CSVWriter : Writer
 {
 	this(in string outputFileName);
 	override void write(Record rec);
-	~this();
+	override void close();
 }
 class TXTWriter : Writer
 {
 	this(in string outputFileName);
 	override void write(Record rec);
-	~this();
+	override void close();
 }
 Writer writer(in string output = "", in string mode = "txt");

@@ -7,7 +7,7 @@ import std.exception;
 import std.algorithm;
 import std.array;
 import std.zip;
-import core.time;
+//import std.time;
 
 import rbf.field;
 import rbf.record;
@@ -36,9 +36,9 @@ struct XLSXPattern {
 class XLSXWriter : Writer {
 private:
 
-	string _xlsxFilename;
-	string _xlsxDir;
-	string[] _worksheets;
+	string _xlsxFilename;		/// Excel worksheet file name
+	string _xlsxDir;				/// directory used to gather all Excel files
+	string[] _worksheets;   /// list of worksheets for the Excel file
 
 	static XLSXPattern[string] pattern;
 
@@ -54,6 +54,21 @@ private:
 		{
 			return XlsxRowType.XLSX_NUMROW.format(value);
 		}
+	}
+
+	// create the zip archive as an XLSX file
+	void _create_zip() {
+		// ch dir to XLSX directory
+		chdir(_xlsxDir);
+
+		// create zip
+		auto result = std.process.execute(["/usr/bin/zip", "-r", "../" ~ _xlsxFilename, "."]);
+		if (result.status != 0)
+			throw new Exception("zip command failed:\n", result.output);
+
+		// now it's sace to remove all files
+		chdir("..");
+		rmdirRecurse(_xlsxDir);
 	}
 
 public:
@@ -87,9 +102,9 @@ public:
 		_xlsxFilename = outputFileName;
 
 		// create a unique XLSX directory structure
-		_xlsxDir = "./%s.%d".format(_xlsxFilename, MonoTime.currTime);
+		_xlsxDir = "./%s.%d".format(_xlsxFilename, std.datetime.Clock.currStdTime());
 		mkdir(_xlsxDir);
-		mkdir(_xlsxDir ~ "\\_rels");
+		mkdir(_xlsxDir ~ "/_rels");
 	}
 
 	override void write(Record record)
@@ -135,7 +150,7 @@ public:
 		worksheetHandle.write("</row>");
 	}
 
-	~this()
+	override void close()
 	{
 		ushort i=0;
 
@@ -161,6 +176,9 @@ public:
 			fh.write("</sheetData></worksheet>");
 			fh.close();
 		}
+
+		// finally create zip
+		_create_zip();
 	}
 
 

@@ -7,7 +7,6 @@ import std.exception;
 import std.algorithm;
 import std.array;
 import std.zip;
-import core.time;
 import rbf.field;
 import rbf.record;
 import rbf.writer;
@@ -32,11 +31,12 @@ class XLSXWriter : Writer
 		string[] _worksheets;
 		static XLSXPattern[string] pattern;
 		string _toXLSXRow(string value, FieldType ft = FieldType.ALPHABETICAL);
+		void _create_zip();
 		public 
 		{
 			this(string outputFileName);
 			override void write(Record record);
-			~this();
+			override void close();
 		}
 	}
 }

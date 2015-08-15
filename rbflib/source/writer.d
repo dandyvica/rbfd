@@ -37,6 +37,7 @@ public:
 	}
 
 	abstract void write(Record rec);
+	abstract void close();
 
 }
 
@@ -49,24 +50,40 @@ class HTMLWriter : Writer {
 	{
 		super(outputFileName);
 		_fh = File(outputFileName, "w");
-		_fh.write("<html><head><link href=\"../css/rbf.css\" rel=\"stylesheet\" type=\"text/css\"></head><body>\n");
+
+		// bootstrap header
+		_fh.writeln(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">`);
+		_fh.writeln(`<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"></head>`);
+		_fh.writeln(`<body role="document"><div class="container">`);
 	}
 
 	override void write(Record rec)
 	{
 		string names="", values="";
 
-		_fh.write("<table>");
+		// write record name & description
+		_fh.writefln(`<h2><span class="label label-primary">%s - %s</span></h2>`,
+					rec.name, rec.description);
+
+		// write fields as a HTML table
+		_fh.write(`<table class="table table-striped">`);
 		foreach (Field f; rec)
 		{
-			names ~= "<tr>" ~ f.name ~ "</tr>";
-			values ~= "<tr>" ~ f.value ~ "</tr>";
+			names ~= "<th>" ~ f.name ~ "</th>";
+			values ~= "<td>" ~ f.value ~ "</td>";
 		}
-		_fh.write(names, "\n", values);
+		_fh.writefln("<thead><tr>%s</tr></thead>", names);
+		_fh.writefln("<tbody><tr>%s</tr></tbody>", values);
+
 		_fh.write("</table>");
 	}
 
-	~this() { _fh.close(); }
+	// end up HTML tags
+	override void close()
+	{
+		_fh.writeln("</div></body></html>");
+		_fh.close();
+	}
 }
 
 /*********************************************
@@ -86,7 +103,7 @@ class CSVWriter : Writer {
 		_fh.write(join(rec.fieldValues, ";"), "\n");
 	}
 
-	~this() { _fh.close(); }
+	override void close() { _fh.close(); }
 }
 
 /*********************************************
@@ -114,7 +131,7 @@ class TXTWriter : Writer {
 		_fh.writefln("%s\n%s\n", join(names, "|"), join(values, "|"));
 	}
 
-	~this() { _fh.close(); }
+	override void close() { _fh.close(); }
 }
 
 
@@ -141,15 +158,24 @@ Writer writer(in string output = "", in string mode = "txt")
 
 unittest {
 
-	auto reader = new Reader("./local/test1", r"./local/hot203.xml", (line => line[0..3] ~ line[11..13]));
-	auto writer = writer("test.html", "html");
+	writefln("-------------------------------------------------------------");
+	writeln(__FILE__);
+	writefln("-------------------------------------------------------------");
 
-	reader.ignore_pattern = "^BKS";
-
-
-	foreach (rec; reader) {
-		writer.write(rec);
-	}
+	auto reader = new Reader("../test/world.data", "../test/world_data.xml", (line => line[0..4]));
+	reader.ignore_pattern = "^#";
 
 
+	auto writer1 = writer("test.html", "html");
+	foreach (rec; reader) { writer1.write(rec); }
+
+	auto writer2 = writer("test.txt", "txt");
+	foreach (rec; reader) { writer2.write(rec); }
+
+	auto writer3 = writer("test.csv", "csv");
+	foreach (rec; reader) { writer3.write(rec); }
+
+	auto writer4 = writer("test.xlsx", "xlsx");
+	foreach (rec; reader) { writer4.write(rec); }
+	writer4.close();
 }
