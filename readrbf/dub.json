@@ -1,0 +1,8 @@
+{
+	"name": "readrbf",
+	"description": "A minimal D application.",
+	"copyright": "Copyright © 2015, alain",
+	"authors": ["alain"],
+	"dependencies": {
+	}
+}
