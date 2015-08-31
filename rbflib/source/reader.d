@@ -16,11 +16,12 @@ import std.regex;
 import rbf.field;
 import rbf.record;
 import rbf.format;
+import rbf.util;
 
 //import util.common;
 
 // definition of useful aliases
-alias GET_RECORD_FUNCTION = string function(string);   /// alias for a function pointer which identifies a record
+alias GET_RECORD_FUNCTION = string delegate(string);   /// alias for a function pointer which identifies a record
 alias STRING_MAPPER = void function(Record);           /// alias to a delegate used to change field values
 
 
@@ -175,18 +176,11 @@ public:
 
 }
 
-
-/*
-Reader ReaderFactory(in InputFormat rbFileType, in string inputFile)
+Reader reader(string rbFile, RBFConfig rbfConfig)
 {
-	final switch(rbFileType)
-	{
-		case InputFormat.hot203: return new Reader(inputFile, "xml/hot203.xml", (line => line[0..3] ~ line[11..13]));
-		case InputFormat.isr: return new Reader(inputFile, "xml/isr.xml", (line => line[0..2]));
-		case InputFormat.prl: return new Reader(inputFile, "xml/prl.xml", (line => "PRL"));
-	}
+	return new Reader(rbFile, rbfConfig.xmlStructure, &rbfConfig.record_identifier);
 }
-*/
+
 
 
 unittest {
