@@ -50,6 +50,7 @@ class Record
 			}
 			int opApply(int delegate(ref Field) dg);
 			Record dup();
+			Record fromList(string[] listOfFields);
 			Field get(string fieldName, ushort index);
 			string toTxt();
 			string opDispatch(string fieldName)(ushort index)

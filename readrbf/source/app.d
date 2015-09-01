@@ -1,69 +1,81 @@
 import std.stdio;
 import std.file;
 import std.string;
+import std.getopt;
 
 import rbf.field;
 import rbf.record;
 import rbf.format;
 import rbf.reader;
 import rbf.writer;
+import rbf.util;
+
+import overpunch;
 
 
 void main(string[] argv)
 {
 	string[] conditions;
 
-	// get command line arguments
-	getopt(args, 
-		"input|i",  &opts.inputFileName, 
-		"output|o", &opts.outputFileName,
-		"mode|m",   &opts.outputMode,
-		"format|f", &opts.inputFormat,
-		"clause|c", &opts.conditionFile
-	);
+	// read JSON properties
+	auto config = new Config();
 
-	//writeln(opts);
+	// print-out help
 	if (argv.length == 1)
 	{
 		writeln("
-This program is aimed at reading record based file format.
+This program is aimed at reading record based file.
+It reads its settings from the rbf.json file located in the ~/.rbf directory
+(linux) or the %APPDATA%/local/rbf directory (Windows).
 
-Usage: rbf.exe -i <input file name> -o <output file> -m <mode> -f <format> -c <cond file>
+Usage: readrbf -i <input file name> -O <output file> -o <output format> -f <input format> -c <cond file>
 
-	-i		file name and path and the file to read
-	-o		file name to generate
-	-m		format of the output file. Should be only html, csv, txt, xlsx or sql
+	-i		file name and path of the file to read
+	-o		output file name to generate
 	-f		format of the input file (ex.: isr)
+	-F		format of the output file. Should be only: html, csv, txt, xlsx or sqlite3
 	-c		optional: a set of conditions for filtering records
 		");
-		std.c.stdlib.exit(1);
+		core.stdc.stdlib.exit(1);
 	}
 
-	// read properties from JSON file and depending on input file format,
-	// fill structure
-		
-	auto reader = ReaderFactory(opts.inputFormat, opts.inputFileName);
-	auto writer = writerFactory(opts.outputMode, opts.outputFileName);
-	
+	// get command line arguments
+	CommandLineOption opts;
+	getopt(argv,
+		std.getopt.config.caseSensitive,
+		"i",  &opts.inputFileName,
+		"o",  &opts.outputFileName,
+		"f", &opts.inputFormat,
+		"F", &opts.outputFormat,
+		"c",  &opts.conditionFile
+	);
+
+  // if no output file name specified, then use input file name and
+	// append the suffix
+	if (opts.outputFileName == "") {
+		opts.outputFileName = opts.inputFileName ~ "." ~ opts.outputFormat;
+	}
+
+  // create new reader
+	auto reader = reader(opts.inputFileName, config[opts.inputFormat]);
+
+	// create new writer
+	auto writer = writer(opts.outputFileName, opts.outputFormat);
+
+	// in case of HOT files, specifiy our modifier
+	reader.register_mapper = &overpunch.overpunch;
+
 	/*
 	if (opts.conditionFile != "")
-	{	
+	{
 		conditions = reader.readCondition(opts.conditionFile);
 		writeln(conditions);
 	}
 	*/
-	
-	foreach (rec; reader) 
+
+	foreach (rec; reader)
 	{
-		// overpunch for HOT files but only for numerical fields
-		if (opts.inputFormat == InputFormat.hot203)
-		{
-			foreach (Field f; rec) 
-			{ 
-					if (f.fieldType == FieldType.NUMERICAL) f.transmute(&overpunch); 
-			}
-		}
-		
+		/*
 		// store record depending on options
 		if (opts.conditionFile != "" && rec.matchCondition(conditions))
 		{
@@ -72,10 +84,11 @@ Usage: rbf.exe -i <input file name> -o <output file> -m <mode> -f <format> -c <c
 		else
 		{
 			writer.print(rec);
-		}
+		}*/
+		writer.write(rec.fromList(["TDNR", "CDGT"]));
 	}
-	
-	// explicitly call destructor to finish creating file (specially for Excel files)
-	delete writer;
-	
+
+	// explicitly call close to finish creating file (specially for Excel files)
+	writer.close();
+
 }

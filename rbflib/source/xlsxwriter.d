@@ -99,7 +99,7 @@ public:
 
 
 		// save file name
-		_xlsxFilename = outputFileName;
+		_xlsxFilename = std.path.baseName(outputFileName);
 
 		// create a unique XLSX directory structure
 		_xlsxDir = "./%s.%d".format(_xlsxFilename, std.datetime.Clock.currStdTime());

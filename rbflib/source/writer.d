@@ -149,7 +149,7 @@ Writer writer(in string output = "", in string mode = "txt")
 		case "xlsx": return new XLSXWriter(output);
 		case "sql" : return new TXTWriter(output);
 		default:
-			throw new Exception("writer unknown mode %s".format(mode));
+			throw new Exception("writer unknown mode <%s>".format(mode));
 	}
 }
 

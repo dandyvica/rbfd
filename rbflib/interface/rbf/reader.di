@@ -9,7 +9,8 @@ import std.regex;
 import rbf.field;
 import rbf.record;
 import rbf.format;
-alias GET_RECORD_FUNCTION = string function(string);
+import rbf.util;
+alias GET_RECORD_FUNCTION = string delegate(string);
 alias STRING_MAPPER = void function(Record);
 class Reader
 {
@@ -29,3 +30,4 @@ class Reader
 		}
 	}
 }
+Reader reader(string rbFile, RBFConfig rbfConfig);

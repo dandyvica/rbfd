@@ -1,8 +1,14 @@
 {
 	"name": "readrbf",
-	"description": "A minimal D application.",
-	"copyright": "Copyright © 2015, alain",
-	"authors": ["alain"],
+	"description": "A generic record-based file reader using rbf library",
+	"authors": ["Alain Viguier"],
+	"homepage": "https://github.com/dandyvica/rbfd",
+	"license": "GPL-2.0",
 	"dependencies": {
-	}
+	},
+	"targetPath": "bin",
+	"targetType": "executable",
+	"libs": ["rbf"],
+	"importPaths": ["source", "../rbflib/interface"],
+	"lflags": ["-L../rbflib/lib"],
 }

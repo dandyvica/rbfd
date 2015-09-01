@@ -7,6 +7,7 @@ import std.process;
 import std.json;
 import std.conv;
 import std.path;
+import std.typecons;
 
 /***********************************
  * This structure is holding command line arguments
@@ -14,9 +15,9 @@ import std.path;
 struct CommandLineOption
 {
 	string inputFileName;		// input file name to parse
-	string outputFileName;		// output file name to save
-	string outputMode;			// output mode HTML, TXT, ...
+	string outputFileName;	// output file name to save
 	string inputFormat;			// input file format
+	string outputFormat;		// output format HTML, TXT, ...
 	string conditionFile;		// if any, name of the clause file
 }
 
@@ -25,34 +26,82 @@ enum mapperType { STRING_MAPPER, VARIABLE_MAPPER }
 /***********************************
  * This class is holding configuration specific to a rbf format
  */
-struct RBFConfig
+class RBFConfig
 {
-	string xmlStructure;		/// XML description of the format
-	string[] sliceList;					/// list of slices to build record identifier
-	string ignorePattern;		/// if any, ignore those lines when reading
+private:
+  string _structureName;	/// name of the rb format
+	string _xmlStructure;		/// XML description of the format
 
-	string record_identifier(string x) {
-		// result is either a constant string or depending on string passed
-		string[] result;
+	alias Slice = Tuple!(int, int);
 
-		foreach (slice; sliceList) {
-			// slice is like '0:2', so we need to extract 0 and 2
-			auto bounds = slice.split(':');
-			auto lower_bound = to!int(bounds[0]);
-			auto upper_bound = to!int(bounds[1]);
+	mapperType _mappingType;	/// is it a constant or variable mapper?
+	string _constantMapping;	/// case of a constant mapper
+	Slice[] _sliceMapping;	  /// list of slices to build record identifier (variable mapper)
 
-			// and get slice from string
-			result ~= x[lower_bound..upper_bound];
+	string _ignorePattern;	/// if any, ignore those lines when reading
+
+
+public:
+	this(in string name, JSONValue tag) {
+		// save the name of this structure
+		_structureName = name;
+
+		// save XML file name
+		_xmlStructure = tag["xmlfile"].str;
+
+		// ignore pattern might not be found
+		if ("ignore" in tag) {
+			_ignorePattern = tag["ignore"].str;
 		}
 
-		return join(result, "");
+		// get mapping
+		if ("constant" in tag["mapping"]) {
+			_mappingType = mapperType.STRING_MAPPER;
+			_constantMapping = tag["mapping"]["constant"].str;
+		}
+		else if ("variable" in tag["mapping"]) {
+			_mappingType = mapperType.VARIABLE_MAPPER;
+
+			// slices oare just an array of tuples
+			foreach (slice; tag["mapping"]["variable"].str.split(",")) {
+				// slice is like '0:2', so we need to extract 0 and 2
+				auto bounds = slice.split(':');
+				auto lower_bound = to!int(bounds[0]);
+				auto upper_bound = to!int(bounds[1]);
+
+				// and get slice from string
+				_sliceMapping ~= Slice(lower_bound, upper_bound);
+			}
+
+			// build our list of slices
+		}
+		else
+				throw new Exception("no constant or variable mapper defined for format %s".format(_structureName));
 	}
 
-/*
-	this(in string xmlStructure, in string ignorePattern) {
-		this.xmlStructure = xmlStructure;
-		this.ignorePattern = ignorePattern;
-	}*/
+	@property string xmlStructure() { return _xmlStructure; }
+	@property string ignorePattern() { return _ignorePattern; }
+
+	string record_identifier(string x) {
+		string result;
+
+		// depending on type, return a constant or a list of values
+		if (_mappingType == mapperType.STRING_MAPPER)
+			result = _constantMapping;
+		else if (_mappingType == mapperType.VARIABLE_MAPPER) {
+			foreach (slice; _sliceMapping) {
+				result ~= x[slice[0]..slice[1]];
+			}
+		}
+
+		// result value
+		return result;
+	}
+
+	override string toString() {
+		return "<%s>: structure file=<%s>, ignore pattern=<%s>, mapping=<%s>"
+			.format(_structureName, _xmlStructure, _ignorePattern, _sliceMapping);
+	}
 }
 
 /***********************************
@@ -60,7 +109,8 @@ struct RBFConfig
  */
 class Config {
 private:
-	JSONValue[string] tags;						/// tags as read from the JSON settings file
+	JSONValue[string] document;						/// tags as read from the JSON settings file
+	RBFConfig[string] conf;						/// individual config for one XML structure
 
 public:
 	/**
@@ -86,34 +136,19 @@ public:
 
 		// Ok, now read JSON
 		auto jsonTags = to!string(read(settingsFile));
-		tags = parseJSON(jsonTags).object;
+		document = parseJSON(jsonTags).object;
+
+		// now fetch "xml" tag
+		JSONValue[string] xmlTag = document["xml"].object;
+
+		// and create array of XML configs
+		foreach (tag; xmlTag.keys) {
+			conf[tag] = new RBFConfig(tag, xmlTag[tag]);
+		}
 	}
 
 	RBFConfig opIndex(string rbfFormat) {
-		string ignorePattern;
-
-		// xml file structure
-		auto xmlStructure = tags["xml"][rbfFormat]["xmlfile"].str;
-
-		// list of ranges used to build lambda
-		auto mapping = tags["xml"][rbfFormat]["mapping"].str;
-
-		// if ':' is found, this is a list of ranges
-		string[] slices;
-		if (mapping.indexOf(':') != -1) {
-			// split and build our ranges
-			slices = mapping.split(",");
-		}
-		else
-			slices ~= mapping;
-
-		// ignore pattern might not be found
-		if ("ignore" in tags["xml"][rbfFormat]) {
-			ignorePattern = tags["xml"][rbfFormat]["ignore"].str;
-		}
-
-		// return structure
-		return RBFConfig(xmlStructure, slices, ignorePattern);
+		return conf[rbfFormat];
 	}
 }
 

@@ -262,6 +262,16 @@ public:
 		return copied;
 	}
 
+	Record fromList(string[] listOfFields) {
+		Record copied = new Record(name, description);
+		foreach (field; _field_list) {
+			if (listOfFields.canFind(field.name)) {
+				copied ~= field.dup();
+			}
+		}
+		return copied;
+	}
+
 	/**
 	 * get the i-th field whose is passed as argument in case of duplicate
 	 * field names (starting from 0)
@@ -399,7 +409,7 @@ unittest {
 	writefln("-------------------------------------------------------------");
 	writeln(__FILE__);
 	writefln("-------------------------------------------------------------");
-		
+
 	// check wrong arguments
 	assertThrown(new Record("", "Rec description"));
 
