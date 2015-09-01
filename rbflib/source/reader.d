@@ -16,7 +16,7 @@ import std.regex;
 import rbf.field;
 import rbf.record;
 import rbf.format;
-import rbf.util;
+import rbf.conf;
 
 //import util.common;
 

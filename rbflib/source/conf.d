@@ -1,4 +1,4 @@
-module rbf.util;
+module rbf.conf;
 
 import std.stdio;
 import std.file;
@@ -10,17 +10,8 @@ import std.path;
 import std.typecons;
 
 /***********************************
- * This structure is holding command line arguments
+ * the mapper is either a constant or a variable
  */
-struct CommandLineOption
-{
-	string inputFileName;		// input file name to parse
-	string outputFileName;	// output file name to save
-	string inputFormat;			// input file format
-	string outputFormat;		// output format HTML, TXT, ...
-	string conditionFile;		// if any, name of the clause file
-}
-
 enum mapperType { STRING_MAPPER, VARIABLE_MAPPER }
 
 /***********************************
@@ -62,7 +53,7 @@ public:
 		else if ("variable" in tag["mapping"]) {
 			_mappingType = mapperType.VARIABLE_MAPPER;
 
-			// slices oare just an array of tuples
+			// slices are just an array of tuples
 			foreach (slice; tag["mapping"]["variable"].str.split(",")) {
 				// slice is like '0:2', so we need to extract 0 and 2
 				auto bounds = slice.split(':');

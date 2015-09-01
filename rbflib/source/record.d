@@ -277,10 +277,11 @@ public:
 	 * field names (starting from 0)
 	 * Examples:
 	 * --------------
-	 * rec.get("FIELD1",5) returns the value of the 6-th field named FIELD1
+	 * rec.get("FIELD",5) // return the field object of the 6-th field named FIELD
+	 * rec.get("FIELD") // return the first field object named FIELD
 	 * --------------
 	 */
-	Field get(string fieldName, ushort index) {
+	Field get(string fieldName, ushort index = 0) {
 		enforce(fieldName in this, "field %s is not found in record %s".format(fieldName, name));
 		enforce(0 <= index && index < _field_map[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
 
@@ -350,13 +351,10 @@ public:
 		return(s);
 	}
 
-
-
-/+
 	/**
-	 * match a record against a set of boolean conditions
+	 * match a record against a set of boolean conditions to filter data
 	 */
-	bool matchCondition(string[] query)
+	bool matchCondition(string[] filter)
 	{
 		// useful structure mapping a condition
 		struct condition {
@@ -372,10 +370,14 @@ public:
 		condition[] fullCondition;
 
 		// read each condition to extract field name, operator and value
-		foreach (string s; query)
+		foreach (string s; filter)
 		{
 			auto m = match(s, reg);
-			fullCondition ~= condition(m.captures[1].strip(), m.captures[3].strip(), m.captures[5].strip());
+			fullCondition ~= condition(
+						m.captures[1].strip(),
+						m.captures[3].strip(),
+						m.captures[5].strip()
+			);
 		}
 		//writeln(fullCondition);
 
@@ -399,7 +401,6 @@ public:
 		// if we didn't return, condition is true
 		return true;
 	}
-+/
 
 }
 

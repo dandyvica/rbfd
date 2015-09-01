@@ -9,7 +9,7 @@ import std.regex;
 import rbf.field;
 import rbf.record;
 import rbf.format;
-import rbf.util;
+import rbf.conf;
 alias GET_RECORD_FUNCTION = string delegate(string);
 alias STRING_MAPPER = void function(Record);
 class Reader

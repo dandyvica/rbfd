@@ -118,19 +118,19 @@ public:
 			worksheetHandle = File(worksheetFilename, "w");
 			worksheetHandle.write(pattern["worksheet"].fileString);
 
-			// write worksheet column name
-			worksheetHandle.write("<row>");
-			foreach (Field f; record)
-			{
-				worksheetHandle.write(_toXLSXRow(f.name));
-			}
-			worksheetHandle.write("</row>");
-
 			// write worksheet column description
 			worksheetHandle.write("<row>");
 			foreach (Field f; record)
 			{
 				worksheetHandle.write(_toXLSXRow(f.description));
+			}
+			worksheetHandle.write("</row>");
+
+			// write worksheet column name
+			worksheetHandle.write("<row>");
+			foreach (Field f; record)
+			{
+				worksheetHandle.write(_toXLSXRow(f.name));
 			}
 			worksheetHandle.write("</row>");
 

@@ -169,6 +169,71 @@ public:
 			             .format(name, description, length, type, value, offset, index));
 	}
 
+	/**
+	 * test if field value matches condition using the operator.
+	 *
+	 *  Example: FIELD1 = TEST
+	 */
+	bool matchCondition(in string operator, in string scalar)
+	{
+		bool condition;
+		//writefln("Field.matchCondition: <%s>, <%s>", operator, scalar);
+
+		// otherwise, get field value and compare it to scalar values
+		switch (operator)
+		{
+			case "=":
+			case "==":
+				mixin(opExpression("=="));
+				break;
+
+			case "!=":
+				mixin(opExpression("!="));
+				break;
+
+			case "<":
+				mixin(opExpression("<"));
+				break;
+
+			case ">":
+				mixin(opExpression(">"));
+				break;
+
+			case "~":
+				if (_field_type == FieldType.ALPHABETICAL &&
+						_field_type == FieldType.ALPHANUMERICAL)
+					throw new Exception("operator ~ not supported for numeric fields, field name = <%s>".format(name));
+
+				condition = !match(value, regex(scalar)).empty;
+				break;
+
+			case "!~":
+				if (_field_type == FieldType.ALPHABETICAL && 
+					_field_type == FieldType.ALPHANUMERICAL)
+					throw new Exception("operator !~ not supported for numeric fields, field name = <%s>".format(name));
+
+				condition = match(value, regex(scalar)).empty;
+				break;
+
+			default:
+				throw new Exception("operator %s not supported".format(operator));
+		}
+		return condition;
+	}
+
+	/**
+	 * mixin macro for syntactic sugar
+	 */
+	static string opExpression(in string operator)
+	{
+		return (
+			"if (_field_type == FieldType.ALPHABETICAL ||
+				_field_type == FieldType.ALPHANUMERICAL)
+					{ condition = (value " ~ operator ~ " scalar); }
+			else { condition = to!float(value) " ~ operator ~ " to!float(scalar); }"
+		);
+	}
+
 }
 
 

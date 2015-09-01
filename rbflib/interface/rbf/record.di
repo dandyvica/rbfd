@@ -51,7 +51,7 @@ class Record
 			int opApply(int delegate(ref Field) dg);
 			Record dup();
 			Record fromList(string[] listOfFields);
-			Field get(string fieldName, ushort index);
+			Field get(string fieldName, ushort index = 0);
 			string toTxt();
 			string opDispatch(string fieldName)(ushort index)
 			{
@@ -63,6 +63,7 @@ class Record
 				return this[attrName][0].value;
 			}
 			override string toString();
+			bool matchCondition(string[] filter);
 		}
 	}
 }

@@ -8,7 +8,8 @@ import rbf.record;
 import rbf.format;
 import rbf.reader;
 import rbf.writer;
-import rbf.util;
+import rbf.conf;
+import rbf.args;
 
 import overpunch;
 
@@ -20,41 +21,8 @@ void main(string[] argv)
 	// read JSON properties
 	auto config = new Config();
 
-	// print-out help
-	if (argv.length == 1)
-	{
-		writeln("
-This program is aimed at reading record based file.
-It reads its settings from the rbf.json file located in the ~/.rbf directory
-(linux) or the %APPDATA%/local/rbf directory (Windows).
-
-Usage: readrbf -i <input file name> -O <output file> -o <output format> -f <input format> -c <cond file>
-
-	-i		file name and path of the file to read
-	-o		output file name to generate
-	-f		format of the input file (ex.: isr)
-	-F		format of the output file. Should be only: html, csv, txt, xlsx or sqlite3
-	-c		optional: a set of conditions for filtering records
-		");
-		core.stdc.stdlib.exit(1);
-	}
-
-	// get command line arguments
-	CommandLineOption opts;
-	getopt(argv,
-		std.getopt.config.caseSensitive,
-		"i",  &opts.inputFileName,
-		"o",  &opts.outputFileName,
-		"f", &opts.inputFormat,
-		"F", &opts.outputFormat,
-		"c",  &opts.conditionFile
-	);
-
-  // if no output file name specified, then use input file name and
-	// append the suffix
-	if (opts.outputFileName == "") {
-		opts.outputFileName = opts.inputFileName ~ "." ~ opts.outputFormat;
-	}
+	// manage arguments
+	auto opts = new CommandLineOption(argv);
 
   // create new reader
 	auto reader = reader(opts.inputFileName, config[opts.inputFormat]);
@@ -85,7 +53,24 @@ Usage: readrbf -i <input file name> -O <output file> -o <output format> -f <inpu
 		{
 			writer.print(rec);
 		}*/
-		writer.write(rec.fromList(["TDNR", "CDGT"]));
+		if (rec.matchCondition(["TDNR ~ ^05754"]))
+		{
+			writeln(rec);
+			continue;
+		}
+		//writeln(rec.get("TDNR").matchCondition("~", "^05754"));
+
+
+		// ask for a restriction?
+		if (opts.isRestriction) {
+			// only print out rec if record name is found is the restriction file
+			if (rec.name in opts.fieldNames) {
+				auto fieldNamesToKeep = opts.fieldNames[rec.name];
+				writer.write(rec.fromList(fieldNamesToKeep));
+			}
+		}
+		else
+			writer.write(rec);
 	}
 
 	// explicitly call close to finish creating file (specially for Excel files)

@@ -48,6 +48,8 @@ class Field
 			@property void sign(short new_sign);
 			void convert();
 			override string toString();
+			bool matchCondition(in string operator, in string scalar);
+			static string opExpression(in string operator);
 		}
 	}
 }

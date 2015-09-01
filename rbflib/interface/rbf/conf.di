@@ -1,5 +1,5 @@
-// D import file generated from 'source/util.d'
-module rbf.util;
+// D import file generated from 'source/conf.d'
+module rbf.conf;
 import std.stdio;
 import std.file;
 import std.string;
@@ -8,14 +8,6 @@ import std.json;
 import std.conv;
 import std.path;
 import std.typecons;
-struct CommandLineOption
-{
-	string inputFileName;
-	string outputFileName;
-	string inputFormat;
-	string outputFormat;
-	string conditionFile;
-}
 enum mapperType 
 {
 	STRING_MAPPER,
