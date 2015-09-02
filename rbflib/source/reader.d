@@ -106,13 +106,14 @@ public:
 	int opApply(int delegate(ref Record) dg)
 	{
 		int result = 0;
-		string line, recordName;
+		string recordName;
 
-			// read each line of the ascii file
-		foreach (string line_read; lines(File(_rbFile, "r")))
+		// read each line of the ascii file
+		//foreach (string line_read; lines(File(_rbFile, "r")))
+		foreach (string line_read; lines(File(_rbFile)))
 		{
 			// get rid of \n
-			line = chomp(line_read);
+			auto line = chomp(line_read);
 
 			// if line is matching the ignore pattern, just loop
 			if (_ignore_pattern != "" && matchFirst(line, regex(_ignore_pattern))) {

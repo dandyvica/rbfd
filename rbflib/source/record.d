@@ -366,32 +366,38 @@ public:
 
 	/**
 	 * match a record against a set of boolean conditions to filter data
+	 * returns True is all conditions are met
 	 */
 	bool matchFilter(Filter filter)
 	{
-		writefln("=======> %s",filter);
+		//writefln("=======> %s",filter);
 		// now for each filter, just check it out
 		foreach (Clause c; filter)
 		{
-			writeln(c);
+			//writeln(c);
 			// field name not found: just return false
 			if (c.fieldName !in this) {
-				writefln("%s not in this",c.fieldName);
+				//writefln("%s not in this",c.fieldName);
 				return false;
 			}
-
 
 			// get field value
 			//Field field = this[c.fieldName][0];
 			//writefln("<%s> <%s> cond=<%s>", f.name, f.value, f.matchCondition(c.operator, c.scalar));
 
 			// loop on all fields for this requested field
+			bool condition = false;
+
+			//writefln("number of fields %s is %d",c.fieldName, this[c.fieldName].length);
 			foreach (Field field; this[c.fieldName]) {
 				// if one condition is false, then get out
-				writefln("looking at field %s:%s", name, field.name);
-				if (!field.isFilterMatched(c.operator, c.scalar)) return false;
+				//writefln("looking at field %s:%s", name, field.name);
+				condition |= field.isFilterMatched(c.operator, c.scalar);
 			}
+
+			if (!condition) return false;
 		}
+
 
 		// if we didn't return, condition is true
 		return true;

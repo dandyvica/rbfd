@@ -49,7 +49,7 @@ class Field
 			void convert();
 			override string toString();
 			bool isFilterMatched(in string operator, in string scalar);
-			static string testFilter(string operator);
+			static string testFilter(in string operator);
 		}
 	}
 }

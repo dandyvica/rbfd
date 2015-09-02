@@ -67,7 +67,6 @@ void main(string[] argv)
 
 		// do we filter out records?
 		if (opts.isFilter) {
-			//writefln("=======> %s",opts.filter);
 			if (!rec.matchFilter(opts.filter))
 				continue;
 		}

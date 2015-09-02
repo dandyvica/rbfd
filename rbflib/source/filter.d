@@ -38,8 +38,7 @@ public:
 		foreach (string line_read; File(filterFile, "r").lines)
 		{
       auto line = line_read.strip();
-      
-      writefln("line read <%s>", line);
+
       // comments ignored
 			if (!startsWith(line, "#")) {
         // split filter clause into individual data
@@ -53,7 +52,7 @@ public:
         );
       }
 		}
-    writeln(_fitlerClause);
+    //writeln(_fitlerClause);
 	}
 
   /**
