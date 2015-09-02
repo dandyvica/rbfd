@@ -9,6 +9,7 @@ import std.regex;
 import std.algorithm;
 import std.path;
 import rbf.conf;
+import rbf.filter;
 class CommandLineOption
 {
 	private 
@@ -19,7 +20,7 @@ class CommandLineOption
 		string _inputFormat;
 		string _outputFormat = "txt";
 		string _filterFile;
-		string[] _filters;
+		Filter _filter;
 		string _restrictionFile;
 		string[][string] _fieldNames;
 		public 
@@ -30,7 +31,9 @@ class CommandLineOption
 			@property string inputFormat();
 			@property string outputFormat();
 			@property bool isRestriction();
+			@property bool isFilter();
 			@property string[][string] fieldNames();
+			@property Filter filter();
 			private string[][string] _readRestrictionFile(in string filename);
 		}
 	}

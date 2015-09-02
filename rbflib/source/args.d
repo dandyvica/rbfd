@@ -10,6 +10,7 @@ import std.algorithm;
 import std.path;
 
 import rbf.conf;
+import rbf.filter;
 
 /***********************************
  * This class is holding command line arguments
@@ -23,7 +24,7 @@ private:
 	string _inputFormat;			// input file format
 	string _outputFormat = "txt";		// output format HTML, TXT, ...
 	string _filterFile;		// if any, name of the clause file
-	string[] _filters;
+	Filter _filter;
 
 	string _restrictionFile;	// name of the file containing subset list of fields
 	string[][string] _fieldNames;
@@ -89,10 +90,9 @@ Usage: readrbf -i <input file name> -O <output file> -o <output format> -f <inpu
 	}
 
 	// if filter file is specified, load conditions
-	/*
 	if (_filterFile != "") {
-		_filters = _readRestrictionFile(_restrictionFile);
-	}*/
+		_filter = new Filter(_filterFile);
+	}
 
 	// build output file name
 	_outputFileName = _outputDirectoryName ~ "/" ~
@@ -104,7 +104,9 @@ Usage: readrbf -i <input file name> -O <output file> -o <output format> -f <inpu
 	@property string inputFormat() { return _inputFormat; }
 	@property string outputFormat() { return _outputFormat; }
 	@property bool isRestriction() { return _restrictionFile != ""; }
+	@property bool isFilter() { return _filterFile != ""; }
 	@property string[][string] fieldNames() { return _fieldNames; }
+	@property Filter filter() { return _filter; }
 
 private:
 

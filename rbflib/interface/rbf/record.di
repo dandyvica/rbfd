@@ -8,6 +8,7 @@ import std.array;
 import std.regex;
 import std.range;
 import rbf.field;
+import rbf.filter;
 class Record
 {
 	private 
@@ -63,7 +64,7 @@ class Record
 				return this[attrName][0].value;
 			}
 			override string toString();
-			bool matchCondition(string[] filter);
+			bool matchFilter(Filter filter);
 		}
 	}
 }

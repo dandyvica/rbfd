@@ -2,6 +2,9 @@ import std.stdio;
 import std.file;
 import std.string;
 import std.getopt;
+import std.algorithm;
+import std.datetime;
+import std.range;
 
 import rbf.field;
 import rbf.record;
@@ -16,22 +19,37 @@ import overpunch;
 
 void main(string[] argv)
 {
+	// number of records read
+	auto nbRecords = 1;
+
+
 	string[] conditions;
 
-	// read JSON properties
+	// need to known how much time spent
+	auto starttime = Clock.currTime();
+
+	// read JSON properties from rbf.json file located in:
+	// ~/.rbf for Linux
+	// %APPDATA%/local/rbf for Windows
 	auto config = new Config();
 
-	// manage arguments
+	// manage arguments passed from the command line
 	auto opts = new CommandLineOption(argv);
 
-  // create new reader
+  // create new reader according to what is passed in the command
+	// line and the configuration found in JSON properties file
 	auto reader = reader(opts.inputFileName, config[opts.inputFormat]);
 
-	// create new writer
+	// create new writer to generate outputFileName matching the outputFormat
 	auto writer = writer(opts.outputFileName, opts.outputFormat);
 
 	// in case of HOT files, specifiy our modifier
-	reader.register_mapper = &overpunch.overpunch;
+	// HOT files used the overpunch characters (some alphabetical chars matching
+	// digits (?!))
+	if (canFind(opts.inputFormat,"hot")) {
+		reader.register_mapper = &overpunch.overpunch;
+	}
+
 
 	/*
 	if (opts.conditionFile != "")
@@ -41,25 +59,18 @@ void main(string[] argv)
 	}
 	*/
 
+	// now loop for each record in the file
 	foreach (rec; reader)
 	{
-		/*
-		// store record depending on options
-		if (opts.conditionFile != "" && rec.matchCondition(conditions))
-		{
-			writer.print(rec);
-		}
-		else
-		{
-			writer.print(rec);
-		}*/
-		if (rec.matchCondition(["TDNR ~ ^05754"]))
-		{
-			writeln(rec);
-			continue;
-		}
-		//writeln(rec.get("TDNR").matchCondition("~", "^05754"));
+		// record read is increasing
+		nbRecords++;
 
+		// do we filter out records?
+		if (opts.isFilter) {
+			//writefln("=======> %s",opts.filter);
+			if (!rec.matchFilter(opts.filter))
+				continue;
+		}
 
 		// ask for a restriction?
 		if (opts.isRestriction) {
@@ -75,5 +86,9 @@ void main(string[] argv)
 
 	// explicitly call close to finish creating file (specially for Excel files)
 	writer.close();
+
+	// print out some stats
+	auto elapsedtime = Clock.currTime() - starttime;
+	writefln("Records read: %d\nElapsed time = %s", nbRecords, elapsedtime);
 
 }

@@ -174,7 +174,7 @@ public:
 	 *
 	 *  Example: FIELD1 = TEST
 	 */
-	bool matchCondition(in string operator, in string scalar)
+	bool isFilterMatched(in string operator, in string scalar)
 	{
 		bool condition;
 		//writefln("Field.matchCondition: <%s>, <%s>", operator, scalar);
@@ -184,32 +184,32 @@ public:
 		{
 			case "=":
 			case "==":
-				mixin(opExpression("=="));
+				mixin(testFilter("=="));
 				break;
 
 			case "!=":
-				mixin(opExpression("!="));
+				mixin(testFilter("!="));
 				break;
 
 			case "<":
-				mixin(opExpression("<"));
+				mixin(testFilter("<"));
 				break;
 
 			case ">":
-				mixin(opExpression(">"));
+				mixin(testFilter(">"));
 				break;
 
 			case "~":
-				if (_field_type == FieldType.ALPHABETICAL &&
-						_field_type == FieldType.ALPHANUMERICAL)
+				if (_field_type != FieldType.ALPHABETICAL &&
+						_field_type != FieldType.ALPHANUMERICAL)
 					throw new Exception("operator ~ not supported for numeric fields, field name = <%s>".format(name));
 
 				condition = !match(value, regex(scalar)).empty;
 				break;
 
 			case "!~":
-				if (_field_type == FieldType.ALPHABETICAL && 
-					_field_type == FieldType.ALPHANUMERICAL)
+				if (_field_type != FieldType.ALPHABETICAL &&
+					_field_type != FieldType.ALPHANUMERICAL)
 					throw new Exception("operator !~ not supported for numeric fields, field name = <%s>".format(name));
 
 				condition = match(value, regex(scalar)).empty;
@@ -224,7 +224,7 @@ public:
 	/**
 	 * mixin macro for syntactic sugar
 	 */
-	static string opExpression(in string operator)
+	static string testFilter(in string operator)
 	{
 		return (
 			"if (_field_type == FieldType.ALPHABETICAL ||

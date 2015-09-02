@@ -14,6 +14,7 @@ import std.regex;
 import std.range;
 
 import rbf.field;
+import rbf.filter;
 
 /***********************************
  * This record class represents a record as found in record-based files
@@ -252,7 +253,11 @@ public:
 
 	/**
 	 * duplicate a record with all its fields and values
-	 */
+	 *
+	 * Examples:
+	 * --------------
+	 * auto copy = rec.dup();
+	 * --------------	 */
 	Record dup()
 	{
 		Record copied = new Record(name, description);
@@ -262,6 +267,14 @@ public:
 		return copied;
 	}
 
+	/**
+	 * duplicate a record with all its fields and values but only keeping
+	 * the fields named in the list passed in argument
+	 *
+	 * Examples:
+	 * --------------
+	 * auto copy = rec.fromList(["FIELD1", "FIELD2"]);
+	 * --------------	 */
 	Record fromList(string[] listOfFields) {
 		Record copied = new Record(name, description);
 		foreach (field; _field_list) {
@@ -314,7 +327,7 @@ public:
 	 *
 	 * Examples:
 	 * --------------
-	 * rec.FIELD1(5) returns the value of the 6-th field named FIELD1
+	 * rec.FIELD(5) returns the value of the 6-th field named FIELD
 	 * --------------
 	 */
 	string opDispatch(string fieldName)(ushort index)
@@ -354,48 +367,30 @@ public:
 	/**
 	 * match a record against a set of boolean conditions to filter data
 	 */
-	bool matchCondition(string[] filter)
+	bool matchFilter(Filter filter)
 	{
-		// useful structure mapping a condition
-		struct condition {
-			string fieldName;
-			string operator;
-			string scalar;
-		}
-
-		// this is the regex to use to split the condition
-		static auto reg = regex(r"(\w+)(\s*)(=|!=|>|<|~|!~)(\s*)(.+)$");
-
-		// and the array holding conditions
-		condition[] fullCondition;
-
-		// read each condition to extract field name, operator and value
-		foreach (string s; filter)
+		writefln("=======> %s",filter);
+		// now for each filter, just check it out
+		foreach (Clause c; filter)
 		{
-			auto m = match(s, reg);
-			fullCondition ~= condition(
-						m.captures[1].strip(),
-						m.captures[3].strip(),
-						m.captures[5].strip()
-			);
-		}
-		//writeln(fullCondition);
-
-
-		// now for each condition, try it
-		foreach (condition c; fullCondition)
-		{
+			writeln(c);
 			// field name not found: just return false
-			if (c.fieldName !in this) return false;
+			if (c.fieldName !in this) {
+				writefln("%s not in this",c.fieldName);
+				return false;
+			}
+
 
 			// get field value
-			Field f = this[c.fieldName][0];
+			//Field field = this[c.fieldName][0];
 			//writefln("<%s> <%s> cond=<%s>", f.name, f.value, f.matchCondition(c.operator, c.scalar));
 
-			// if one condition is false, then get out
-			if (!f.matchCondition(c.operator, c.scalar)) return false;
-
-			// otherwise, get field value and compare it to scalar values
+			// loop on all fields for this requested field
+			foreach (Field field; this[c.fieldName]) {
+				// if one condition is false, then get out
+				writefln("looking at field %s:%s", name, field.name);
+				if (!field.isFilterMatched(c.operator, c.scalar)) return false;
+			}
 		}
 
 		// if we didn't return, condition is true
