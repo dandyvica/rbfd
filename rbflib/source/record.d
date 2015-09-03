@@ -61,6 +61,8 @@ public:
 
 	@property ulong length() { return _length; }
 
+	@property ulong size() { return _field_list.length; }
+
 
 	/**
 	 * sets record value from one string

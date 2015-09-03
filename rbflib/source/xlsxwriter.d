@@ -11,8 +11,8 @@ import std.zip;
 
 import rbf.field;
 import rbf.record;
-
 import rbf.writer;
+import rbf.conf;
 
 /**
  * define the type of XML for OpenXML depending on value
@@ -62,7 +62,7 @@ private:
 		chdir(_xlsxDir);
 
 		// create zip
-		auto result = std.process.execute(["/usr/bin/zip", "-r", "../" ~ _xlsxFilename, "."]);
+		auto result = std.process.execute([config.zipper, "-r", "../" ~ _xlsxFilename, "."]);
 		if (result.status != 0)
 			throw new Exception("zip command failed:\n", result.output);
 

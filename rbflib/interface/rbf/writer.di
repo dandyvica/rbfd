@@ -10,6 +10,7 @@ import rbf.field;
 import rbf.record;
 import rbf.reader;
 import rbf.xlsxwriter;
+import rbf.conf;
 abstract class Writer
 {
 	private 
@@ -42,4 +43,4 @@ class TXTWriter : Writer
 	override void write(Record rec);
 	override void close();
 }
-Writer writer(in string output = "", in string mode = "txt");
+Writer writer(in string output, in string mode);

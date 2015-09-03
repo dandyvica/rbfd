@@ -27,6 +27,7 @@ class Record
 			@property string line();
 			@property void line(string new_line);
 			@property ulong length();
+			@property ulong size();
 			@property void value(string s);
 			@property string value();
 			@property string[] fieldNames();

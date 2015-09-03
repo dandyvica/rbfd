@@ -8,6 +8,10 @@ import std.json;
 import std.conv;
 import std.path;
 import std.typecons;
+import std.algorithm;
+import std.range;
+
+static Config config;
 
 /***********************************
  * the mapper is either a constant or a variable
@@ -30,7 +34,6 @@ private:
 	Slice[] _sliceMapping;	  /// list of slices to build record identifier (variable mapper)
 
 	string _ignorePattern;	/// if any, ignore those lines when reading
-
 
 public:
 	this(in string name, JSONValue tag) {
@@ -79,14 +82,10 @@ public:
 		// depending on type, return a constant or a list of values
 		if (_mappingType == mapperType.STRING_MAPPER)
 			result = _constantMapping;
-		else if (_mappingType == mapperType.VARIABLE_MAPPER) {
-			foreach (slice; _sliceMapping) {
-				result ~= x[slice[0]..slice[1]];
-			}
-		}
+		else if (_mappingType == mapperType.VARIABLE_MAPPER)
+      result =  reduce!((a,b) => a ~= x[b[0]..b[1]])("", _sliceMapping);
 
-		// result value
-		return result;
+    return result;
 	}
 
 	override string toString() {
@@ -100,8 +99,11 @@ public:
  */
 class Config {
 private:
-	JSONValue[string] document;						/// tags as read from the JSON settings file
-	RBFConfig[string] conf;						/// individual config for one XML structure
+	JSONValue[string] document;		/// tags as read from the JSON settings file
+	RBFConfig[string] conf;				/// individual config for one XML structure
+
+  string _zipper;               /// path/name of the excutable used tip zip .xlsx
+
 
 public:
 	/**
@@ -129,6 +131,14 @@ public:
 		auto jsonTags = to!string(read(settingsFile));
 		document = parseJSON(jsonTags).object;
 
+    // save location of zipper file
+		version(linux) {
+			_zipper = document["global"]["zipper"]["linux"].str;
+		}
+		version(win64) {
+      _zipper = document["global"]["zipper"]["win64"].str;
+		}
+
 		// now fetch "xml" tag
 		JSONValue[string] xmlTag = document["xml"].object;
 
@@ -141,6 +151,9 @@ public:
 	RBFConfig opIndex(string rbfFormat) {
 		return conf[rbfFormat];
 	}
+
+  @property string zipper() { return _zipper; }
+
 }
 
 unittest {

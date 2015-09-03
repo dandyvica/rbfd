@@ -4,6 +4,7 @@ import std.stdio;
 import std.conv;
 import std.string;
 import std.regex;
+import std.algorithm;
 
 //import util.common;
 /***********************************
@@ -41,6 +42,8 @@ private:
 
 	short _value_sign = 1;			/// positive value for the moment
 
+	immutable ulong _cell_length;
+
 public:
 	/**
  	 * creates a new field object
@@ -68,9 +71,12 @@ public:
 		_description = description;
 		_length = length;
 
+		// used to print out text data
+		_cell_length = max(_length, _name.length);
+
 		// value is empty by default
-		_str_value = "";
-		_raw_value = "";
+		//_str_value = "";
+		//_raw_value = "";
 
 		// set type according to what is passed
 		_type = type;
@@ -122,6 +128,9 @@ public:
 
 	/// read property for field length
 	@property ulong length() { return _length; }
+
+	/// read property for cell length
+	@property ulong cell_length() { return _cell_length; }
 
 	/// read property for field value
 	@property string value() { return _str_value; }

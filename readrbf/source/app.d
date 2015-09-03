@@ -31,7 +31,7 @@ void main(string[] argv)
 	// read JSON properties from rbf.json file located in:
 	// ~/.rbf for Linux
 	// %APPDATA%/local/rbf for Windows
-	auto config = new Config();
+	config = new Config();
 
 	// manage arguments passed from the command line
 	auto opts = new CommandLineOption(argv);

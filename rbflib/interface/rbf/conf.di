@@ -8,6 +8,9 @@ import std.json;
 import std.conv;
 import std.path;
 import std.typecons;
+import std.algorithm;
+import std.range;
+static Config config;
 enum mapperType 
 {
 	STRING_MAPPER,
@@ -40,10 +43,12 @@ class Config
 	{
 		JSONValue[string] document;
 		RBFConfig[string] conf;
+		string _zipper;
 		public 
 		{
 			this();
 			RBFConfig opIndex(string rbfFormat);
+			@property string zipper();
 		}
 	}
 }

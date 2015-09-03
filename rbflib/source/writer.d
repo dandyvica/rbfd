@@ -10,8 +10,8 @@ import std.variant;
 import rbf.field;
 import rbf.record;
 import rbf.reader;
-
 import rbf.xlsxwriter;
+import rbf.conf;
 
 //import util.common;
 /*********************************************
@@ -119,16 +119,36 @@ class TXTWriter : Writer {
 
 	override void write(Record rec)
 	{
+		/*
 		string[] names, values;
 
+		// preallocate as we know how much fields we've got
+		names.length = rec.size;
+		values.length = rec.size;
+
+		uint i = 0;
 		foreach (Field f; rec)
 		{
-			auto length = max(f.length, f.name.length);
-
-			names  ~= f.name.leftJustify(length);
-			values  ~= f.value.strip().leftJustify(length);
+			//auto length = max(f.length, f.name.length);
+			//names  ~= f.name.leftJustify(f.cell_length);
+			//values  ~= f.value.leftJustify(f.cell_length);
+			names[i] = f.name.leftJustify(f.cell_length);
+			values[i++] = f.value.leftJustify(f.cell_length);
 		}
 		_fh.writefln("%s\n%s\n", join(names, "|"), join(values, "|"));
+		*/
+		uint i = 0;
+		foreach (name; rec.fieldNames) {
+			_fh.writef("%-*s|", rec[i++].cell_length, name);
+		}
+		_fh.writeln();
+
+		i = 0;
+		foreach (value; rec.fieldValues) {
+			_fh.writef("%-*s|", rec[i++].cell_length, value);
+		}
+		_fh.writeln("\n");
+
 	}
 
 	override void close() { _fh.close(); }
@@ -139,7 +159,7 @@ class TXTWriter : Writer {
  * factory method for creating object matching
  * desired format
  */
-Writer writer(in string output = "", in string mode = "txt")
+Writer writer(in string output, in string mode)
 {
 	switch(mode)
 	{

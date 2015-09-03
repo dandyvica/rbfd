@@ -10,6 +10,7 @@ import std.zip;
 import rbf.field;
 import rbf.record;
 import rbf.writer;
+import rbf.conf;
 enum XlsxRowType : string
 {
 	XLSX_STRROW = "<c t=\"inlineStr\"><is><t>%s</t></is></c>",
