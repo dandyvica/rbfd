@@ -9,5 +9,5 @@
 	"targetPath": "lib",
 	"targetType": "staticLibrary",
 	"dflags-dmd": ["-H"],
-	"postBuildCommands": ["mv *.di ./interface/rbf"],
+	"postBuildCommands": ["mv *writer.di ./interface/rbf/writers","mv *.di ./interface/rbf"],
 }

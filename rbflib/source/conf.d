@@ -11,7 +11,7 @@ import std.typecons;
 import std.algorithm;
 import std.range;
 
-static Config config;
+static Config configSettings;
 
 /***********************************
  * the mapper is either a constant or a variable

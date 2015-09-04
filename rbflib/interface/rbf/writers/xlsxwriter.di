@@ -1,5 +1,5 @@
-// D import file generated from 'source/xlsxwriter.d'
-module rbf.xlsxwriter;
+// D import file generated from 'source/writers/xlsxwriter.d'
+module rbf.writers.xlsxwriter;
 import std.stdio;
 import std.file;
 import std.string;
@@ -9,7 +9,7 @@ import std.array;
 import std.zip;
 import rbf.field;
 import rbf.record;
-import rbf.writer;
+import rbf.writers.writer;
 import rbf.conf;
 enum XlsxRowType : string
 {

@@ -1,4 +1,4 @@
-module rbf.xlsxwriter;
+module rbf.writers.xlsxwriter;
 
 import std.stdio;
 import std.file;
@@ -11,7 +11,7 @@ import std.zip;
 
 import rbf.field;
 import rbf.record;
-import rbf.writer;
+import rbf.writers.writer;
 import rbf.conf;
 
 /**
@@ -62,7 +62,7 @@ private:
 		chdir(_xlsxDir);
 
 		// create zip
-		auto result = std.process.execute([config.zipper, "-r", "../" ~ _xlsxFilename, "."]);
+		auto result = std.process.execute([configSettings.zipper, "-r", "../" ~ _xlsxFilename, "."]);
 		if (result.status != 0)
 			throw new Exception("zip command failed:\n", result.output);
 

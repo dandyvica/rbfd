@@ -10,7 +10,7 @@ import std.path;
 import std.typecons;
 import std.algorithm;
 import std.range;
-static Config config;
+static Config configSettings;
 enum mapperType 
 {
 	STRING_MAPPER,

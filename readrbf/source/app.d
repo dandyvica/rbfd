@@ -10,7 +10,7 @@ import rbf.field;
 import rbf.record;
 import rbf.format;
 import rbf.reader;
-import rbf.writer;
+import rbf.writers.writer;
 import rbf.conf;
 import rbf.args;
 
@@ -31,14 +31,14 @@ void main(string[] argv)
 	// read JSON properties from rbf.json file located in:
 	// ~/.rbf for Linux
 	// %APPDATA%/local/rbf for Windows
-	config = new Config();
+	configSettings = new Config();
 
 	// manage arguments passed from the command line
 	auto opts = new CommandLineOption(argv);
 
   // create new reader according to what is passed in the command
 	// line and the configuration found in JSON properties file
-	auto reader = reader(opts.inputFileName, config[opts.inputFormat]);
+	auto reader = reader(opts.inputFileName, configSettings[opts.inputFormat]);
 
 	// create new writer to generate outputFileName matching the outputFormat
 	auto writer = writer(opts.outputFileName, opts.outputFormat);

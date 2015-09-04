@@ -1,0 +1,93 @@
+module rbf.writers.writer;
+
+import std.stdio;
+import std.file;
+import std.string;
+import std.exception;
+import std.algorithm;
+import std.variant;
+
+import rbf.field;
+import rbf.record;
+import rbf.reader;
+import rbf.conf;
+
+import rbf.writers.xlsxwriter;
+import rbf.writers.csvwriter;
+import rbf.writers.txtwriter;
+import rbf.writers.htmlwriter;
+
+/*********************************************
+ * writer class for writing to various ouput
+ * formats
+ */
+abstract class Writer {
+private:
+
+	string _outputFileName; // name of the file we want to create
+
+package:
+
+	File _fh; // file handle on output file if any
+
+public:
+	/**
+	 * creates a new Writer object for converting record-based files
+	 *
+	 * Params:
+	 *  outputFileName = name of the output file (or database name in case of sqlite3)
+	 */
+	this(in string outputFileName)
+	{
+		_outputFileName = outputFileName;
+	}
+
+	abstract void write(Record rec);
+	abstract void close();
+
+}
+
+/*********************************************
+ * factory method for creating object matching
+ * desired format
+ */
+Writer writer(in string output, in string mode)
+{
+	switch(mode)
+	{
+		case "html": return new HTMLWriter(output);
+		case "csv" : return new CSVWriter(output);
+		case "txt" : return new TXTWriter(output);
+		case "xlsx": return new XLSXWriter(output);
+		case "sql" : return new TXTWriter(output);
+		default:
+			throw new Exception("writer unknown mode <%s>".format(mode));
+	}
+}
+
+
+
+
+unittest {
+
+	writefln("-------------------------------------------------------------");
+	writeln(__FILE__);
+	writefln("-------------------------------------------------------------");
+
+	auto reader = new Reader("../test/world.data", "../test/world_data.xml", (line => line[0..4]));
+	reader.ignore_pattern = "^#";
+
+
+	auto writer1 = writer("test.html", "html");
+	foreach (rec; reader) { writer1.write(rec); }
+
+	auto writer2 = writer("test.txt", "txt");
+	foreach (rec; reader) { writer2.write(rec); }
+
+	auto writer3 = writer("test.csv", "csv");
+	foreach (rec; reader) { writer3.write(rec); }
+
+	auto writer4 = writer("test.xlsx", "xlsx");
+	foreach (rec; reader) { writer4.write(rec); }
+	writer4.close();
+}
