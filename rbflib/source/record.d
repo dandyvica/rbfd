@@ -51,6 +51,9 @@ public:
 			enforce(name != "", "record name should not be empty!");
 			_name = name;
 			_description = description;
+
+			// pre-allocate array of fields
+			reserve(_field_list, 30);
 	}
 
 	@property string name() { return _name; }

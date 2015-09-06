@@ -76,11 +76,13 @@ void main(string[] argv)
 			// only print out rec if record name is found is the restriction file
 			if (rec.name in opts.fieldNames) {
 				auto fieldNamesToKeep = opts.fieldNames[rec.name];
-				writer.write(rec.fromList(fieldNamesToKeep));
+				version(nobenchmark) {
+					writer.write(rec.fromList(fieldNamesToKeep));
+				}
 			}
 		}
 		else
-			writer.write(rec);
+			version(nobenchmark) { writer.write(rec); }
 	}
 
 	// explicitly call close to finish creating file (specially for Excel files)

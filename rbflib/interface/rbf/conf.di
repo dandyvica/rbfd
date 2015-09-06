@@ -16,6 +16,7 @@ enum mapperType
 	STRING_MAPPER,
 	VARIABLE_MAPPER,
 }
+alias MAPPER = string delegate(string);
 class RBFConfig
 {
 	private 
@@ -27,6 +28,8 @@ class RBFConfig
 		string _constantMapping;
 		Slice[] _sliceMapping;
 		string _ignorePattern;
+		MAPPER _record_mapper;
+		char[] _recordName;
 		public 
 		{
 			this(in string name, JSONValue tag);
@@ -34,6 +37,11 @@ class RBFConfig
 			@property string ignorePattern();
 			string record_identifier(string x);
 			override string toString();
+			private 
+			{
+				string _string_mapper(string x);
+				string _variable_mapper(string x);
+			}
 		}
 	}
 }

@@ -101,7 +101,7 @@ unittest {
 	writefln("-------------------------------------------------------------");
 	writeln(__FILE__);
 	writefln("-------------------------------------------------------------");
-		
+
 	auto f = new Format("../test/world_data.xml");
 
 	foreach (string s, Record rec; f.records)

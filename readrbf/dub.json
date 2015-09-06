@@ -11,4 +11,5 @@
 	"libs": ["rbf"],
 	"importPaths": ["source", "../rbflib/interface"],
 	"lflags": ["-L../rbflib/lib"],
+	"versions": ["nobenchmark"],
 }

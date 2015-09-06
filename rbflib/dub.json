@@ -8,6 +8,6 @@
 	},
 	"targetPath": "lib",
 	"targetType": "staticLibrary",
-	"dflags-dmd": ["-H"],
+	"dflags-dmd": ["-H", "-profile=gc"],
 	"postBuildCommands": ["mv *writer.di ./interface/rbf/writers","mv *.di ./interface/rbf"],
 }
