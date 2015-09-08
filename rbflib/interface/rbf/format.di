@@ -13,10 +13,12 @@ class Format
 	private 
 	{
 		Record[string] _records;
+		string _description;
 		public 
 		{
 			this(string xmlFile);
 			@property Record[string] records();
+			@property string description();
 			ref Record opIndex(string recName);
 		}
 	}

@@ -21,6 +21,9 @@ private:
 	/// used to hold record definition as build from XML file
 	Record[string] _records;
 
+	// description as found is the XML main tag
+	string _description;
+
 public:
 	/**
 	 * create all records based on the XML file structure
@@ -48,6 +51,9 @@ public:
 
 		// create a new parser
 		auto xml = new DocumentParser(s);
+
+		// save descrpition of the structure
+		_description = xml.tag.attr["description"];
 
 		// read <record> definitions and create record object
 		xml.onStartTag["record"] = (ElementParser xml)
@@ -82,6 +88,13 @@ public:
 	 * array of all records
 	 */
 	@property Record[string] records() { return _records; }
+
+	/**
+	 * description of the XML structure
+	 */
+	@property string description() { return _description; }
+
+
 
 	/**
 	 * [] operator to retrieve the record by name

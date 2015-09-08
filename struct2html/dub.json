@@ -1,0 +1,14 @@
+{
+	"name": "struct2html",
+	"description": "Convert XML structure definition to a plain HTML file",
+	"authors": ["Alain Viguier"],
+	"homepage": "https://github.com/dandyvica/rbfd",
+	"license": "GPL-2.0",
+	"dependencies": {
+	},
+	"targetPath": "bin",
+	"targetType": "executable",
+	"libs": ["rbf"],
+	"importPaths": ["source", "../rbflib/interface"],
+	"lflags": ["-L../rbflib/lib"],
+}
