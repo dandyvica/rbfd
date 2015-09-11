@@ -9,10 +9,10 @@ import std.conv;
 
 import rbf.field;
 import rbf.record;
-import rbf.format;
-import rbf.reader;
+import rbf.layout;
+//import rbf.reader;
 import rbf.conf;
-import rbf.args;
+//import rbf.args;
 
 
 void main(string[] argv)
@@ -28,7 +28,7 @@ void main(string[] argv)
 	auto htmlFile = format ~ ".html";
 
 	// define new structure
-	auto fmt = new Format(configSettings[format].xmlStructure);
+	auto layout = new Layout(configSettings[format].xmlStructure);
 
 
 	// write out HTML header (uses bootstrap css framework)
@@ -38,13 +38,13 @@ void main(string[] argv)
 	html.writeln(`<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"></head>`);
 	html.writeln(`<style>@media print { h2 {page-break-before: always;} }</style>`);
 	html.writeln(`<body role="document"><div class="container theme-showcase" role="main">`);
-	html.writefln(`<div class="jumbotron"><h1 class="text-center">%s</h1></div>`, fmt.description);
+	html.writefln(`<div class="jumbotron"><h1 class="text-center">%s</h1></div>`, layout.description);
 	html.writeln(`<div class="container">`);
 
   // loop on each record (sorted)
-	foreach (recName; sort(fmt.records.keys)) {
+	foreach (rec; layout) {
 		// loop on each
-		auto rec = fmt[recName];
+		//auto rec = fmt[recName];
 
 		// record description
 		html.writefln(`<h2><span class="label label-primary">%s-%s</span></h2>`,

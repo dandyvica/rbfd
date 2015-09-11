@@ -26,6 +26,8 @@ class Field
 		string _str_value;
 		ulong _index;
 		ulong _offset;
+		ulong _lowerBound;
+		ulong _upperBound;
 		float _float_value;
 		uint _int_value;
 		short _value_sign = 1;
@@ -49,6 +51,10 @@ class Field
 			@property void offset(ulong new_offset);
 			@property short sign();
 			@property void sign(short new_sign);
+			@property ulong lowerBound();
+			@property ulong upperBound();
+			@property void lowerBound(ulong new_bound);
+			@property void upperBound(ulong new_bound);
 			void convert();
 			override string toString();
 			bool isFilterMatched(in string operator, in string scalar);

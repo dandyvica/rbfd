@@ -15,7 +15,7 @@ import std.regex;
 
 import rbf.field;
 import rbf.record;
-import rbf.format;
+import rbf.layout;
 import rbf.conf;
 
 //import util.common;
@@ -39,7 +39,7 @@ private:
 	//File _fh;
 
 	/// list of all records read from XML definition file
-	Format _fmt;
+	Layout _layout;
 
 	/// this function will identify a record name from the line read
 	GET_RECORD_FUNCTION _recIdent;
@@ -72,7 +72,7 @@ public:
 		//_fh = File(rbFile, "r");
 
 		// build all records but defining a new format
-		_fmt = new Format(xmlFile);
+		_layout = new Layout(xmlFile);
 
 		// save record identifier lambda
 		_recIdent = recIndentifier;
@@ -93,6 +93,8 @@ public:
 	 * register a callback function which will be called for each fetched record
 	 */
 	@property void register_mapper(STRING_MAPPER func) { _mapper = func; }
+
+	@property Layout layout() { return _layout; }
 
 	/**
 	 * used to loop on foreach on all records of the file
@@ -124,24 +126,24 @@ public:
 			recordName = _recIdent(line);
 
 			// record not found ? So loop
-			if (recordName !in _fmt.records) {
+			if (recordName !in _layout.records) {
 				writefln("record name <%s> not found!!", recordName);
 				continue;
 			}
 
 			// now we can safely save our values
 			// set record value (and fields)
-			_fmt[recordName].value = line;
+			_layout[recordName].value = line;
 
 			// is a mapper registered? so we need to call it
 			if (_mapper)
-				_mapper(_fmt[recordName]);
+				_mapper(_layout[recordName]);
 
 			// save line
-			_fmt[recordName].line = line;
+			_layout[recordName].line = line;
 
 			// this is conventional way of opApply()
-			result = dg(_fmt[recordName]);
+			result = dg(_layout[recordName]);
 			if (result)
 				break;
 		}

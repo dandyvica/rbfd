@@ -9,9 +9,11 @@ import std.stdio;
 import std.conv;
 import std.string;
 import std.algorithm;
+//import std.algorithm.mutation;
 import std.array;
 import std.regex;
 import std.range;
+import std.container.array;
 
 import rbf.field;
 import rbf.filter;
@@ -27,6 +29,8 @@ private:
 	immutable string _description;	/// record descrption
 
 	Field[] _field_list;	/// dynamic array used to store elements
+	//auto _field_list = Array!Field();
+
 	Field[][string] _field_map; /// hash map to store fields (key is field name)
 
 	ulong _length;           /// length of record = sum of field lengths
@@ -53,7 +57,8 @@ public:
 			_description = description;
 
 			// pre-allocate array of fields
-			reserve(_field_list, 30);
+			//reserve(_field_list, 30);
+			_field_list.reserve(30);
 	}
 
 	@property string name() { return _name; }
@@ -91,11 +96,16 @@ public:
 		}
 
 		// loop for each element and set each value
+		/*
 		ushort offset = 0;
 		foreach (f; _field_list) {
 			f.value = s[offset..offset+f.length];
 			offset += f.length;
-		}
+		}*/
+
+		// assign each field to a slice of s
+		_field_list.each!(f => f.value = s[f.lowerBound..f.upperBound]);
+
 	}
 
 	/**
@@ -176,6 +186,10 @@ public:
 
 		// we add a new field, so increment length
 		_length += field.length;
+
+		// calcule lower/upper bounds inside the record
+		field.lowerBound = field.offset;
+		field.upperBound = field.offset + field.length;
 	}
 
 	/**
@@ -228,7 +242,7 @@ public:
 	 */
 	Field[]* opBinaryRight(string op)(string fieldName)
 	{
-		if (op == "in") {
+		static if (op == "in") {
 		    return (fieldName in _field_map);
 		}
 	}
@@ -273,6 +287,43 @@ public:
 	}
 
 	/**
+	 * remove all fields matching field name
+	 *
+	 * Examples:
+	 * --------------
+	 * rec.remove("FIELD1");
+	 * --------------	 */
+	void remove(string fieldName) {
+		// remove all elements matching the fieldName
+		// attn: assigning back to _field_list is normal because remove
+		// doesn't remove from array but just from range
+		_field_list = _field_list.remove!(f => f.name == fieldName);
+
+		// remove corresponding key
+		_field_map.remove(fieldName);
+
+	}
+
+	/**
+	 * keep only those fields specified
+	 *
+	 * Examples:
+	 * --------------
+	 * rec.keepOnly(["FIELD1", "FIELD2"]);
+	 * --------------	 */
+	void keepOnly(string[] listOfFieldNamesToKeep) {
+		// build the list of field to remove =  those not found in
+		// listOfFieldNamesToKeep
+		auto listOfFieldNamesToRemove =
+			this.fieldNames.filter!(s => !listOfFieldNamesToKeep.canFind(s));
+
+		// now remove them
+		listOfFieldNamesToRemove.each!(s => this.remove(s));
+
+	}
+
+
+	/**
 	 * duplicate a record with all its fields and values but only keeping
 	 * the fields named in the list passed in argument
 	 *
@@ -280,15 +331,10 @@ public:
 	 * --------------
 	 * auto copy = rec.fromList(["FIELD1", "FIELD2"]);
 	 * --------------	 */
-	Record fromList(string[] listOfFields) {
-		Record copied = new Record(name, description);
-		foreach (field; _field_list) {
-			if (listOfFields.canFind(field.name)) {
-				copied ~= field.dup();
-			}
-		}
-		return copied;
-	}
+	/*
+	void prune(string[] listOfFieldNames) {
+		listOfFieldNames.each!(s => this.remove(s));
+	}*/
 
 	/**
 	 * get the i-th field whose is passed as argument in case of duplicate
@@ -309,6 +355,7 @@ public:
 	/**
 	 * just print out a record with field names and field values
 	 */
+	/*
 	string toTxt()
 	{
 		// length of the record when printed out
@@ -325,7 +372,7 @@ public:
 
 		// write out table
 		return ("%s\n%s\n".format(join(fields,"|"), join(values,"|")));
-	}
+	}*/
 
 	/**
 	 * to match an attribute more easily
@@ -443,6 +490,23 @@ unittest {
 	auto s = "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEE";
 	rec.value = s;
 	writeln(rec);
+
+  auto rec2 = rec.dup;
+	rec2.remove("FIELD2");
+	writeln(rec2);
+
+	rec.keepOnly(["FIELD3","FIELD2"]);
+	writeln(rec);
+
+	core.stdc.stdlib.exit(0);
+
+
+
+
+
+
+
+
 
 	// get value
 	assert(rec.value == s);

@@ -84,14 +84,14 @@ public:
 
 		pattern["content_types"] =
 			XLSXPattern("[Content_Types].xml", import("[Content_Types].xml"),
-									`<Override PartName="/%s.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>\n`);
+									`<Override PartName="/%s.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`);
 
 		pattern["rels"] =
 			XLSXPattern("_rels/.rels", import("rels.xml"), "");
 
 		pattern["workbook_rels"] =
 			XLSXPattern("_rels/workbook.xml.rels", import("workbook.xml.rels"),
-								   `<Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="%s.xml"/>\n`);
+								   `<Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="%s.xml"/>`);
 
 		pattern["worksheet"] =
 			XLSXPattern("worksheet.xml", import("worksheet.xml"), "");
@@ -126,11 +126,11 @@ public:
 			}
 			worksheetHandle.write("</row>");
 
-			// write worksheet column name
+			// write worksheet column name and field length
 			worksheetHandle.write("<row>");
 			foreach (Field f; record)
 			{
-				worksheetHandle.write(_toXLSXRow(f.name));
+				worksheetHandle.write(_toXLSXRow(format("%s (%d)", f.name, f.length)));
 			}
 			worksheetHandle.write("</row>");
 

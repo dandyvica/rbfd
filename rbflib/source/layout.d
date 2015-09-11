@@ -1,4 +1,4 @@
-module rbf.format;
+module rbf.layout;
 
 import std.stdio;
 import std.file;
@@ -6,6 +6,7 @@ import std.string;
 import std.xml;
 import std.conv;
 import std.exception;
+import std.algorithm;
 
 import rbf.field;
 import rbf.record;
@@ -14,7 +15,7 @@ import rbf.record;
 /***********************************
  * This class build the list of records and fields from an XML definition file
  */
-class Format {
+class Layout {
 
 private:
 
@@ -43,7 +44,7 @@ public:
 
 
 		string[string] fd;		/// associative array to hold field data
-		string recName = "";		/// to save the record name when we find a <record> tag
+		string recName = "";	/// to save the record name when we find a <record> tag
 
 
 		// open XML file and load it into a string
@@ -94,8 +95,6 @@ public:
 	 */
 	@property string description() { return _description; }
 
-
-
 	/**
 	 * [] operator to retrieve the record by name
 	 *
@@ -108,6 +107,35 @@ public:
 		return _records[recName];
 	}
 
+	/**
+	 * to loop with foreach loop on all records of the layout
+	 *
+	 */
+	 /*
+	 @property bool empty() const { return _records.length == 0; }
+	 @property ref Layout front() { return _records[0]; }
+	 void popFront() { _records = _records[1..$]; }*/
+
+	int opApply(int delegate(ref Record) dg)
+	{
+		int result = 0;
+
+		foreach (recName; sort(_records.keys)) {
+				result = dg(_records[recName]);
+				if (result)
+			break;
+		}
+		return result;
+	}
+
+	override string toString() {
+		string s;
+		foreach (rec; this) {
+			s ~= rec.toString;
+		}
+		return s;
+	}
+
 }
 
 unittest {
@@ -115,10 +143,12 @@ unittest {
 	writeln(__FILE__);
 	writefln("-------------------------------------------------------------");
 
-	auto f = new Format("../test/world_data.xml");
+	auto layout = new Layout("./test/world_data.xml");
 
-	foreach (string s, Record rec; f.records)
+	foreach (rec; layout)
 	{
 		writeln(rec);
 	}
+
+	//core.stdc.stdlib.exit(0);
 }

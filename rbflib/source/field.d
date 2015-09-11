@@ -36,13 +36,17 @@ private:
 
 	ulong _index;					/// index of the field within its parent record
 	ulong _offset;					/// index of the field within its parent record from the first field
+	ulong _lowerBound;
+	ulong _upperBound;
 
 	float _float_value;				/// hold values when converted
 	uint _int_value;
 
 	short _value_sign = 1;			/// positive value for the moment
 
-	immutable ulong _cell_length;
+	immutable ulong _cell_length;  ///
+
+
 
 public:
 	/**
@@ -114,10 +118,8 @@ public:
 			return copied;
 	}
 
-	/// read property for name attribute
+	/// read/write property for name attribute
 	@property string name() { return _name; }
-
-	/// write property for attribute name. Used to rename an element
 	@property void name(string name) { _name = name; }
 
 	/// read property for description attribute
@@ -129,13 +131,11 @@ public:
 	/// read property for field length
 	@property ulong length() { return _length; }
 
-	/// read property for cell length
+	/// read property for cell length when creating ascii tables
 	@property ulong cell_length() { return _cell_length; }
 
-	/// read property for field value
+	/// read/write property for field value
 	@property string value() { return _str_value; }
-
-	/// write property for setting the field value
 	@property void value(string s)
 	{
 		_raw_value = s;
@@ -145,20 +145,23 @@ public:
 	/// read property for field raw value. Raw value is not stripped
 	@property string rawvalue() { return _raw_value; }
 
-	/// read property for the field index
+	/// read/write property for the field index
 	@property ulong index() { return _index; }
-
-	/// write property for setting an index
 	@property void index(ulong new_index) { _index = new_index; }
 
-	/// read property for the field offset
+	/// read/write property for the field offset
 	@property ulong offset() { return _offset; }
-
-	/// write property for setting a new offset
 	@property void offset(ulong new_offset) { _offset = new_offset; }
 
+	/// read/write property for the sign field
 	@property short sign() { return _value_sign; }
 	@property void sign(short new_sign) { _value_sign = new_sign; }
+
+	/// read/write property lower/upper bounds
+	@property ulong lowerBound() { return _lowerBound; }
+	@property ulong upperBound() { return _upperBound; }
+	@property void lowerBound(ulong new_bound) { _lowerBound = new_bound; }
+	@property void upperBound(ulong new_bound) { _upperBound = new_bound; }
 
 	/// convert field value to scalar value (float or integer)
 	void convert() {
@@ -174,8 +177,8 @@ public:
 	 * return a string of Field attributes
 	 */
 	override string toString() {
-		return("name=<%s>, description=<%s>, length=<%u>, type=<%s>, value=<%s>, offset=<%s>, index=<%s>"
-			             .format(name, description, length, type, value, offset, index));
+		return("name=<%s>, description=<%s>, length=<%u>, type=<%s>, lower/upperBound=<%u:%u>, value=<%s>, offset=<%s>, index=<%s>"
+			             .format(name, description, length, type, lowerBound, upperBound, value, offset, index));
 	}
 
 	/**

@@ -8,7 +8,7 @@ import std.range;
 
 import rbf.field;
 import rbf.record;
-import rbf.format;
+import rbf.layout;
 import rbf.reader;
 import rbf.writers.writer;
 import rbf.conf;
@@ -50,14 +50,18 @@ void main(string[] argv)
 		reader.register_mapper = &overpunch.overpunch;
 	}
 
-
-	/*
-	if (opts.conditionFile != "")
-	{
-		conditions = reader.readCondition(opts.conditionFile);
-		writeln(conditions);
+	// ask for a restriction?
+	if (opts.isRestriction) {
+		// prune each record depending on what is requested
+		foreach (rec; reader.layout) {
+			// recname is not concerned
+			if (rec.name in opts.fieldNames) {
+			  // this record has some fields to keep
+				auto fieldNamesToKeep = opts.fieldNames[rec.name];
+				rec.keepOnly(fieldNamesToKeep);
+			}
+		}
 	}
-	*/
 
 	// now loop for each record in the file
 	foreach (rec; reader)
@@ -71,18 +75,11 @@ void main(string[] argv)
 				continue;
 		}
 
-		// ask for a restriction?
-		if (opts.isRestriction) {
-			// only print out rec if record name is found is the restriction file
-			if (rec.name in opts.fieldNames) {
-				auto fieldNamesToKeep = opts.fieldNames[rec.name];
-				version(nobenchmark) {
-					writer.write(rec.fromList(fieldNamesToKeep));
-				}
-			}
-		}
-		else
-			version(nobenchmark) { writer.write(rec); }
+		// if restriction is set and record is not asked, just loop
+		if (opts.isRestriction && rec.name !in opts.fieldNames) continue;
+
+		// use our writer to generate the file
+		writer.write(rec);
 	}
 
 	// explicitly call close to finish creating file (specially for Excel files)

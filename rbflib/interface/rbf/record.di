@@ -7,6 +7,7 @@ import std.algorithm;
 import std.array;
 import std.regex;
 import std.range;
+import std.container.array;
 import rbf.field;
 import rbf.filter;
 class Record
@@ -40,21 +41,24 @@ class Record
 				_field_list ~= field;
 				_field_map[field.name] ~= field;
 				_length += field.length;
+				field.lowerBound = field.offset;
+				field.upperBound = field.offset + field.length;
 			}
 			Field opIndex(size_t i);
 			Field[] opIndex(string fieldName);
 			Field[]* opBinaryRight(string op)(string fieldName)
 			{
-				if (op == "in")
+				static if (op == "in")
 				{
 					return fieldName in _field_map;
 				}
+
 			}
 			int opApply(int delegate(ref Field) dg);
 			Record dup();
-			Record fromList(string[] listOfFields);
+			void remove(string fieldName);
+			void keepOnly(string[] listOfFieldNamesToKeep);
 			Field get(string fieldName, ushort index = 0);
-			string toTxt();
 			string opDispatch(string fieldName)(ushort index)
 			{
 				enforce(0 <= index && index < _field_map[fieldName].length, "field %s, index %d is out of bounds".format(fieldName, index));

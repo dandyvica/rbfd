@@ -146,11 +146,12 @@ unittest {
 	writeln(__FILE__);
 	writefln("-------------------------------------------------------------");
 
+/*
 	auto c = new Config();
 
 	writeln(c["hot220"]);
 
 	auto x = "BKS1111111124 4444";
-	writeln(c["hot220"].record_identifier(x));
+	writeln(c["hot220"].record_identifier(x));*/
 
 }
