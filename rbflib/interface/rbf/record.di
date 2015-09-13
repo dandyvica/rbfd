@@ -20,6 +20,7 @@ class Record
 		Field[][string] _field_map;
 		ulong _length;
 		string _line;
+		bool _keep = true;
 		public 
 		{
 			this(in string name, in string description);
@@ -29,6 +30,8 @@ class Record
 			@property void line(string new_line);
 			@property ulong length();
 			@property ulong size();
+			@property bool keep();
+			@property void keep(bool keep);
 			@property void value(string s);
 			@property string value();
 			@property string[] fieldNames();

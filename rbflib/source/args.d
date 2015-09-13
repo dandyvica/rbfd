@@ -50,7 +50,7 @@ Usage: readrbf -i <input file name> -O <output file> -o <output format> -f <inpu
 	-i		mandatory: input file name to read
 	-f		mandatory: input file format (ex:: isr)
 	-o		optional: output directory name. If not specified, current directory
-	-F		optional: output file format, should be only: html, csv, txt, xlsx or sqlite3.
+	-F		optional: output file format, should be only: html, tag, csv, txt, xlsx or sqlite3.
 				If not specified, default to \"txt\"
 	-c		optional: a set of conditions for filtering records
 	-r		optional: a file containing a list of records/fields to get
@@ -74,7 +74,7 @@ Usage: readrbf -i <input file name> -O <output file> -o <output format> -f <inpu
 
 	// check input format
 	//string[] allowedFormats = ["txt","html","csv","xlsx","sqlite3"];
-	if (!["txt","html","csv","xlsx","sqlite3"].canFind(_outputFormat)) {
+	if (!["tag","txt","html","csv","xlsx","sqlite3"].canFind(_outputFormat)) {
 		throw new Exception("unknown input format %s".format(_outputFormat));
 	}
 

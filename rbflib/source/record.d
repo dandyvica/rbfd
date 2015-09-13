@@ -37,6 +37,9 @@ private:
 
 	string _line;			/// save string from file
 
+	bool _keep = true;						/// true is we want to keep this record when
+																/// looping using a reader
+
 public:
 	/**
 	 * creates a new record object
@@ -71,6 +74,8 @@ public:
 
 	@property ulong size() { return _field_list.length; }
 
+	@property bool keep() { return _keep; }
+	@property void keep(bool keep) { _keep = keep; }
 
 	/**
 	 * sets record value from one string
@@ -407,7 +412,7 @@ public:
 	 */
 	override string toString()
 	{
-		auto s = "\nname=<%s>, description=<%s>, length=<%u>\n".format(name, description, length);
+		auto s = "\nname=<%s>, description=<%s>, length=<%u>, keep=<%s>\n".format(name, description, length, keep);
 		foreach (f; _field_list)
 		{
 			s ~= f.toString();

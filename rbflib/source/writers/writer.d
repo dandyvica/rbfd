@@ -16,6 +16,7 @@ import rbf.writers.xlsxwriter;
 import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
 import rbf.writers.htmlwriter;
+import rbf.writers.tagwriter;
 
 /*********************************************
  * writer class for writing to various ouput
@@ -60,6 +61,7 @@ Writer writer(in string output, in string mode)
 		case "txt" : return new TXTWriter(output);
 		case "xlsx": return new XLSXWriter(output);
 		case "sql" : return new TXTWriter(output);
+		case "tag" : return new TAGWriter(output);
 		default:
 			throw new Exception("writer unknown mode <%s>".format(mode));
 	}

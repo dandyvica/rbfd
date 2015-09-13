@@ -14,6 +14,7 @@ import rbf.writers.xlsxwriter;
 import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
 import rbf.writers.htmlwriter;
+import rbf.writers.tagwriter;
 abstract class Writer
 {
 	private 

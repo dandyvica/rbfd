@@ -22,7 +22,7 @@ private:
 	/// used to hold record definition as build from XML file
 	Record[string] _records;
 
-	// description as found is the XML main tag
+	// description as found is the XML <rbfile> tag
 	string _description;
 
 public:
@@ -34,7 +34,7 @@ public:
 	 *
 	 * Examples:
 	 * --------------
-	 * auto fmt = new Format("my_def_file.xml");
+	 * auto layout = new Layout("my_def_file.xml");
 	 * --------------
 	 */
 	this(string xmlFile)
@@ -56,13 +56,13 @@ public:
 		// save descrpition of the structure
 		_description = xml.tag.attr["description"];
 
-		// read <record> definitions and create record object
+		// read <record> definitions and create a new record object
 		xml.onStartTag["record"] = (ElementParser xml)
 		{
 			// save record name
 			recName = xml.tag.attr["name"];
 
-			// create Record object and store it into our record aa
+			// create a Record object and store it into our record aa
 			_records[recName] = new Record(recName, xml.tag.attr["description"]);
 		};
 
@@ -116,6 +116,10 @@ public:
 	 @property ref Layout front() { return _records[0]; }
 	 void popFront() { _records = _records[1..$]; }*/
 
+ 	/**
+	 * to loop with foreach loop on all records of the layout
+	 *
+	 */
 	int opApply(int delegate(ref Record) dg)
 	{
 		int result = 0;
@@ -128,6 +132,10 @@ public:
 		return result;
 	}
 
+	/**
+	 * record definition for all records found
+	 *
+	 */
 	override string toString() {
 		string s;
 		foreach (rec; this) {
@@ -135,6 +143,37 @@ public:
 		}
 		return s;
 	}
+
+	/**
+	 * keep only fields specified for each record in the map
+	 *
+	 * Params:
+	 *	recordMap = associate array (key=record name, value=array of field names)
+	 *
+	 * Examples:
+	 * --------------
+	 * recList["RECORD1"] = ["FIELD1", "FIELD2"];
+	 * layout.prune(recList);
+	 * --------------
+	 */
+	void prune(string[][string] recordMap) {
+			// recordMap contains a list of fields to keep in each record
+			// the key of recordMap is a record name
+			// for all those records, keep only those provided
+			foreach (rec; _records) {
+				// recname is not concerned
+				if (rec.name in recordMap) {
+					// keep only those found
+					_records[rec.name].keepOnly(recordMap[rec.name]);
+ 				}
+				else {
+					// but we want all other not requested to not be kept
+					_records[rec.name].keep = false;
+				}
+			}
+	}
+
+
 
 }
 

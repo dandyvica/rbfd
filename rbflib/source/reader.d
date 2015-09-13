@@ -131,6 +131,9 @@ public:
 				continue;
 			}
 
+			// do we keep this record?
+			if (!_layout[recordName].keep) continue;
+
 			// now we can safely save our values
 			// set record value (and fields)
 			_layout[recordName].value = line;
@@ -140,7 +143,7 @@ public:
 				_mapper(_layout[recordName]);
 
 			// save line
-			_layout[recordName].line = line;
+			//_layout[recordName].line = line;
 
 			// this is conventional way of opApply()
 			result = dg(_layout[recordName]);

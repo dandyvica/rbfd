@@ -53,14 +53,7 @@ void main(string[] argv)
 	// ask for a restriction?
 	if (opts.isRestriction) {
 		// prune each record depending on what is requested
-		foreach (rec; reader.layout) {
-			// recname is not concerned
-			if (rec.name in opts.fieldNames) {
-			  // this record has some fields to keep
-				auto fieldNamesToKeep = opts.fieldNames[rec.name];
-				rec.keepOnly(fieldNamesToKeep);
-			}
-		}
+		reader.layout.prune(opts.fieldNames);
 	}
 
 	// now loop for each record in the file
@@ -74,9 +67,6 @@ void main(string[] argv)
 			if (!rec.matchFilter(opts.filter))
 				continue;
 		}
-
-		// if restriction is set and record is not asked, just loop
-		if (opts.isRestriction && rec.name !in opts.fieldNames) continue;
 
 		// use our writer to generate the file
 		writer.write(rec);
