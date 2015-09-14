@@ -18,6 +18,8 @@ enum AtomicType {
 	ALPHANUMERICAL
 }
 
+alias TESTER = bool delegate(string,string,string);
+
 /***********************************
  *This field class represents a field as found
  * in record-based files
@@ -30,7 +32,7 @@ private:
 
 	Regex!char re;
 
-
+	TESTER tester;
 
 public:
 	/**
@@ -57,6 +59,7 @@ public:
 		{
 			case "N":
 				_atom = AtomicType.FLOAT;
+				tester = &matchFilter!float;
 				break;
 			case "I":
 				_atom = AtomicType.INTEGER;
@@ -80,6 +83,30 @@ public:
 
 	@property void pattern(string p) { re = regex(p); }
 
+	static string testFilter(T)(string op) {
+		static if (is(T t == string))
+			return "condition = (lvalue" ~ op ~ "rvalue);";
+		else
+			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
+	}
+
+	bool matchFilter(T)(string lvalue, string operator, string rvalue) {
+		bool condition;
+
+		switch (operator) {
+			case "=":
+			case "==":
+				mixin(testFilter!T("=="));
+				break;
+			case "<":
+				mixin(testFilter!T("<"));
+				break;
+			default:
+				throw new Exception("operator %s not supported".format(operator));
+		}
+
+		return condition;
+	}
 
 }
 

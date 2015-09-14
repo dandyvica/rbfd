@@ -47,7 +47,6 @@ private:
 	immutable ulong _cell_length;  ///
 
 
-
 public:
 	/**
  	 * creates a new field object
