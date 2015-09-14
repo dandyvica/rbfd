@@ -40,9 +40,6 @@ void main(string[] argv)
 	// line and the configuration found in JSON properties file
 	auto reader = reader(opts.inputFileName, configSettings[opts.inputFormat]);
 
-	// create new writer to generate outputFileName matching the outputFormat
-	auto writer = writer(opts.outputFileName, opts.outputFormat);
-
 	// in case of HOT files, specifiy our modifier
 	// HOT files used the overpunch characters (some alphabetical chars matching
 	// digits (?!))
@@ -55,6 +52,12 @@ void main(string[] argv)
 		// prune each record depending on what is requested
 		reader.layout.prune(opts.fieldNames);
 	}
+
+//	writeln(reader.layout); writeln(opts.fieldNames);
+//	core.stdc.stdlib.exit(0);
+
+	// create new writer to generate outputFileName matching the outputFormat
+	auto writer = writer(opts.outputFileName, opts.outputFormat, reader.layout);
 
 	// now loop for each record in the file
 	foreach (rec; reader)

@@ -28,6 +28,7 @@ class TAGWriter : Writer {
 
 	override void write(Record rec)
 	{
+		_fh.writef("%s:", rec.name);
 		foreach (field; rec) {
 			_fh.write(`%s="%s" `.format(field.name, field.value));
 		}

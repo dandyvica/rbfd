@@ -6,6 +6,7 @@ import std.algorithm;
 import std.datetime;
 import std.range;
 import std.conv;
+import std.exception;
 
 import rbf.field;
 import rbf.record;
@@ -29,6 +30,14 @@ void main(string[] argv)
 
 	// define new structure
 	auto layout = new Layout(configSettings[format].xmlStructure);
+
+	// checking first XML file compliance if layou length was specified
+	if (layout.length != 0) {
+		foreach (rec; layout) {
+			enforce(rec.length == layout.length, "Record %s length is incorrect (%d != %d)".
+				format(rec.name, rec.length, layout.length));
+		}
+	}
 
 
 	// write out HTML header (uses bootstrap css framework)

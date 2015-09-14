@@ -11,6 +11,7 @@ import rbf.field;
 import rbf.record;
 import rbf.reader;
 import rbf.conf;
+import rbf.layout;
 
 import rbf.writers.xlsxwriter;
 import rbf.writers.csvwriter;
@@ -52,14 +53,14 @@ public:
  * factory method for creating object matching
  * desired format
  */
-Writer writer(in string output, in string mode)
+Writer writer(in string output, in string mode, Layout layout)
 {
 	switch(mode)
 	{
 		case "html": return new HTMLWriter(output);
 		case "csv" : return new CSVWriter(output);
 		case "txt" : return new TXTWriter(output);
-		case "xlsx": return new XLSXWriter(output);
+		case "xlsx": return new XLSXWriter(output, layout);
 		case "sql" : return new TXTWriter(output);
 		case "tag" : return new TAGWriter(output);
 		default:

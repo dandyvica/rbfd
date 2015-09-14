@@ -10,6 +10,7 @@ import rbf.field;
 import rbf.record;
 import rbf.reader;
 import rbf.conf;
+import rbf.layout;
 import rbf.writers.xlsxwriter;
 import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
@@ -32,4 +33,4 @@ abstract class Writer
 		}
 	}
 }
-Writer writer(in string output, in string mode);
+Writer writer(in string output, in string mode, Layout layout);

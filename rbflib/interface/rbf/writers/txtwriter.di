@@ -13,7 +13,14 @@ import rbf.conf;
 import rbf.writers.writer;
 class TXTWriter : Writer
 {
-	this(in string outputFileName);
-	override void write(Record rec);
-	override void close();
+	private 
+	{
+		string _previousRecordName;
+		public 
+		{
+			this(in string outputFileName);
+			override void write(Record rec);
+			override void close();
+		}
+	}
 }

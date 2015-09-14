@@ -25,6 +25,9 @@ private:
 	// description as found is the XML <rbfile> tag
 	string _description;
 
+	// length if found is <rbfile> table
+	ulong _length;
+
 public:
 	/**
 	 * create all records based on the XML file structure
@@ -53,8 +56,13 @@ public:
 		// create a new parser
 		auto xml = new DocumentParser(s);
 
-		// save descrpition of the structure
+		// save description of the structure
 		_description = xml.tag.attr["description"];
+
+		// save length if any
+		if ("reclength" in xml.tag.attr) {
+			_length = to!ulong(xml.tag.attr["reclength"]);
+		}
 
 		// read <record> definitions and create a new record object
 		xml.onStartTag["record"] = (ElementParser xml)
@@ -94,6 +102,11 @@ public:
 	 * description of the XML structure
 	 */
 	@property string description() { return _description; }
+
+	/**
+	 * description of the XML structure
+	 */
+	@property ulong length() { return _length; }
 
 	/**
 	 * [] operator to retrieve the record by name
@@ -164,7 +177,8 @@ public:
 				// recname is not concerned
 				if (rec.name in recordMap) {
 					// keep only those found
-					_records[rec.name].keepOnly(recordMap[rec.name]);
+					if (recordMap[rec.name] != [])
+						_records[rec.name].keepOnly(recordMap[rec.name]);
  				}
 				else {
 					// but we want all other not requested to not be kept

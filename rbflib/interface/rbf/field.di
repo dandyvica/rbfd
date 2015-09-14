@@ -40,6 +40,7 @@ class Field
 			@property void name(string name);
 			@property string description();
 			@property FieldType type();
+			@property string declaredType();
 			@property ulong length();
 			@property ulong cell_length();
 			@property string value();

@@ -15,11 +15,13 @@ class Layout
 	{
 		Record[string] _records;
 		string _description;
+		ulong _length;
 		public 
 		{
 			this(string xmlFile);
 			@property Record[string] records();
 			@property string description();
+			@property ulong length();
 			ref Record opIndex(string recName);
 			int opApply(int delegate(ref Record) dg);
 			override string toString();

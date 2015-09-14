@@ -19,6 +19,11 @@ import rbf.writers.writer;
  */
 class TXTWriter : Writer {
 
+private:
+	string _previousRecordName;
+
+public:
+
 	this(in string outputFileName)
 	{
 		super(outputFileName);
@@ -27,20 +32,35 @@ class TXTWriter : Writer {
 
 	override void write(Record rec)
 	{
-		uint i = 0;
-		foreach (name; rec.fieldNames) {
+		if (_previousRecordName != rec.name) {
+				_fh.writeln();
+
+			rec.each!(
+				f => 	_fh.writef("%-*s|", f.cell_length, f.name)
+			);
+
+				/*
+			foreach (int j, name; rec.fieldNames) {
+				// left justifiy with - format
+				_fh.writef("%-*s|", rec[j].cell_length, name);
+			}*/
+			_fh.writeln();
+	  }
+
+		rec.each!(
+			f => 	_fh.writef("%-*s|", f.cell_length, f.value)
+		);
+
+/*
+		foreach (int j, value; rec.fieldValues) {
 			// left justifiy with - format
-			_fh.writef("%-*s|", rec[i++].cell_length, name);
-		}
+			_fh.writef("%-*s|", rec[j].cell_length, value);
+		}*/
+
 		_fh.writeln();
 
-		i = 0;
-		foreach (value; rec.fieldValues) {
-			// left justifiy with - format
-			_fh.writef("%-*s|", rec[i++].cell_length, value);
-		}
-		_fh.writeln("\n");
-
+		//
+		_previousRecordName = rec.name;
 	}
 
 	override void close() { _fh.close(); }

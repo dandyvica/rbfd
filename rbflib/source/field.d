@@ -127,6 +127,7 @@ public:
 
 	/// read property for element type
 	@property FieldType type() { return _field_type; }
+	@property string declaredType() { return _type; }
 
 	/// read property for field length
 	@property ulong length() { return _length; }

@@ -128,10 +128,24 @@ private:
 
 			// ok, now split line and extract record name for the key
 			// and field names for the values
+			// e.g: RECORD1: FIELD1,FIELD2, FIELD3
 			auto data = line.split(":");
 
-			foreach (fieldName; data[1].split(",")) {
-				fieldNames[data[0].strip] ~= fieldName.strip;
+			// record name is found before the : char
+			auto recordName = data[0].strip;
+
+			// and all fields on the right
+			auto fieldList =  data[1].strip;
+
+			// no list specified or '*' found: we want all fields of this record
+			if (fieldList == "" || fieldList == "*") {
+				fieldNames[recordName] = [];
+				continue;
+			}
+
+			// otherwise build list of field names
+			foreach (fieldName; fieldList.split(",")) {
+				fieldNames[recordName] ~= fieldName.strip;
 			}
 		}
 
