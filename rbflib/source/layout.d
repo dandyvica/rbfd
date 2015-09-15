@@ -19,14 +19,9 @@ class Layout {
 
 private:
 
-	/// used to hold record definition as build from XML file
-	Record[string] _records;
-
-	// description as found is the XML <rbfile> tag
-	string _description;
-
-	// length if found is <rbfile> table
-	ulong _length;
+	Record[string] _records;			/// used to hold record definition as build from XML file
+	string _description;					/// description as found is the XML <rbfile> tag
+	ulong _length;								/// length if found is <rbfile> table
 
 public:
 	/**
@@ -94,7 +89,7 @@ public:
 	}
 
 	/**
-	 * array of all records
+	 * associative array of all records
 	 */
 	@property Record[string] records() { return _records; }
 
@@ -104,7 +99,7 @@ public:
 	@property string description() { return _description; }
 
 	/**
-	 * description of the XML structure
+	 * length of each record of the XML structure
 	 */
 	@property ulong length() { return _length; }
 

@@ -3,26 +3,21 @@ import std.container.array;
 import std.conv;
 import std.algorithm;
 import std.string;
+import std.variant;
 
 void main()
 {
+	class C {
+		int i;
+		Variant v;
 
-	// slist
-  string[] list;
+		this(int j) {
+			i = j;
+		}
 
-	foreach (i; 1..10) {
-		list ~= "item_" ~ to!string(i%3);
 	}
 
-	writeln(list);
 
-	list = list.remove!(s => s == "item_0");
-	writeln(list);
-
-	auto s1 = "ssssssssssssss";
-	writefln("<%s>", s1.leftJustify(30));
-
-	auto s2 = "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss";
-	writefln("<%s>", s2.leftJustify(30));
 
 }
+

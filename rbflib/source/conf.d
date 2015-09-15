@@ -33,10 +33,9 @@ private:
 	mapperType _mappingType;	/// is it a constant or variable mapper?
 	string _constantMapping;	/// case of a constant mapper
 	Slice[] _sliceMapping;	  /// list of slices to build record identifier (variable mapper)
-
 	string _ignorePattern;  	/// if any, ignore those lines when reading
-
   MAPPER _record_mapper;    /// callback called to indentify one record
+  string[] _skipFieldList;  /// optional field list to no consider when reading
 
   char[] _recordName;
 
@@ -52,6 +51,13 @@ public:
 		if ("ignore" in tag) {
 			_ignorePattern = tag["ignore"].str;
 		}
+
+    // ignore pattern might not be found
+		if ("skip" in tag) {
+//writeln(tag["skip"].str);
+			_skipFieldList = tag["skip"].str.split(",");
+		}
+//writeln(_skipField);
 
 		// get mapping
     // whenever our mapping is just one string, simple case
@@ -94,6 +100,7 @@ public:
 
 	@property string xmlStructure() { return _xmlStructure; }
 	@property string ignorePattern() { return _ignorePattern; }
+	@property string[] skipFieldList() { return _skipFieldList; }
   string record_identifier(string x) { return _record_mapper(x); }
 
 

@@ -5,6 +5,7 @@ import std.conv;
 import std.string;
 import std.regex;
 import std.algorithm;
+import std.variant;
 enum FieldType 
 {
 	FLOAT,
@@ -17,13 +18,13 @@ class Field
 {
 	private 
 	{
-		FieldType _field_type;
+		FieldType _fieldType;
 		string _name;
 		immutable string _description;
 		immutable ulong _length;
 		immutable string _type;
-		string _raw_value;
-		string _str_value;
+		string _rawValue;
+		string _strValue;
 		ulong _index;
 		ulong _offset;
 		ulong _lowerBound;
@@ -31,7 +32,8 @@ class Field
 		float _float_value;
 		uint _int_value;
 		short _value_sign = 1;
-		immutable ulong _cell_length;
+		immutable ulong _cellLength;
+		Variant _convertedValue;
 		public 
 		{
 			this(in string name, in string description, in string type, in ulong length);

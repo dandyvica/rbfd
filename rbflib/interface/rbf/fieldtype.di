@@ -13,20 +13,21 @@ enum AtomicType
 	ALPHABETICAL,
 	ALPHANUMERICAL,
 }
-alias TESTER = bool delegate(string, string, string);
+alias MATCH_FILTER = bool delegate(string, string, string);
 class FieldType
 {
 	private 
 	{
 		string _declaredType;
 		AtomicType _atom;
-		Regex!char re;
-		TESTER tester;
+		Regex!char _re;
+		MATCH_FILTER _filterTestCallback;
 		public 
 		{
 			this(in string type);
 			@property AtomicType type();
 			@property void pattern(string p);
+			override string toString();
 			static string testFilter(T)(string op)
 			{
 				static if (is(T t == string))

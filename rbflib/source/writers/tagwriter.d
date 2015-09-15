@@ -9,14 +9,11 @@ import std.variant;
 
 import rbf.field;
 import rbf.record;
-import rbf.reader;
-import rbf.conf;
-
 import rbf.writers.writer;
 
 /*********************************************
- * writer class for writing to various ouput
- * formats
+ * writer class for writing tagged records
+ * (one record per line)
  */
 class TAGWriter : Writer {
 

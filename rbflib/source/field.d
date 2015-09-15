@@ -5,6 +5,7 @@ import std.conv;
 import std.string;
 import std.regex;
 import std.algorithm;
+import std.variant;
 
 //import util.common;
 /***********************************
@@ -26,13 +27,13 @@ enum FieldType {
 class Field {
 private:
 
-	FieldType _field_type;  		/// enum type of the field
-	string _name;					/// name of the element. Ex: TDNR
+	FieldType _fieldType; 		/// enum type of the field
+	string _name;					/// name of the element. Ex                 : TDNR
 	immutable string _description;	/// description of the element. Ex: Ticket/Document Identification Record
 	immutable ulong _length;		/// length (in bytes) of the field
 	immutable string _type;			/// type as passed to the ctor
-	string _raw_value;              /// pristine value
-	string _str_value;				/// when set, store the value of the field
+	string _rawValue; /// pristine value
+	string _strValue;				/// when set, store the value of the field
 
 	ulong _index;					/// index of the field within its parent record
 	ulong _offset;					/// index of the field within its parent record from the first field
@@ -44,7 +45,9 @@ private:
 
 	short _value_sign = 1;			/// positive value for the moment
 
-	immutable ulong _cell_length;  ///
+	immutable ulong _cellLength; ///
+
+	Variant _convertedValue;
 
 
 public:
@@ -70,36 +73,32 @@ public:
 		enforce(name != "", "field name should not be empty!");
 
 		// just copy what is passed to constructor
-		_name = name;
+		_name        = name;
 		_description = description;
-		_length = length;
+		_length      = length;
 
 		// used to print out text data
-		_cell_length = max(_length, _name.length);
-
-		// value is empty by default
-		//_str_value = "";
-		//_raw_value = "";
+		_cellLength = max(_length, _name.length);
 
 		// set type according to what is passed
 		_type = type;
 		switch (type)
 		{
 			case "N":
-				_field_type = FieldType.FLOAT;
+				_fieldType = FieldType.FLOAT;
 				break;
 			case "I":
-				_field_type = FieldType.INTEGER;
+				_fieldType = FieldType.INTEGER;
 				break;
 			case "D":
-				_field_type = FieldType.DATE;
+				_fieldType = FieldType.DATE;
 				break;
 			case "A":
-				_field_type = FieldType.ALPHABETICAL;
+				_fieldType = FieldType.ALPHABETICAL;
 				break;
 			case "AN":
 			case "A/N":
-				_field_type = FieldType.ALPHANUMERICAL;
+				_fieldType = FieldType.ALPHANUMERICAL;
 				break;
 			default:
 				throw new Exception("unknown field type %s".format(type));
@@ -109,12 +108,19 @@ public:
 
 	// copy a field with all its data
 	Field dup() {
-			auto copied = new Field(_name, _description, _type, _length);
+		auto copied = new Field(_name, _description, _type, _length);
 
-			// both copy _raw_value & _str_value
-			copied.value = rawvalue;
+		// both copy _rawValue & _strValue
+		copied.value = rawvalue;
 
-			return copied;
+		// copy other properties
+		copied.index      = index;
+		copied.offset     = offset;
+		copied.sign       = sign;
+		copied.lowerBound = lowerBound;
+		copied.upperBound = upperBound;
+
+		return copied;
 	}
 
 	/// read/write property for name attribute
@@ -125,25 +131,25 @@ public:
 	@property string description() { return _description; }
 
 	/// read property for element type
-	@property FieldType type() { return _field_type; }
+	@property FieldType type() { return _fieldType; }
 	@property string declaredType() { return _type; }
 
 	/// read property for field length
 	@property ulong length() { return _length; }
 
 	/// read property for cell length when creating ascii tables
-	@property ulong cell_length() { return _cell_length; }
+	@property ulong cell_length() { return _cellLength; }
 
 	/// read/write property for field value
-	@property string value() { return _str_value; }
+	@property string value() { return _strValue; }
 	@property void value(string s)
 	{
-		_raw_value = s;
-		_str_value = s.strip();
+		_rawValue = s;
+		_strValue = s.strip();
 	}
 
 	/// read property for field raw value. Raw value is not stripped
-	@property string rawvalue() { return _raw_value; }
+	@property string rawvalue() { return _rawValue; }
 
 	/// read/write property for the field index
 	@property ulong index() { return _index; }
@@ -165,11 +171,11 @@ public:
 
 	/// convert field value to scalar value (float or integer)
 	void convert() {
-		if (_field_type == FieldType.FLOAT) {
-			_float_value = to!float(_str_value) * _value_sign;
-		} else if (_field_type == FieldType.INTEGER || _field_type == FieldType.DATE) {
-			_float_value = to!float(_str_value) * _value_sign;
-			_int_value = to!uint(_str_value);
+		if (_fieldType == FieldType.FLOAT) {
+			_float_value = to!float(_strValue) * _value_sign;
+		} else if (_fieldType == FieldType.INTEGER || _fieldType == FieldType.DATE) {
+			_float_value = to!float(_strValue) * _value_sign;
+			_int_value = to!uint(_strValue);
 		}
 	}
 
@@ -212,16 +218,16 @@ public:
 				break;
 
 			case "~":
-				if (_field_type != FieldType.ALPHABETICAL &&
-						_field_type != FieldType.ALPHANUMERICAL)
+				if (_fieldType != FieldType.ALPHABETICAL &&
+						_fieldType != FieldType.ALPHANUMERICAL)
 					throw new Exception("operator ~ not supported for numeric fields, field name = <%s>".format(name));
 
 				condition = !match(value, regex(scalar)).empty;
 				break;
 
 			case "!~":
-				if (_field_type != FieldType.ALPHABETICAL &&
-					_field_type != FieldType.ALPHANUMERICAL)
+				if (_fieldType != FieldType.ALPHABETICAL &&
+					_fieldType != FieldType.ALPHANUMERICAL)
 					throw new Exception("operator !~ not supported for numeric fields, field name = <%s>".format(name));
 
 				condition = match(value, regex(scalar)).empty;
@@ -239,8 +245,8 @@ public:
 	static string testFilter(in string operator)
 	{
 		return (
-			"if (_field_type == FieldType.ALPHABETICAL ||
-				_field_type == FieldType.ALPHANUMERICAL)
+			"if (_fieldType == FieldType.ALPHABETICAL ||
+				_fieldType == FieldType.ALPHANUMERICAL)
 					{ condition = (value " ~ operator ~ " scalar); }
 			else { condition = to!float(value) " ~ operator ~ " to!float(scalar); }"
 		);

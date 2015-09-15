@@ -18,7 +18,8 @@ enum AtomicType {
 	ALPHANUMERICAL
 }
 
-alias TESTER = bool delegate(string,string,string);
+// filter matching method pointer
+alias MATCH_FILTER = bool delegate(string,string,string);
 
 /***********************************
  *This field class represents a field as found
@@ -27,26 +28,21 @@ alias TESTER = bool delegate(string,string,string);
 class FieldType {
 private:
 
-	string _declaredType;
-	AtomicType _atom;
-
-	Regex!char re;
-
-	TESTER tester;
+	string _declaredType;								// the field type as read from the layout file
+	AtomicType _atom;										// the corresponding "real" type
+	Regex!char _re;				  						// the pattern the field should stick to
+	MATCH_FILTER _filterTestCallback;  	// method to test whether a value matches a filter
 
 public:
 	/**
- 	 * creates a new field object
+ 	 * creates a new type for a field object
 	 *
 	 * Params:
-	 * 	name = name of the field
-	 *  description = a generally long description of the field
-	 *  length = length in bytes of the field. Should be >0
 	 *  type = whether the field holds numerical, alphanumerical... data
 	 *
 	 * Examples:
   	 * -----------------------------------------------------------------------
- 	 * auto ft = new FieldType('FIELD1', 'Field description', 'A/N', 15);
+ 	 * auto ft = new FieldType('A/N');
   	 * -----------------------------------------------------------------------
 	 */
 	this(in string type)
@@ -59,37 +55,49 @@ public:
 		{
 			case "N":
 				_atom = AtomicType.FLOAT;
-				tester = &matchFilter!float;
+				_filterTestCallback = &matchFilter!float;
 				break;
 			case "I":
 				_atom = AtomicType.INTEGER;
+				_filterTestCallback = &matchFilter!long;
 				break;
 			case "D":
 				_atom = AtomicType.DATE;
+				_filterTestCallback = &matchFilter!string;
 				break;
 			case "A":
 				_atom = AtomicType.ALPHABETICAL;
+				_filterTestCallback = &matchFilter!string;
 				break;
 			case "AN":
 			case "A/N":
 				_atom = AtomicType.ALPHANUMERICAL;
+				_filterTestCallback = &matchFilter!string;
 				break;
 			default:
 				throw new Exception("unknown field type %s".format(type));
 		}
 	}
 
+	// properties
 	@property AtomicType type() { return _atom; }
+	@property void pattern(string p) { _re = regex(p); }
 
-	@property void pattern(string p) { re = regex(p); }
+	// toString
+	override string toString()
+	{
+		return format("type=%s, pattern=%s", _atom, _re);
+	}
 
+
+
+	// templated tester for testing a value against a filter and an operator
 	static string testFilter(T)(string op) {
 		static if (is(T t == string))
 			return "condition = (lvalue" ~ op ~ "rvalue);";
 		else
 			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
 	}
-
 	bool matchFilter(T)(string lvalue, string operator, string rvalue) {
 		bool condition;
 
@@ -104,12 +112,10 @@ public:
 			default:
 				throw new Exception("operator %s not supported".format(operator));
 		}
-
 		return condition;
 	}
 
 }
-
 
 
 import std.exception;
@@ -119,24 +125,12 @@ unittest {
 	writefln("-------------------------------------------------------------");
 
 	// check wrong arguments
-	assertThrown(new Field("","Ticket/Document Number","A", 5));
-	assertThrown(new Field("TDNR","Ticket/Document Number","B", 5));
-	assertThrown(new Field("TDNR","Ticket/Document Number","A", 0));
+	assertThrown(new FieldType("B"));
 
 	// create new field and check methods
-	auto f = new Field("FIELD1","First field","AN",5);
+	auto ft = new FieldType("AN");
 
-	assert(f.name == "FIELD1");
-	assert(f.description == "First field");
-	assert(f.length == 5);
-	assert(f.type == FieldType.ALPHANUMERICAL);
-
-	// test methods
-	f.value = "12345";
-	assert(f.value == "12345");
-
-	writeln(f);
-
-	writeln(f.dup());
+	assert(ft.type == AtomicType.ALPHANUMERICAL);
+	writeln(ft);
 
 }

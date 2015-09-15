@@ -16,8 +16,8 @@ class Record
 	{
 		immutable string _name;
 		immutable string _description;
-		Field[] _field_list;
-		Field[][string] _field_map;
+		Field[] _fieldList;
+		Field[][string] _fieldMap;
 		ulong _length;
 		string _line;
 		bool _keep = true;
@@ -39,10 +39,10 @@ class Record
 			void autoRename();
 			void opOpAssign(string op)(Field field) if (op == "~")
 			{
-				field.index = _field_list.length;
+				field.index = _fieldList.length;
 				field.offset = this.length;
-				_field_list ~= field;
-				_field_map[field.name] ~= field;
+				_fieldList ~= field;
+				_fieldMap[field.name] ~= field;
 				_length += field.length;
 				field.lowerBound = field.offset;
 				field.upperBound = field.offset + field.length;
@@ -53,7 +53,7 @@ class Record
 			{
 				static if (op == "in")
 				{
-					return fieldName in _field_map;
+					return fieldName in _fieldMap;
 				}
 
 			}
@@ -64,7 +64,7 @@ class Record
 			Field get(string fieldName, ushort index = 0);
 			string opDispatch(string fieldName)(ushort index)
 			{
-				enforce(0 <= index && index < _field_map[fieldName].length, "field %s, index %d is out of bounds".format(fieldName, index));
+				enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName, index));
 				return this[fieldName][index].value;
 			}
 			@property string opDispatch(string attrName)()

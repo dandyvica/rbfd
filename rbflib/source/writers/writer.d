@@ -44,6 +44,7 @@ public:
 		_outputFileName = outputFileName;
 	}
 
+	// should be implemented by derived classes
 	abstract void write(Record rec);
 	abstract void close();
 
@@ -81,16 +82,17 @@ unittest {
 	reader.ignore_pattern = "^#";
 
 
-	auto writer1 = writer("test.html", "html");
+	auto writer1 = writer("test.html", "html", reader.layout);
 	foreach (rec; reader) { writer1.write(rec); }
 
-	auto writer2 = writer("test.txt", "txt");
+	auto writer2 = writer("test.txt", "txt", reader.layout);
 	foreach (rec; reader) { writer2.write(rec); }
 
-	auto writer3 = writer("test.csv", "csv");
+	auto writer3 = writer("test.csv", "csv", reader.layout);
 	foreach (rec; reader) { writer3.write(rec); }
 
-	auto writer4 = writer("test.xlsx", "xlsx");
+	auto writer4 = writer("test.xlsx", "xlsx", reader.layout);
 	foreach (rec; reader) { writer4.write(rec); }
+
 	writer4.close();
 }

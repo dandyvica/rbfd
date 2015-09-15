@@ -28,10 +28,10 @@ private:
 	immutable string _name;			/// record name
 	immutable string _description;	/// record descrption
 
-	Field[] _field_list;	/// dynamic array used to store elements
-	//auto _field_list = Array!Field();
+	Field[] _fieldList;	/// dynamic array used to store elements
+	//auto _fieldList = Array!Field();
 
-	Field[][string] _field_map; /// hash map to store fields (key is field name)
+	Field[][string] _fieldMap; /// hash map to store fields (key is field name)
 
 	ulong _length;           /// length of record = sum of field lengths
 
@@ -56,12 +56,11 @@ public:
 	this(in string name, in string description)
 	{
 			enforce(name != "", "record name should not be empty!");
-			_name = name;
+			_name        = name;
 			_description = description;
 
 			// pre-allocate array of fields
-			//reserve(_field_list, 30);
-			_field_list.reserve(30);
+			_fieldList.reserve(30);
 	}
 
 	@property string name() { return _name; }
@@ -72,7 +71,7 @@ public:
 
 	@property ulong length() { return _length; }
 
-	@property ulong size() { return _field_list.length; }
+	@property ulong size() { return _fieldList.length; }
 
 	@property bool keep() { return _keep; }
 	@property void keep(bool keep) { _keep = keep; }
@@ -90,8 +89,6 @@ public:
 	 */
 	@property void value(string s)
 	{
-		// s length should equal record length
-		//enforce(length == s.length, "line (%s) length = %d is over record length (%d)".format(s, s.length, length));
 		// add or strip chars from string if string has not the same length as record
 		if (s.length < _length) {
 			s = s.leftJustify(_length);
@@ -100,41 +97,33 @@ public:
 			s = s[0.._length];
 		}
 
-		// loop for each element and set each value
-		/*
-		ushort offset = 0;
-		foreach (f; _field_list) {
-			f.value = s[offset..offset+f.length];
-			offset += f.length;
-		}*/
-
 		// assign each field to a slice of s
-		_field_list.each!(f => f.value = s[f.lowerBound..f.upperBound]);
+		_fieldList.each!(f => f.value = s[f.lowerBound..f.upperBound]);
 
 	}
 
 	/**
-	 * value of a record is the concatenation of all field values
+	 * value of a record is the concatenation of all field raw values
 	 */
 	@property string value()
 	{
-		return reduce!((a, b) => a ~ b.rawvalue)("", _field_list);
+		return reduce!((a, b) => a ~ b.rawvalue)("", _fieldList);
 	}
 
 	/**
-	 * return the list of all field names
+	 * return the list of all field names contained in the record
 	 */
 	@property string[] fieldNames()
 	{
-		 return array(map!(f => f.name)(_field_list));
+		 return array(map!(f => f.name)(_fieldList));
 	}
 
 	/**
-	 * return the list of all field values
+	 * return the list of all field values contained in the record
 	 */
 	@property string[] fieldValues()
 	{
-		 return array(map!(f => f.value)(_field_list));
+		 return array(map!(f => f.value)(_fieldList));
 	}
 
 	/**
@@ -144,22 +133,22 @@ public:
 	 */
 	 void autoRename()
 	 {
-		foreach (fieldName; _field_map.byKey) {
+		foreach (fieldName; _fieldMap.byKey) {
 			// more than one instance?
-			if (_field_map[fieldName].length > 1) {
+			if (_fieldMap[fieldName].length > 1) {
 
 				// rename each field
 				auto i = 1;
-				foreach (ref field; _field_map[fieldName]) {
+				foreach (ref field; _fieldMap[fieldName]) {
 					// build new field name
 					field.name = field.name ~ to!string(i++);
 
 					// rebuld map
-					_field_map[field.name] ~= field;
+					_fieldMap[field.name] ~= field;
 				}
 
 				// but now no more older field name!
-				_field_map.remove(fieldName);
+				_fieldMap.remove(fieldName);
 			}
 		}
 	 }
@@ -180,14 +169,14 @@ public:
 	void opOpAssign(string op)(Field field) if (op == "~")
 	{
 		// set index & offset
-		field.index = _field_list.length;
+		field.index  = _fieldList.length;
 		field.offset = this.length;
 
 		// store a new element in array
-		_field_list ~= field;
+		_fieldList ~= field;
 
 		// store in map (used for auto-renaming)
-		_field_map[field.name] ~= field;
+		_fieldMap[field.name] ~= field;
 
 		// we add a new field, so increment length
 		_length += field.length;
@@ -211,8 +200,8 @@ public:
 	Field opIndex(size_t i)
 	{
 		// i should fit within consistent bounds
-		enforce(0 <= i && i < _field_list.length, "index %d is out of bounds for _field_list[]".format(i));
-		return(_field_list[i]);
+		enforce(0 <= i && i < _fieldList.length, "index %d is out of bounds for _fieldList[]".format(i));
+		return(_fieldList[i]);
 	}
 
 	/**
@@ -230,8 +219,7 @@ public:
 	{
 		// check if fieldName is in the record
 		enforce(fieldName in this, "field %s is not found in record %s".format(fieldName, name));
-
-		return _field_map[fieldName];
+		return _fieldMap[fieldName];
 	}
 
 	/**
@@ -247,9 +235,7 @@ public:
 	 */
 	Field[]* opBinaryRight(string op)(string fieldName)
 	{
-		static if (op == "in") {
-		    return (fieldName in _field_map);
-		}
+		static if (op == "in") { return (fieldName in _fieldMap); }
 	}
 
 
@@ -266,9 +252,9 @@ public:
 	{
 		int result = 0;
 
-		for (int i = 0; i < _field_list.length; i++)
+		for (int i = 0; i < _fieldList.length; i++)
 		{
-		    result = dg(_field_list[i]);
+		    result = dg(_fieldList[i]);
 		    if (result)
 			break;
 		}
@@ -285,7 +271,7 @@ public:
 	Record dup()
 	{
 		Record copied = new Record(name, description);
-		foreach (field; _field_list) {
+		foreach (field; _fieldList) {
 			copied ~= field.dup();
 		}
 		return copied;
@@ -298,15 +284,15 @@ public:
 	 * --------------
 	 * rec.remove("FIELD1");
 	 * --------------	 */
-	void remove(string fieldName) {
+	void remove(string fieldName)
+	{
 		// remove all elements matching the fieldName
-		// attn: assigning back to _field_list is normal because remove
+		// attn: assigning back to _fieldList is normal because remove
 		// doesn't remove from array but just from range
-		_field_list = _field_list.remove!(f => f.name == fieldName);
+		_fieldList = _fieldList.remove!(f => f.name == fieldName);
 
 		// remove corresponding key
-		_field_map.remove(fieldName);
-
+		_fieldMap.remove(fieldName);
 	}
 
 	/**
@@ -316,7 +302,8 @@ public:
 	 * --------------
 	 * rec.keepOnly(["FIELD1", "FIELD2"]);
 	 * --------------	 */
-	void keepOnly(string[] listOfFieldNamesToKeep) {
+	void keepOnly(string[] listOfFieldNamesToKeep)
+	{
 		// build the list of field to remove =  those not found in
 		// listOfFieldNamesToKeep
 		auto listOfFieldNamesToRemove =
@@ -324,24 +311,9 @@ public:
 
 		// now remove them
 		listOfFieldNamesToRemove.each!(s => this.remove(s));
-
 	}
 
-
-	/**
-	 * duplicate a record with all its fields and values but only keeping
-	 * the fields named in the list passed in argument
-	 *
-	 * Examples:
-	 * --------------
-	 * auto copy = rec.fromList(["FIELD1", "FIELD2"]);
-	 * --------------	 */
-	/*
-	void prune(string[] listOfFieldNames) {
-		listOfFieldNames.each!(s => this.remove(s));
-	}*/
-
-	/**
+/**
 	 * get the i-th field whose is passed as argument in case of duplicate
 	 * field names (starting from 0)
 	 * Examples:
@@ -350,34 +322,13 @@ public:
 	 * rec.get("FIELD") // return the first field object named FIELD
 	 * --------------
 	 */
-	Field get(string fieldName, ushort index = 0) {
+	Field get(string fieldName, ushort index = 0)
+  {
 		enforce(fieldName in this, "field %s is not found in record %s".format(fieldName, name));
-		enforce(0 <= index && index < _field_map[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
+		enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
 
-		return _field_map[fieldName][index];
+		return _fieldMap[fieldName][index];
 	}
-
-	/**
-	 * just print out a record with field names and field values
-	 */
-	/*
-	string toTxt()
-	{
-		// length of the record when printed out
-		ulong length;
-		string[] fields, values;
-
-		// wisely build our ascii table
-		foreach (Field f; this) {
-			length = max(f.length, f.name.length);
-
-			fields  ~= f.name.leftJustify(length);
-			values  ~= f.value.leftJustify(length);
-		}
-
-		// write out table
-		return ("%s\n%s\n".format(join(fields,"|"), join(values,"|")));
-	}*/
 
 	/**
 	 * to match an attribute more easily
@@ -389,7 +340,7 @@ public:
 	 */
 	string opDispatch(string fieldName)(ushort index)
 	{
-		enforce(0 <= index && index < _field_map[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
+		enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
 		return this[fieldName][index].value;
 	}
 
@@ -413,9 +364,9 @@ public:
 	override string toString()
 	{
 		auto s = "\nname=<%s>, description=<%s>, length=<%u>, keep=<%s>\n".format(name, description, length, keep);
-		foreach (f; _field_list)
+		foreach (field; _fieldList)
 		{
-			s ~= f.toString();
+			s ~= field.toString();
 			s ~= "\n";
 		}
 		return(s);
@@ -473,19 +424,19 @@ unittest {
 	assertThrown(new Record("", "Rec description"));
 
 	// main test
-	//auto rec = Record.read_from_file("records.txt");
 	auto rec = new Record("RECORD_A", "This is my main and top record");
-
 	rec ~= new Field("FIELD1", "Desc1", "A/N", 10);
 	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
 	rec ~= new Field("FIELD3", "Desc3", "A/N", 10);
 	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
 	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
 
-	// test members
+	// test properties
 	assert(rec.name == "RECORD_A");
 	assert(rec.description == "This is my main and top record");
 	assert(rec.length == 50);
+	assert(rec.size == 5);
+	assert(rec.keep == true);
 
 	// test in
 	assert("NON_PRESENT" !in rec);
@@ -494,6 +445,18 @@ unittest {
 	// set value
 	auto s = "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEE";
 	rec.value = s;
+	assert(rec.value == s);
+
+	// test fields
+	assert(rec[0].name == "FIELD1");
+	assert(rec[0].description == "Desc1");
+	assert(rec[0].length == 10);
+	assert(rec[0].type == FieldType.ALPHANUMERICAL);
+
+
+
+
+
 	writeln(rec);
 
   auto rec2 = rec.dup;

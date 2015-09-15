@@ -41,9 +41,9 @@ public:
 	if (argv.length == 1)
 	{
 		writeln("
-This program is aimed at reading record based file.
+This program is aimed at reading record-based files.
 It reads its settings from the rbf.json file located in the ~/.rbf directory
-(linux) or the %APPDATA%/local/rbf directory (Windows).
+(linux) or the %APPDATA%\\local\\rbf directory (Windows).
 
 Usage: readrbf -i <input file name> -O <output file> -o <output format> -f <input format> -c <cond file>
 
@@ -73,7 +73,6 @@ Usage: readrbf -i <input file name> -O <output file> -o <output format> -f <inpu
 	);
 
 	// check input format
-	//string[] allowedFormats = ["txt","html","csv","xlsx","sqlite3"];
 	if (!["tag","txt","html","csv","xlsx","sqlite3"].canFind(_outputFormat)) {
 		throw new Exception("unknown input format %s".format(_outputFormat));
 	}

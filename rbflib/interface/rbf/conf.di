@@ -29,12 +29,14 @@ class RBFConfig
 		Slice[] _sliceMapping;
 		string _ignorePattern;
 		MAPPER _record_mapper;
+		string[] _skipFieldList;
 		char[] _recordName;
 		public 
 		{
 			this(in string name, JSONValue tag);
 			@property string xmlStructure();
 			@property string ignorePattern();
+			@property string[] skipFieldList();
 			string record_identifier(string x);
 			override string toString();
 			private 
