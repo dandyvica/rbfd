@@ -42,10 +42,10 @@ private:
 	Layout _layout;
 
 	/// this function will identify a record name from the line read
-	GET_RECORD_FUNCTION _recIdent;
+	GET_RECORD_FUNCTION _recordIdentifier;
 
 	/// regex ignore pattern: don't read those lines matching this regex
-	string _ignore_pattern;
+	Regex!char _ignoreRegex;
 
 	/// mapper function
 	STRING_MAPPER _mapper;
@@ -74,7 +74,7 @@ public:
 		_layout = layout;
 
 		// save record identifier lambda
-		_recIdent = recIndentifier;
+		_recordIdentifier = recIndentifier;
 
 	}
 
@@ -83,10 +83,10 @@ public:
 	 *
 	 * Examples:
 	 * -----------------------------
-	 * reader.ignore_pattern("^#")		// ignore lines starting with #
+	 * reader.ignoreRegexPattern("^#")		// ignore lines starting with #
 	 * -----------------------------
 	 */
-	@property void ignore_pattern(string pattern) { _ignore_pattern = pattern; }
+	@property void ignoreRegexPattern(Regex!char pattern) { _ignoreRegex = pattern; }
 
 	/**
 	 * register a callback function which will be called for each fetched record
@@ -117,12 +117,12 @@ public:
 			auto line = chomp(line_read);
 
 			// if line is matching the ignore pattern, just loop
-			if (_ignore_pattern != "" && matchFirst(line, regex(_ignore_pattern))) {
+			if (!_ignoreRegex.empty && matchFirst(line, _ignoreRegex)) {
 				continue;
 			}
 
 			// try to fetch corresponding record name for line we've read
-			recordName = _recIdent(line);
+			recordName = _recordIdentifier(line);
 
 			// record not found ? So loop
 			if (recordName !in _layout.records) {
@@ -141,9 +141,6 @@ public:
 			if (_mapper)
 				_mapper(_layout[recordName]);
 
-			// save line
-			//_layout[recordName].line = line;
-
 			// this is conventional way of opApply()
 			result = dg(_layout[recordName]);
 			if (result)
@@ -152,13 +149,6 @@ public:
 		return result;
 	}
 
-	/**
-	 * destructor: close the file
-	~this() {
-		_fh.close();
-	}
-
-	*/
 	/**
 	 * read the condition file and return an array of string, one string
 	 * per condition
@@ -205,7 +195,7 @@ unittest {
 	//auto conditions = rbf.readCondition("conds.txt");
 	//writeln(conditions);
 
-	rbf.ignore_pattern = "^#";
+	rbf.ignoreRegexPattern = "^#";
 	//rbf.register_mapper = &mapper;
 
 	foreach (rec; rbf) {

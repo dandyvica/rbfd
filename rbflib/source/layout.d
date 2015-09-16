@@ -161,10 +161,10 @@ public:
 	 * Examples:
 	 * --------------
 	 * recList["RECORD1"] = ["FIELD1", "FIELD2"];
-	 * layout.prune(recList);
+	 * layout.prunePerRecords(recList);
 	 * --------------
 	 */
-	void prune(string[][string] recordMap) {
+	void prunePerRecords(string[][string] recordMap) {
 			// recordMap contains a list of fields to keep in each record
 			// the key of recordMap is a record name
 			// for all those records, keep only those provided
@@ -182,6 +182,23 @@ public:
 			}
 	}
 
+	/**
+	 * for each record, remove each field in the list. If field
+	 * is not in the record, just loop
+	 *
+	 * Params:
+	 *	fieldList = list of fields to get rid of
+	 *
+	 * Examples:
+	 * --------------
+	 * layout.pruneAll(["FIELD1", "FIELD2"]);
+	 * --------------
+	 */
+	void pruneAll(string[] fieldList) {
+		foreach (rec; _records) {
+			fieldList.each!(fieldName => rec.lazyRemove(fieldName));
+		}
+	}
 
 
 }

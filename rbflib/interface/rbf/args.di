@@ -12,28 +12,25 @@ import rbf.conf;
 import rbf.filter;
 class CommandLineOption
 {
-	private 
+	public 
 	{
-		string _inputFileName;
-		string _outputFileName;
-		string _outputDirectoryName;
-		string _inputFormat;
-		string _outputFormat = "txt";
-		string _filterFile;
-		Filter _filter;
-		string _restrictionFile;
-		string[][string] _fieldNames;
+		string inputFileName;
+		string inputLayout;
+		string outputFormat = "txt";
+		string outputFileName;
+		string fieldFilterFile;
+		string recordFilterFile;
+		string pgmVersion;
+		bool verbose = false;
+		Filter filteredRecords;
+		string[][string] filteredFields;
+		ulong samples;
 		public 
 		{
 			this(string[] argv);
-			@property string inputFileName();
-			@property string outputFileName();
-			@property string inputFormat();
-			@property string outputFormat();
-			@property bool isRestriction();
-			@property bool isFilter();
-			@property string[][string] fieldNames();
-			@property Filter filter();
+			@property bool isFieldFilterSet();
+			@property bool isRecordFilterSet();
+			void printOptions();
 			private string[][string] _readRestrictionFile(in string filename);
 		}
 	}

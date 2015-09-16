@@ -60,6 +60,7 @@ class Record
 			int opApply(int delegate(ref Field) dg);
 			Record dup();
 			void remove(string fieldName);
+			void lazyRemove(string fieldName);
 			void keepOnly(string[] listOfFieldNamesToKeep);
 			Field get(string fieldName, ushort index = 0);
 			string opDispatch(string fieldName)(ushort index)

@@ -25,7 +25,8 @@ class Layout
 			ref Record opIndex(string recName);
 			int opApply(int delegate(ref Record) dg);
 			override string toString();
-			void prune(string[][string] recordMap);
+			void prunePerRecords(string[][string] recordMap);
+			void pruneAll(string[] fieldList);
 		}
 	}
 }

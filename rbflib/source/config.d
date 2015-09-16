@@ -11,6 +11,7 @@ import std.typecons;
 import std.algorithm;
 import std.range;
 import std.functional;
+import std.regex;
 
 //static Config configSettings;
 
@@ -18,12 +19,17 @@ import yaml;
 
 alias RECORD_MAPPER = string delegate(string);
 
+
+/***********************************
+	* struct for describing layout metadata
+ */
 struct LayoutConfig {
-  string description;
-  string mapping;
-  string xmlFile;
-  string ignorePattern;
-  string skipField;
+  string description;         /// a short description of the layout
+  string mapping;             /// how to map a read line to a record object?
+  string xmlFile;             /// XML definition of layout
+  Regex!char ignorePattern;   /// in some case, we need to get rid of some lines
+  string skipField;           /// in some cases, don't take into account some fields
+  string layoutType;          /// what kind of layout is it?
 
   // mapper is used to find a record name from a line read from file
   RECORD_MAPPER mapper;
@@ -88,10 +94,13 @@ public:
 
     // those are optional
     if ("ignorePattern" in _document["layout"][layoutName])
-      conf.ignorePattern = _document["layout"][layoutName]["ignorePattern"].as!string;
+      conf.ignorePattern = regex(_document["layout"][layoutName]["ignorePattern"].as!string);
 
     if ("skipField" in _document["layout"][layoutName])
       conf.skipField     = _document["layout"][layoutName]["skipField"].as!string;
+
+    if ("layoutType" in _document["layout"][layoutName])
+      conf.layoutType    = _document["layout"][layoutName]["layoutType"].as!string;
 
     // build mapper
     // if constant mapper, it's easy

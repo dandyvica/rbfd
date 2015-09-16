@@ -11,6 +11,7 @@ import std.typecons;
 import std.algorithm;
 import std.range;
 import std.functional;
+import std.regex;
 import yaml;
 alias RECORD_MAPPER = string delegate(string);
 struct LayoutConfig
@@ -18,8 +19,9 @@ struct LayoutConfig
 	string description;
 	string mapping;
 	string xmlFile;
-	string ignorePattern;
+	Regex!char ignorePattern;
 	string skipField;
+	string layoutType;
 	RECORD_MAPPER mapper;
 }
 class Setting

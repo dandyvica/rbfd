@@ -296,6 +296,19 @@ public:
 	}
 
 	/**
+	 * remove all fields matching field name. Does nothing if field is not found
+	 * in record
+	 *
+	 * Examples:
+	 * --------------
+	 * rec.lazyRemove("FIELD1");
+	 * --------------	 */
+	void lazyRemove(string fieldName)
+	{
+		if (fieldName in this) this.remove(fieldName);
+	}	
+
+	/**
 	 * keep only those fields specified
 	 *
 	 * Examples:
