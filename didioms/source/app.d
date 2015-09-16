@@ -3,21 +3,17 @@ import std.container.array;
 import std.conv;
 import std.algorithm;
 import std.string;
-import std.variant;
+import std.process;
 
 void main()
 {
-	class C {
-		int i;
-		Variant v;
 
-		this(int j) {
-			i = j;
-		}
-
-	}
+	f();
 
 
+}
 
+void f() {
+	writeln(environment["PATH"]);
 }
 

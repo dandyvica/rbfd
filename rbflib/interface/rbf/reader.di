@@ -23,7 +23,7 @@ class Reader
 		STRING_MAPPER _mapper;
 		public 
 		{
-			this(string rbFile, string xmlFile, GET_RECORD_FUNCTION recIndentifier);
+			this(string rbFile, Layout layout, GET_RECORD_FUNCTION recIndentifier);
 			@property void ignore_pattern(string pattern);
 			@property void register_mapper(STRING_MAPPER func);
 			@property Layout layout();
@@ -31,4 +31,3 @@ class Reader
 		}
 	}
 }
-Reader reader(string rbFile, RBFConfig rbfConfig);

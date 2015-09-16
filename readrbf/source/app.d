@@ -13,6 +13,7 @@ import rbf.reader;
 import rbf.writers.writer;
 import rbf.conf;
 import rbf.args;
+import rbf.config;
 
 import overpunch;
 
@@ -32,13 +33,25 @@ void main(string[] argv)
 	// ~/.rbf for Linux
 	// %APPDATA%/local/rbf for Windows
 	configSettings = new Config();
+	auto settings = new Setting();
 
 	// manage arguments passed from the command line
 	auto opts = new CommandLineOption(argv);
 
+	// define new layout
+	auto layout = new Layout(settings[opts.inputFormat].xmlFile);
+
+	// ask for a restriction?
+	if (opts.isRestriction) {
+		// prune each record depending on what is requested
+		layout.prune(opts.fieldNames);
+	}
+
   // create new reader according to what is passed in the command
 	// line and the configuration found in JSON properties file
-	auto reader = reader(opts.inputFileName, configSettings[opts.inputFormat]);
+	auto reader = new Reader(
+		opts.inputFileName, layout,	settings[opts.inputFormat].mapper
+	);
 
 	// in case of HOT files, specifiy our modifier
 	// HOT files used the overpunch characters (some alphabetical chars matching
@@ -47,11 +60,7 @@ void main(string[] argv)
 		reader.register_mapper = &overpunch.overpunch;
 	}
 
-	// ask for a restriction?
-	if (opts.isRestriction) {
-		// prune each record depending on what is requested
-		reader.layout.prune(opts.fieldNames);
-	}
+
 
 //	writeln(reader.layout); writeln(opts.fieldNames);
 //	core.stdc.stdlib.exit(0);

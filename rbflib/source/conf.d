@@ -165,7 +165,7 @@ public:
 		}
 		version(win64) {
 				immutable string settingsFile = environment["APPDATA"] +
-					"/local/rbf/rbf.json";
+					`\local\rbf\rbf.json`;
 		}
 		// ensure file exists
 		std.exception.enforce(exists(settingsFile), "Settings file %s not found".format(settingsFile));

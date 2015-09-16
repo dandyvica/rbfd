@@ -59,11 +59,10 @@ public:
 	 *  xmlFile = xml file containing fields & records definitions
 	 *  recIndentifier = function used to map each record
 	 */
-	this(string rbFile, string xmlFile, GET_RECORD_FUNCTION recIndentifier)
+	this(string rbFile, Layout layout, GET_RECORD_FUNCTION recIndentifier)
 	{
 		// check arguments
 		enforce(exists(rbFile), "File %s not found".format(rbFile));
-		enforce(exists(xmlFile), "XML definition file %s not found".format(xmlFile));
 
 		// save file name and opens file for reading
 		_rbFile = rbFile;
@@ -72,7 +71,7 @@ public:
 		//_fh = File(rbFile, "r");
 
 		// build all records but defining a new format
-		_layout = new Layout(xmlFile);
+		_layout = layout;
 
 		// save record identifier lambda
 		_recIdent = recIndentifier;
@@ -182,10 +181,12 @@ public:
 
 }
 
+/*
 Reader reader(string rbFile, RBFConfig rbfConfig)
 {
 	return new Reader(rbFile, rbfConfig.xmlStructure, &rbfConfig.record_identifier);
 }
+*/
 
 
 
