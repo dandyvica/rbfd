@@ -19,6 +19,9 @@ import yaml;
 
 alias RECORD_MAPPER = string delegate(string);
 
+// configuration file name
+immutable yamlSettings = "rbf.yaml";
+
 
 /***********************************
 	* struct for describing layout metadata
@@ -27,7 +30,7 @@ struct LayoutConfig {
   string description;         /// a short description of the layout
   string mapping;             /// how to map a read line to a record object?
   string xmlFile;             /// XML definition of layout
-  Regex!char ignorePattern;   /// in some case, we need to get rid of some lines
+  Regex!char ignoreRecord;   /// in some case, we need to get rid of some lines
   string skipField;           /// in some cases, don't take into account some fields
   string layoutType;          /// what kind of layout is it?
 
@@ -55,14 +58,23 @@ public:
 	 */
 	this() {
 
-    // YAML settings file location is OS-dependent
-    version(linux) {
-      _rbfhome = environment["HOME"] ~ "/.rbf/";
-      auto settingsFile = _rbfhome ~ "rbf.yaml";
+    // settings file
+    string settingsFile;
+
+    // first possible location is current directory
+    if (exists(getcwd ~ yamlSettings)) {
+      settingsFile = getcwd ~ yamlSettings;
     }
-    version(win64) {
-      _rbfhome = environment["APPDATA"];
-      auto string settingsFile = _rbfhome ~ `\local\rbf\rbf.yaml`;
+    else {
+      // YAML settings file location is OS-dependent
+      version(linux) {
+        _rbfhome = environment["HOME"] ~ "/.rbf/";
+        settingsFile = _rbfhome ~ "rbf.yaml";
+      }
+      version(win64) {
+        _rbfhome = environment["APPDATA"];
+         settingsFile = _rbfhome ~ `\local\rbf\rbf.yaml`;
+      }
     }
 
 		// ensure file exists
@@ -93,8 +105,8 @@ public:
     conf.xmlFile     = _rbfhome ~ _document["layout"][layoutName]["xmlFile"].as!string;
 
     // those are optional
-    if ("ignorePattern" in _document["layout"][layoutName])
-      conf.ignorePattern = regex(_document["layout"][layoutName]["ignorePattern"].as!string);
+    if ("ignoreRecord" in _document["layout"][layoutName])
+      conf.ignoreRecord = regex(_document["layout"][layoutName]["ignoreRecord"].as!string);
 
     if ("skipField" in _document["layout"][layoutName])
       conf.skipField     = _document["layout"][layoutName]["skipField"].as!string;

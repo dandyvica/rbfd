@@ -12,5 +12,5 @@
 	"libs": ["rbf"],
 	"importPaths": ["source", "../rbflib/interface"],
 	"lflags": ["-L../rbflib/lib"],
-	"versions": ["nobenchmark"],
+	"preBuildCommands": ["pandoc -s -t man source/help.md -o views/help.1", "man views/help.1 | col -b > views/help.txt"],
 }

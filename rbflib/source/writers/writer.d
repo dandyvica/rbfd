@@ -9,10 +9,7 @@ import std.variant;
 
 import rbf.field;
 import rbf.record;
-import rbf.reader;
-import rbf.conf;
 import rbf.layout;
-
 import rbf.writers.xlsxwriter;
 import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
@@ -26,11 +23,13 @@ import rbf.writers.tagwriter;
 abstract class Writer {
 private:
 
-	string _outputFileName; // name of the file we want to create
+	string _outputFileName; 			// name of the file we want to create
+	string _zipperExe;						// name & path of the executable used to create zip
 
 package:
 
 	File _fh; // file handle on output file if any
+	string _previousRecordName;		/// sometimes, we need to keep track of the previous record written
 
 public:
 	/**
@@ -43,6 +42,10 @@ public:
 	{
 		_outputFileName = outputFileName;
 	}
+
+	// zipper executable
+	@property string zipper() { return _zipperExe; }
+	@property void zipper(string zipperExe) { _zipperExe = zipperExe; }
 
 	// should be implemented by derived classes
 	abstract void write(Record rec);

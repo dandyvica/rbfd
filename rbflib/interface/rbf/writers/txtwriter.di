@@ -8,19 +8,13 @@ import std.algorithm;
 import std.variant;
 import rbf.field;
 import rbf.record;
-import rbf.reader;
-import rbf.conf;
 import rbf.writers.writer;
 class TXTWriter : Writer
 {
-	private 
+	public 
 	{
-		string _previousRecordName;
-		public 
-		{
-			this(in string outputFileName);
-			override void write(Record rec);
-			override void close();
-		}
+		this(in string outputFileName);
+		override void write(Record rec);
+		override void close();
 	}
 }

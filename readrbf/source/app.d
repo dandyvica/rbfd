@@ -5,23 +5,25 @@ import std.getopt;
 import std.algorithm;
 import std.datetime;
 import std.range;
+import std.conv;
 
 import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.reader;
 import rbf.writers.writer;
-import rbf.conf;
-import rbf.args;
+//import rbf.conf;
 import rbf.config;
 
 import overpunch;
+import args;
 
 
 void main(string[] argv)
 {
 	// number of records read
-	auto nbRecords = 1;
+	auto nbReadRecords = 0;
+	auto nbWrittenRecords = 0;
 
 
 	string[] conditions;
@@ -32,7 +34,6 @@ void main(string[] argv)
 	// read JSON properties from rbf.json file located in:
 	// ~/.rbf for Linux
 	// %APPDATA%/local/rbf for Windows
-	configSettings = new Config();
 	auto settings = new Setting();
 
 	// manage arguments passed from the command line
@@ -40,6 +41,11 @@ void main(string[] argv)
 
 	// define new layout corresponding to the requested layout
 	auto layout = new Layout(settings[opts.inputLayout].xmlFile);
+
+	// synatx validation requested
+	if (opts.checkLayout) {
+		layout.validate;
+	}
 
 	// need to get rid of some records?
 	if (opts.isFieldFilterSet) {
@@ -57,12 +63,12 @@ void main(string[] argv)
 	// HOT files used the overpunch characters (some alphabetical chars matching
 	// digits (?!))
 	if (settings[opts.inputLayout].layoutType == "HOT") {
-		reader.register_mapper = &overpunch.overpunch;
+		reader.recordTransformer = &overpunch.overpunch;
 	}
 
 	// do we want to ignore some lines?
-	if (!settings[opts.inputLayout].ignorePattern.empty) {
-		reader.ignoreRegexPattern = settings[opts.inputLayout].ignorePattern;
+	if (!settings[opts.inputLayout].ignoreRecord.empty) {
+		reader.ignoreRegexPattern = settings[opts.inputLayout].ignoreRecord;
 	}
 
 	// do we want to get rid of some fields for all records?
@@ -70,27 +76,46 @@ void main(string[] argv)
 		auto fieldList = settings[opts.inputLayout].skipField.split(",");
 		fieldList = array(fieldList.map!(s => s.strip));
 		layout.pruneAll(fieldList);
+		writefln("SKipping fields %s", fieldList);
 	}
-
-//	writeln(reader.layout); writeln(opts.fieldNames);
-//	core.stdc.stdlib.exit(0);
 
 	// create new writer to generate outputFileName matching the outputFormat
 	auto writer = writer(opts.outputFileName, opts.outputFormat, reader.layout);
 
-	// if verbose is requested, print out what's possible
+	// in case of Excel output format, set zipper
+	if (opts.outputFormat == "xlsx") {
+		writer.zipper = settings.zipper;
+	}
+
+	// if verbose option is requested, print out what's possible
 	if (opts.verbose) {
 		opts.printOptions;
 	}
 
+	// stuff to correctly display a progress bar
+	immutable termWidth = 78;
+	//auto inputFileSize = getSize(opts.inputFileName);
+	char[termWidth] progressBar = ' ';
+	//auto chunkSize = to!ulong(inputFileSize / termWidth);
+
+	//writef("\n%s", progressBar);
+	writeln();
+
 	// now loop for each record in the file
 	foreach (rec; reader)
 	{
- 		// if samples is set, break is count is over
-		if (opts.samples != 0 && nbRecords > opts.samples) break;
+		// if progress bar, print out moving cursor
+		if (opts.progressBar && nbReadRecords % 4096 == 0) {
+			writef("read %.0f %% of %u bytes\r",
+						reader.currentReadSize/to!float(reader.inputFileSize)*100.0, reader.inputFileSize);
+		}
+
+
+ 		// if samples is set, break if record count is reached
+		if (opts.samples != 0 && nbReadRecords >= opts.samples) break;
 
 		// record read is increasing
-		nbRecords++;
+		nbReadRecords++;
 
 		// do we filter out records?
 		if (opts.isRecordFilterSet) {
@@ -98,8 +123,12 @@ void main(string[] argv)
 				continue;
 		}
 
+		// don't want to write? Just loop
+		if (opts.dontWrite) continue;
+
 		// use our writer to generate the file
 		writer.write(rec);
+		nbWrittenRecords++;
 	}
 
 	// explicitly call close to finish creating file (specially for Excel files)
@@ -107,8 +136,10 @@ void main(string[] argv)
 
 	// print out some stats
 	auto elapsedtime = Clock.currTime() - starttime;
-	writefln("\nCreated file %s, size = %d",
-		opts.outputFileName, getSize(opts.outputFileName));
-	writefln("Records read: %d\nElapsed time = %s", nbRecords, elapsedtime);
+	writefln("\nRecords: %d read, %d written\nElapsed time = %s",
+		nbReadRecords, nbWrittenRecords, elapsedtime);
+	if (!opts.dontWrite)
+			writefln("Created file %s, size = %d bytes",
+							opts.outputFileName, getSize(opts.outputFileName));
 
 }

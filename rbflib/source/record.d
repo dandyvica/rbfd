@@ -115,7 +115,7 @@ public:
 	 */
 	@property string[] fieldNames()
 	{
-		 return array(map!(f => f.name)(_fieldList));
+		 return array(_fieldList.map!(f => f.name));
 	}
 
 	/**
@@ -123,7 +123,7 @@ public:
 	 */
 	@property string[] fieldValues()
 	{
-		 return array(map!(f => f.value)(_fieldList));
+		 return array(_fieldList.map!(f => f.value));
 	}
 
 	/**
@@ -306,7 +306,7 @@ public:
 	void lazyRemove(string fieldName)
 	{
 		if (fieldName in this) this.remove(fieldName);
-	}	
+	}
 
 	/**
 	 * keep only those fields specified

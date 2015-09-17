@@ -8,8 +8,6 @@ import std.algorithm;
 import std.variant;
 import rbf.field;
 import rbf.record;
-import rbf.reader;
-import rbf.conf;
 import rbf.writers.writer;
 class CSVWriter : Writer
 {

@@ -9,18 +9,12 @@ import std.variant;
 
 import rbf.field;
 import rbf.record;
-import rbf.reader;
-import rbf.conf;
-
 import rbf.writers.writer;
 
 /*********************************************
  * in this case, each record is displayed as an ASCII table
  */
 class TXTWriter : Writer {
-
-private:
-	string _previousRecordName;
 
 public:
 

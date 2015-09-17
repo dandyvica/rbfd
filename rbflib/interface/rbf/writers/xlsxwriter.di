@@ -9,10 +9,9 @@ import std.array;
 import std.zip;
 import rbf.field;
 import rbf.record;
+import rbf.layout;
 import rbf.writers.writer;
 import rbf.writers.xlsxformat;
-import rbf.conf;
-import rbf.layout;
 class XLSXWriter : Writer
 {
 	private 

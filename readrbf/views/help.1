@@ -1,0 +1,39 @@
+.TH "readrbf" "" "" "" ""
+.SH NAME
+.PP
+readrbf \- read a record\-based file and convert it to a known format
+.SH SYNOPSIS
+.PP
+readrbf \-i file \- l layout [\-o format] [\-c file] [\-r file] [\-s n]
+[\-v]
+.SH DESCRIPTION
+.PP
+This program is aimed at reading a record\-based file and converting it
+to a human\-readable format.
+It reads its settings from the rbf.yaml configuration file located in
+the current directory or ~/.rbf directory (linux) or the
+%APPDATA%\\local\\rbf directory (Windows).
+.SH OPTIONS
+.PP
+\-c : Validate layout structure
+.PP
+\-f file : Full path and name of a file to filter fields.
+.PP
+\-i file : Full path and name of the file to be read and converted.
+.PP
+\-l layout : Name of the input file layout.
+This name is found is the configuration file rbf.yaml.
+.PP
+\-o format : Name of the output file format.
+Possible values are: html, tag, csv, txt, xlsx, sqlite3.
+Defaulted to txt if not specified.
+.PP
+\-p : Print out progress
+.PP
+\-r file : Full path and name of a file to filter records.
+.PP
+\-s n : Only convert the n\-first records.
+.PP
+\-v : Verbose: print out options
+.PP
+\-V : Version.

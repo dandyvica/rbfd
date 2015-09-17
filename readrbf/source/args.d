@@ -1,4 +1,4 @@
-module rbf.args;
+module args;
 
 import std.stdio;
 import std.file;
@@ -9,8 +9,9 @@ import std.regex;
 import std.algorithm;
 import std.path;
 
-import rbf.conf;
 import rbf.filter;
+
+immutable helpString = import("help.txt");
 
 
 /***********************************
@@ -26,7 +27,11 @@ public:
 	string fieldFilterFile;					/// if any, name of the clause file
 	string recordFilterFile;
 	string pgmVersion;
-	bool   verbose = false;
+
+	bool verbose     = false;
+	bool dontWrite   = false;
+	bool progressBar = false;
+	bool checkLayout = false;
 
 
 	Filter filteredRecords;
@@ -45,47 +50,7 @@ public:
 	// print-out help
 	if (argv.length == 1)
 	{
-		writeln("
-NAME
-	readrbf - read a record-based file and convert it to a known format
-
-SYNOPSIS
-	readrbf -i file - l layout [-o format] [-c file] [-r file] [-s n] [-v]
-
-DESCRIPTION
-	This program is aimed at reading a record-based file and converting it to
-	a human-readable format. It reads its settings from the rbf.yaml configuration
-	file located in the ~/.rbf directory (linux) or the %APPDATA%\\local\\rbf
-	directory (Windows).
-
-OPTIONS
-	-i file
-		Full path and name of the file to be read and converted.
-
-	-l layout
-		Name of the input file layout. This name is found is the
-		configuration file rbf.yaml.
-
-	-o format
-		Name of the output file format. Possible values are:
-		html, tag, csv, txt, xlsx, sqlite3. Defaulted to txt
-		if not specified.
-
-	-r file
-		Full path and name of a file to filter records.
-
-	-f file
-		Full path and name of a file to filter fields.
-
-	-s n
-		Only convert the n-first records.
-
-	-v
-		Verbose: print out options
-
-	-V
-		Version.
-		");
+		writeln(helpString);
 		core.stdc.stdlib.exit(1);
 	}
 
@@ -101,7 +66,10 @@ OPTIONS
 		"r", &recordFilterFile,
 		"V", &pgmVersion,
 		"v", &verbose,
-		"s", &samples
+		"s", &samples,
+		"d", &dontWrite,
+		"p", &progressBar,
+		"c", &checkLayout
 	);
 
 	// check output format
@@ -145,7 +113,7 @@ OPTIONS
 		}
 		if (isRecordFilterSet) {
 			writefln("record filter file: %s", recordFilterFile);
-			writefln("\trecords to filter: %s", filteredRecords);			
+			writefln("\trecords to filter: %s", filteredRecords);
 		}
 	}
 

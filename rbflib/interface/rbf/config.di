@@ -14,12 +14,13 @@ import std.functional;
 import std.regex;
 import yaml;
 alias RECORD_MAPPER = string delegate(string);
+immutable yamlSettings = "rbf.yaml";
 struct LayoutConfig
 {
 	string description;
 	string mapping;
 	string xmlFile;
-	Regex!char ignorePattern;
+	Regex!char ignoreRecord;
 	string skipField;
 	string layoutType;
 	RECORD_MAPPER mapper;

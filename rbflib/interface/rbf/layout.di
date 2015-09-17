@@ -27,6 +27,7 @@ class Layout
 			override string toString();
 			void prunePerRecords(string[][string] recordMap);
 			void pruneAll(string[] fieldList);
+			void validate();
 		}
 	}
 }

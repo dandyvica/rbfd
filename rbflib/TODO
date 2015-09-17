@@ -1,0 +1,6 @@
+- add "identity" output format
+- test on Windows
+- add check syntax option
+- add exit (void -> int for main)
+- add ranges?
+- parallel processing

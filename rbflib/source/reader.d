@@ -16,7 +16,7 @@ import std.regex;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
-import rbf.conf;
+//import rbf.conf;
 
 //import util.common;
 
@@ -50,6 +50,13 @@ private:
 	/// mapper function
 	STRING_MAPPER _mapper;
 
+	/// size read
+	ulong _currentReadSize;
+
+	/// input file size
+	ulong _inputFileSize;
+
+
 public:
 	/**
 	 * creates a new Reader object for rb files
@@ -76,6 +83,8 @@ public:
 		// save record identifier lambda
 		_recordIdentifier = recIndentifier;
 
+		// get file size
+		_inputFileSize = getSize(rbFile);
 	}
 
 	/**
@@ -91,9 +100,13 @@ public:
 	/**
 	 * register a callback function which will be called for each fetched record
 	 */
-	@property void register_mapper(STRING_MAPPER func) { _mapper = func; }
+	@property void recordTransformer(STRING_MAPPER func) { _mapper = func; }
 
 	@property Layout layout() { return _layout; }
+
+	@property ulong currentReadSize() { return _currentReadSize; }
+
+	@property ulong inputFileSize() { return _inputFileSize; }
 
 	/**
 	 * used to loop on foreach on all records of the file
@@ -113,6 +126,9 @@ public:
 		//foreach (string line_read; lines(File(_rbFile, "r")))
 		foreach (string line_read; lines(File(_rbFile)))
 		{
+			// one more line read
+			_currentReadSize += line_read.length;
+
 			// get rid of \n
 			auto line = chomp(line_read);
 

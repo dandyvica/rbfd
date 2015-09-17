@@ -200,6 +200,20 @@ public:
 		}
 	}
 
+	/**
+	 * validate syntax: check if record length is matching file length
+	 * is not in the record, just loop
+	 * --------------
+	 */
+	void validate() {
+		foreach (rec; this) {
+			if (rec.length != _length) {
+				writefln("record %s is not matching declared length (%d instead of %d)",
+					rec.name, rec.length, _length);
+			}
+		}
+	}
+
 
 }
 

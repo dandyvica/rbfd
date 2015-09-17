@@ -7,15 +7,12 @@ import std.exception;
 import std.algorithm;
 import std.array;
 import std.zip;
-//import std.time;
 
 import rbf.field;
 import rbf.record;
+import rbf.layout;
 import rbf.writers.writer;
 import rbf.writers.xlsxformat;
-import rbf.conf;
-import rbf.layout;
-
 
 class XLSXWriter : Writer {
 private:
@@ -36,7 +33,7 @@ private:
 		chdir(_xlsxDir);
 
 		// create zip
-		auto result = std.process.execute([configSettings.zipper, "-r", "../" ~ _xlsxFilename, "."]);
+		auto result = std.process.execute([Writer.zipper, "-r", "../" ~ _xlsxFilename, "."]);
 		if (result.status != 0)
 			throw new Exception("zip command failed:\n", result.output);
 
@@ -84,6 +81,11 @@ public:
 				// and also create sheets. We need an assoc. array to keep track
 				// of link between records and sheets
 				_worksheetFile[rec.name] = new Worksheet(_xlsxDir, rec.name);
+
+				// then create header (record name & record description)
+				_worksheetFile[rec.name].startRow();
+				_worksheetFile[rec.name].strCell(format("%s: %s", rec.name, rec.description));
+				_worksheetFile[rec.name].endRow();
 
 				// then create description columns and fields
 				_worksheetFile[rec.name].startRow();
