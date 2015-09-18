@@ -1,6 +1,10 @@
-- add "identity" output format
+- add "identity" output format: done
 - test on Windows
-- add check syntax option
-- add exit (void -> int for main)
+- add check syntax option: done
+- add exit (void -> int for main): done
 - add ranges?
 - parallel processing
+- change dup() to postblit
+- add package
+- switch to shared lib
+- throw excp if FIELD not in filter field file

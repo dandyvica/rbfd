@@ -24,7 +24,6 @@ class HTMLWriter : Writer {
 	this(in string outputFileName)
 	{
 		super(outputFileName);
-		_fh = File(outputFileName, "w");
 
 		// bootstrap header
 		_fh.writeln(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">`);

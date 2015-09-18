@@ -164,7 +164,7 @@ public:
 	 * layout.prunePerRecords(recList);
 	 * --------------
 	 */
-	void prunePerRecords(string[][string] recordMap) {
+	void prunePerRecord(string[][string] recordMap) {
 			// recordMap contains a list of fields to keep in each record
 			// the key of recordMap is a record name
 			// for all those records, keep only those provided

@@ -1,4 +1,4 @@
-module rbf.writers.csvwriter;
+module rbf.writers.identwriter;
 
 import std.stdio;
 import std.file;
@@ -15,7 +15,7 @@ import rbf.writers.writer;
  * writer class for writing to various ouput
  * formats
  */
-class CSVWriter : Writer {
+class IdentWriter : Writer {
 
 	this(in string outputFileName)
 	{
@@ -24,7 +24,7 @@ class CSVWriter : Writer {
 
 	override void write(Record rec)
 	{
-		_fh.write(join(rec.fieldValues, ";"), "\n");
+		_fh.writeln(rec.value);
 	}
 
 }

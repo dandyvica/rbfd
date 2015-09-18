@@ -1,5 +1,5 @@
-// D import file generated from 'source/writers/csvwriter.d'
-module rbf.writers.csvwriter;
+// D import file generated from 'source/writers/identwriter.d'
+module rbf.writers.identwriter;
 import std.stdio;
 import std.file;
 import std.string;
@@ -9,7 +9,7 @@ import std.variant;
 import rbf.field;
 import rbf.record;
 import rbf.writers.writer;
-class CSVWriter : Writer
+class IdentWriter : Writer
 {
 	this(in string outputFileName);
 	override void write(Record rec);

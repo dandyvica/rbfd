@@ -18,6 +18,8 @@ import std.container.array;
 import rbf.field;
 import rbf.filter;
 
+immutable preAllocSize = 30;
+
 /***********************************
  * This record class represents a record as found in record-based files
  */
@@ -60,7 +62,7 @@ public:
 			_description = description;
 
 			// pre-allocate array of fields
-			_fieldList.reserve(30);
+			_fieldList.reserve(preAllocSize);
 	}
 
 	@property string name() { return _name; }
@@ -107,7 +109,7 @@ public:
 	 */
 	@property string value()
 	{
-		return reduce!((a, b) => a ~ b.rawvalue)("", _fieldList);
+		return fieldRawValues.join("");
 	}
 
 	/**
@@ -124,6 +126,14 @@ public:
 	@property string[] fieldValues()
 	{
 		 return array(_fieldList.map!(f => f.value));
+	}
+
+	/**
+	 * return the list of all field raw values contained in the record
+	 */
+	@property string[] fieldRawValues()
+	{
+		 return array(_fieldList.map!(f => f.rawValue));
 	}
 
 	/**

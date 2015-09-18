@@ -47,7 +47,7 @@ public:
 	this(string outputFileName, Layout layout)
 	{
 
-		super(outputFileName);
+		super(outputFileName, false);
 
 		// save file name
 		_xlsxFilename = std.path.baseName(outputFileName);

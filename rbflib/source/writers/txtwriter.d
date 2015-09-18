@@ -21,7 +21,6 @@ public:
 	this(in string outputFileName)
 	{
 		super(outputFileName);
-		_fh = File(outputFileName, "w");
 	}
 
 	override void write(Record rec)
@@ -57,5 +56,4 @@ public:
 		_previousRecordName = rec.name;
 	}
 
-	override void close() { _fh.close(); }
 }

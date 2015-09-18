@@ -10,6 +10,7 @@ import std.range;
 import std.container.array;
 import rbf.field;
 import rbf.filter;
+immutable preAllocSize = 30;
 class Record
 {
 	private 
@@ -36,6 +37,7 @@ class Record
 			@property string value();
 			@property string[] fieldNames();
 			@property string[] fieldValues();
+			@property string[] fieldRawValues();
 			void autoRename();
 			void opOpAssign(string op)(Field field) if (op == "~")
 			{

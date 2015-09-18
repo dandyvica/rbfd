@@ -13,5 +13,4 @@ class TAGWriter : Writer
 {
 	this(in string outputFileName);
 	override void write(Record rec);
-	override void close();
 }

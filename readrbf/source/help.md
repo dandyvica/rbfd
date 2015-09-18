@@ -29,8 +29,9 @@ configuration file rbf.yaml.
 
 -o format
 : Name of the output file format. Possible values are:
-html, tag, csv, txt, xlsx, sqlite3. Defaulted to txt
-if not specified.
+html, tag, csv, txt, xlsx, sqlite3, ident. Defaulted to txt
+if not specified. ident means the output file format is
+the same than the input one
 
 -p
 : Print out progress

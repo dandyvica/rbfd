@@ -14,6 +14,7 @@ import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
 import rbf.writers.htmlwriter;
 import rbf.writers.tagwriter;
+import rbf.writers.identwriter;
 abstract class Writer
 {
 	private 
@@ -26,13 +27,14 @@ abstract class Writer
 			string _previousRecordName;
 			public 
 			{
-				this(in string outputFileName);
+				this(in string outputFileName, in bool create = true);
 				@property string zipper();
 				@property void zipper(string zipperExe);
 				abstract void write(Record rec);
-				abstract void close();
+				void open();
+				void close();
 			}
 		}
 	}
 }
-Writer writer(in string output, in string mode, Layout layout);
+Writer writerFactory(in string output, in string mode, Layout layout);

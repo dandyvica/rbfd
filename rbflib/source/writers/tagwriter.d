@@ -20,7 +20,6 @@ class TAGWriter : Writer {
 	this(in string outputFileName)
 	{
 		super(outputFileName);
-		_fh = File(outputFileName, "w");
 	}
 
 	override void write(Record rec)
@@ -32,5 +31,4 @@ class TAGWriter : Writer {
 		_fh.writeln();
 	}
 
-	override void close() { _fh.close(); }
 }

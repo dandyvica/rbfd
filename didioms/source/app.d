@@ -7,13 +7,14 @@ import std.process;
 
 void main()
 {
-
-	f();
-
-
+interface I {
+	void a();
+	void b();
+	void c();
 }
 
-void f() {
-	writeln(environment["PATH"]);
+class A : I {
+	void a() { writeln("A class"); }
 }
 
+}

@@ -8,6 +8,7 @@ import std.getopt;
 import std.regex;
 import std.algorithm;
 import std.path;
+import std.exception;
 
 import rbf.filter;
 
@@ -54,33 +55,43 @@ public:
 		core.stdc.stdlib.exit(1);
 	}
 
-	// get command line arguments
-	getopt(argv,
-		std.getopt.config.caseSensitive,
-		std.getopt.config.required,
-		"i", &inputFileName,
-		std.getopt.config.required,
-		"l", &inputLayout,
-		"o", &outputFormat,
-		"f", &fieldFilterFile,
-		"r", &recordFilterFile,
-		"V", &pgmVersion,
-		"v", &verbose,
-		"s", &samples,
-		"d", &dontWrite,
-		"p", &progressBar,
-		"c", &checkLayout
-	);
+	try {
+		// get command line arguments
+		getopt(argv,
+			std.getopt.config.caseSensitive,
+			std.getopt.config.required,
+			"i", &inputFileName,
+			std.getopt.config.required,
+			"l", &inputLayout,
+			"o", &outputFormat,
+			"f", &fieldFilterFile,
+			"r", &recordFilterFile,
+			"V", &pgmVersion,
+			"v", &verbose,
+			"s", &samples,
+			"d", &dontWrite,
+			"p", &progressBar,
+			"c", &checkLayout
+		);
+	}
+	catch (Exception e) {
+		writefln("Argument error: %s", e.msg);
+		core.stdc.stdlib.exit(2);
+	}
 
 	// check output format
-	if (!["tag","txt","html","csv","xlsx","sqlite3"].canFind(outputFormat)) {
-		throw new Exception("unknown input format %s".format(outputFormat));
-	}
+	enforce (["tag","txt","html","csv","xlsx","sqlite3","ident"].
+				canFind(outputFormat), "error: unknown input format %s".format(outputFormat));
+
+/*
+	if (!["tag","txt","html","csv","xlsx","sqlite3","ident"].canFind(outputFormat)) {
+		throw new Exception("error: unknown input format %s".format(outputFormat));
+	}*/
 
 	// if no output file name specified, then use input file name and
 	// append the suffix
 	if (fieldFilterFile != "") {
-		filteredFields = _readRestrictionFile(fieldFilterFile);
+		filteredFields = _readFieldFilterFile(fieldFilterFile);
 	}
 
 	// if filter file is specified, load conditions
@@ -122,7 +133,7 @@ private:
 /***********************************
 	* function to read the list of fields for restricting fields
  */
- string[][string] _readRestrictionFile(in string filename) {
+ string[][string] _readFieldFilterFile(in string filename) {
 	  string[][string] fieldNames;
 
 		foreach (string line_read; lines(File(filename, "r"))) {

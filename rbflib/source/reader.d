@@ -206,7 +206,9 @@ unittest {
 		foreach (f; rec) { f.value = "TTT"; }
 	}
 
-	auto rbf = new Reader("../test/world.data", "../test/world_data.xml", (line => line[0..4] ));
+	auto layout = new Layout("../test/world_data.xml");
+
+	auto rbf = new Reader("../test/world.data", layout, (line => line[0..4] ));
 
 	//auto conditions = rbf.readCondition("conds.txt");
 	//writeln(conditions);

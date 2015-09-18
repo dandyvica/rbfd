@@ -47,7 +47,7 @@ class Field
 			@property ulong cell_length();
 			@property string value();
 			@property void value(string s);
-			@property string rawvalue();
+			@property string rawValue();
 			@property ulong index();
 			@property void index(ulong new_index);
 			@property ulong offset();

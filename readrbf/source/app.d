@@ -19,7 +19,7 @@ import overpunch;
 import args;
 
 
-void main(string[] argv)
+int main(string[] argv)
 {
 	// number of records read
 	auto nbReadRecords = 0;
@@ -31,115 +31,124 @@ void main(string[] argv)
 	// need to known how much time spent
 	auto starttime = Clock.currTime();
 
-	// read JSON properties from rbf.json file located in:
-	// ~/.rbf for Linux
-	// %APPDATA%/local/rbf for Windows
-	auto settings = new Setting();
+	//
+	try {
 
-	// manage arguments passed from the command line
-	auto opts = new CommandLineOption(argv);
+		// read JSON properties from rbf.json file located in:
+		// ~/.rbf for Linux
+		// %APPDATA%/local/rbf for Windows
+		auto settings = new Setting();
 
-	// define new layout corresponding to the requested layout
-	auto layout = new Layout(settings[opts.inputLayout].xmlFile);
+		// manage arguments passed from the command line
+		auto opts = new CommandLineOption(argv);
 
-	// synatx validation requested
-	if (opts.checkLayout) {
-		layout.validate;
-	}
+		// define new layout corresponding to the requested layout
+		auto layout = new Layout(settings[opts.inputLayout].xmlFile);
 
-	// need to get rid of some records?
-	if (opts.isFieldFilterSet) {
-		// prune each record off of field names
-		layout.prunePerRecords(opts.filteredFields);
-	}
-
-  // create new reader according to what is passed in the command
-	// line and the configuration found in JSON properties file
-	auto reader = new Reader(
-		opts.inputFileName, layout,	settings[opts.inputLayout].mapper
-	);
-
-	// in case of HOT files, specifiy our modifier
-	// HOT files used the overpunch characters (some alphabetical chars matching
-	// digits (?!))
-	if (settings[opts.inputLayout].layoutType == "HOT") {
-		reader.recordTransformer = &overpunch.overpunch;
-	}
-
-	// do we want to ignore some lines?
-	if (!settings[opts.inputLayout].ignoreRecord.empty) {
-		reader.ignoreRegexPattern = settings[opts.inputLayout].ignoreRecord;
-	}
-
-	// do we want to get rid of some fields for all records?
-	if (settings[opts.inputLayout].skipField != "") {
-		auto fieldList = settings[opts.inputLayout].skipField.split(",");
-		fieldList = array(fieldList.map!(s => s.strip));
-		layout.pruneAll(fieldList);
-		writefln("SKipping fields %s", fieldList);
-	}
-
-	// create new writer to generate outputFileName matching the outputFormat
-	auto writer = writer(opts.outputFileName, opts.outputFormat, reader.layout);
-
-	// in case of Excel output format, set zipper
-	if (opts.outputFormat == "xlsx") {
-		writer.zipper = settings.zipper;
-	}
-
-	// if verbose option is requested, print out what's possible
-	if (opts.verbose) {
-		opts.printOptions;
-	}
-
-	// stuff to correctly display a progress bar
-	immutable termWidth = 78;
-	//auto inputFileSize = getSize(opts.inputFileName);
-	char[termWidth] progressBar = ' ';
-	//auto chunkSize = to!ulong(inputFileSize / termWidth);
-
-	//writef("\n%s", progressBar);
-	writeln();
-
-	// now loop for each record in the file
-	foreach (rec; reader)
-	{
-		// if progress bar, print out moving cursor
-		if (opts.progressBar && nbReadRecords % 4096 == 0) {
-			writef("read %.0f %% of %u bytes\r",
-						reader.currentReadSize/to!float(reader.inputFileSize)*100.0, reader.inputFileSize);
+		// syntax validation requested
+		if (opts.checkLayout) {
+			layout.validate;
 		}
 
-
- 		// if samples is set, break if record count is reached
-		if (opts.samples != 0 && nbReadRecords >= opts.samples) break;
-
-		// record read is increasing
-		nbReadRecords++;
-
-		// do we filter out records?
-		if (opts.isRecordFilterSet) {
-			if (!rec.matchFilter(opts.filteredRecords))
-				continue;
+		// need to get rid of some records?
+		if (opts.isFieldFilterSet) {
+			// prune each record off of field names
+			layout.prunePerRecord(opts.filteredFields);
 		}
 
-		// don't want to write? Just loop
-		if (opts.dontWrite) continue;
+		// create new reader according to what is passed in the command
+		// line and the configuration found in JSON properties file
+		auto reader = new Reader(opts.inputFileName, layout,	settings[opts.inputLayout].mapper);
 
-		// use our writer to generate the file
-		writer.write(rec);
-		nbWrittenRecords++;
+		// in case of HOT files, specifiy our modifier
+		// HOT files used the overpunch characters (some alphabetical chars matching
+		// digits (?!))
+		if (settings[opts.inputLayout].layoutType == "HOT") {
+			reader.recordTransformer = &overpunch.overpunch;
+		}
+
+		// do we want to ignore some lines?
+		if (!settings[opts.inputLayout].ignoreRecord.empty) {
+			reader.ignoreRegexPattern = settings[opts.inputLayout].ignoreRecord;
+		}
+
+		// do we want to get rid of some fields for all records?
+		if (settings[opts.inputLayout].skipField != "") {
+			auto fieldList = settings[opts.inputLayout].skipField.split(",");
+			fieldList = array(fieldList.map!(s => s.strip));
+			layout.pruneAll(fieldList);
+			writefln("SKipping fields %s", fieldList);
+		}
+
+		// create new writer to generate outputFileName matching the outputFormat
+		auto writer = writerFactory(opts.outputFileName, opts.outputFormat, reader.layout);
+
+		// in case of Excel output format, set zipper
+		if (opts.outputFormat == "xlsx") {
+			writer.zipper = settings.zipper;
+		}
+
+		// if verbose option is requested, print out what's possible
+		if (opts.verbose) {
+			opts.printOptions;
+		}
+
+		// stuff to correctly display a progress bar
+		immutable termWidth = 78;
+		//auto inputFileSize = getSize(opts.inputFileName);
+		char[termWidth] progressBar = ' ';
+		//auto chunkSize = to!ulong(inputFileSize / termWidth);
+
+		//writef("\n%s", progressBar);
+		writeln();
+
+		// now loop for each record in the file
+		foreach (rec; reader)
+		{
+			// if progress bar, print out moving cursor
+			if (opts.progressBar && nbReadRecords % 4096 == 0) {
+				writef("read %.0f %% of %u bytes\r",
+							reader.currentReadSize/to!float(reader.inputFileSize)*100.0, reader.inputFileSize);
+			}
+
+
+				// if samples is set, break if record count is reached
+			if (opts.samples != 0 && nbReadRecords >= opts.samples) break;
+
+			// record read is increasing
+			nbReadRecords++;
+
+			// do we filter out records?
+			if (opts.isRecordFilterSet) {
+				if (!rec.matchFilter(opts.filteredRecords))
+					continue;
+			}
+
+			// don't want to write? Just loop
+			if (opts.dontWrite) continue;
+
+			// use our writer to generate the file
+			writer.write(rec);
+			nbWrittenRecords++;
+		}
+
+		// explicitly call close to finish creating file (specially for Excel files)
+		writer.close();
+
+		// print out some stats
+		auto elapsedtime = Clock.currTime() - starttime;
+		writefln("\nRecords: %d read, %d written\nElapsed time = %s",
+			nbReadRecords, nbWrittenRecords, elapsedtime);
+		if (!opts.dontWrite)
+				writefln("Created file %s, size = %d bytes",
+								opts.outputFileName, getSize(opts.outputFileName));
+	}
+	catch (Exception e) {
+		writeln(e.msg);
+		return 1;
 	}
 
-	// explicitly call close to finish creating file (specially for Excel files)
-	writer.close();
-
-	// print out some stats
-	auto elapsedtime = Clock.currTime() - starttime;
-	writefln("\nRecords: %d read, %d written\nElapsed time = %s",
-		nbReadRecords, nbWrittenRecords, elapsedtime);
-	if (!opts.dontWrite)
-			writefln("Created file %s, size = %d bytes",
-							opts.outputFileName, getSize(opts.outputFileName));
+	// return code to OS
+	return 0;
 
 }

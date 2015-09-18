@@ -111,7 +111,7 @@ public:
 		auto copied = new Field(_name, _description, _type, _length);
 
 		// both copy _rawValue & _strValue
-		copied.value = rawvalue;
+		copied.value = rawValue;
 
 		// copy other properties
 		copied.index      = index;
@@ -149,7 +149,7 @@ public:
 	}
 
 	/// read property for field raw value. Raw value is not stripped
-	@property string rawvalue() { return _rawValue; }
+	@property string rawValue() { return _rawValue; }
 
 	/// read/write property for the field index
 	@property ulong index() { return _index; }

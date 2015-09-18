@@ -15,6 +15,7 @@ import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
 import rbf.writers.htmlwriter;
 import rbf.writers.tagwriter;
+import rbf.writers.identwriter;
 
 /*********************************************
  * writer class for writing to various ouput
@@ -38,9 +39,10 @@ public:
 	 * Params:
 	 *  outputFileName = name of the output file (or database name in case of sqlite3)
 	 */
-	this(in string outputFileName)
+	this(in string outputFileName, in bool create = true)
 	{
 		_outputFileName = outputFileName;
+		if (create) _fh = File(_outputFileName, "w");
 	}
 
 	// zipper executable
@@ -49,7 +51,14 @@ public:
 
 	// should be implemented by derived classes
 	abstract void write(Record rec);
-	abstract void close();
+	//abstract void close();
+
+	void open() {
+		_fh = File(_outputFileName, "w");
+	}
+	void close() {
+		_fh.close();
+	}
 
 }
 
@@ -57,7 +66,7 @@ public:
  * factory method for creating object matching
  * desired format
  */
-Writer writer(in string output, in string mode, Layout layout)
+Writer writerFactory(in string output, in string mode, Layout layout)
 {
 	switch(mode)
 	{
@@ -67,8 +76,9 @@ Writer writer(in string output, in string mode, Layout layout)
 		case "xlsx": return new XLSXWriter(output, layout);
 		case "sql" : return new TXTWriter(output);
 		case "tag" : return new TAGWriter(output);
+		case "ident" : return new IdentWriter(output);
 		default:
-			throw new Exception("writer unknown mode <%s>".format(mode));
+			throw new Exception("error: writer unknown mode <%s>".format(mode));
 	}
 }
 

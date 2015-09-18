@@ -30,7 +30,7 @@ struct LayoutConfig {
   string description;         /// a short description of the layout
   string mapping;             /// how to map a read line to a record object?
   string xmlFile;             /// XML definition of layout
-  Regex!char ignoreRecord;   /// in some case, we need to get rid of some lines
+  Regex!char ignoreRecord;    /// in some case, we need to get rid of some lines
   string skipField;           /// in some cases, don't take into account some fields
   string layoutType;          /// what kind of layout is it?
 
