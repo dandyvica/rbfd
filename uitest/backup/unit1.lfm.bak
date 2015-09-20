@@ -1,0 +1,66 @@
+object Form1: TForm1
+  Left = 363
+  Height = 471
+  Top = 227
+  Width = 568
+  Caption = 'RB file reader'
+  ClientHeight = 471
+  ClientWidth = 568
+  LCLVersion = '1.4.2.0'
+  object Label1: TLabel
+    Left = 16
+    Height = 17
+    Top = 64
+    Width = 46
+    Caption = 'File type'
+    ParentColor = False
+  end
+  object layoutType: TComboBox
+    Left = 80
+    Height = 29
+    Top = 64
+    Width = 208
+    ItemHeight = 0
+    Items.Strings = (
+      'hot203'
+      'hot220'
+      'isr'
+    )
+    Sorted = True
+    Style = csDropDownList
+    TabOrder = 0
+  end
+  object Button1: TButton
+    Left = 32
+    Height = 46
+    Top = 168
+    Width = 119
+    Caption = 'Select input file'
+    OnClick = Button1Click
+    TabOrder = 1
+  end
+  object Edit1: TEdit
+    Left = 160
+    Height = 27
+    Top = 176
+    Width = 289
+    TabOrder = 2
+    Text = 'Edit1'
+  end
+  object Button2: TButton
+    Left = 32
+    Height = 40
+    Top = 384
+    Width = 84
+    Caption = 'Convert'
+    OnClick = Button2Click
+    TabOrder = 3
+  end
+  object OpenDialog1: TOpenDialog
+    Width = 1009
+    Height = 781
+    Title = 'Select file'
+    left = 496
+    top = 32
+  end
+end

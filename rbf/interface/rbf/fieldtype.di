@@ -65,9 +65,14 @@ class FieldType
 						mixin(testFilter!T("<"));
 						break;
 					}
+					case ">":
+					{
+						mixin(testFilter!T(">"));
+						break;
+					}
 					default:
 					{
-						throw new Exception("operator %s not supported".format(operator));
+						throw new Exception("error: operator %s not supported".format(operator));
 					}
 				}
 				return condition;

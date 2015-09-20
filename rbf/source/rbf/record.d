@@ -250,6 +250,7 @@ public:
 	 	{ writeln(f); }
 	 * --------------
 	 */
+
 	 bool empty() { return _fieldList.length == 0; }
 	 ref Field front() { return _fieldList[0]; }
 	 void popFront() { _fieldList = _fieldList[1..$]; }

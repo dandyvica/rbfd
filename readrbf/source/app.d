@@ -40,6 +40,7 @@ int main(string[] argv)
 		auto settings = new Setting();
 
 		// manage arguments passed from the command line
+		writeln(argv);
 		auto opts = new CommandLineOption(argv);
 
 		// define new layout corresponding to the requested layout

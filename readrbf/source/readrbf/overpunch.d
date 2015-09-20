@@ -14,10 +14,12 @@ static string negTable = makeTrans("JKLMNOPQR", "123456789");
 void overpunch(Record rec)
 {
 	// loop only on numerical fields
-	foreach (field; rec.filter!(f => f.fieldType.rootType == RootType.NUMERIC)) {
+	//foreach (field; rec.filter!(f => f.fieldType.rootType == RootType.NUMERIC)) {
+	foreach (field; rec) {
+
 		// loop if not a numerical value
-		//if (f.type != FieldType.FLOAT && f.type != FieldType.INTEGER && f.type != FieldType.DATE)
-			//continue;
+		if (field.fieldType.rootType == RootType.STRING)
+			continue;
 
 		auto s = field.value;
 		// found {ABCDEFGHI} in s: need to translate

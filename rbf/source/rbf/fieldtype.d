@@ -83,7 +83,7 @@ public:
 				_filterTestCallback = &matchFilter!string;
 				break;
 			default:
-				throw new Exception("unknown field type %s".format(type));
+				throw new Exception("error: unknown field type %s".format(type));
 		}
 	}
 
@@ -121,8 +121,11 @@ public:
 			case "<":
 				mixin(testFilter!T("<"));
 				break;
+			case ">":
+				mixin(testFilter!T(">"));
+				break;
 			default:
-				throw new Exception("operator %s not supported".format(operator));
+				throw new Exception("error: operator %s not supported".format(operator));
 		}
 		return condition;
 	}
