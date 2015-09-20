@@ -10,7 +10,7 @@
 	"targetPath": "bin",
 	"targetType": "executable",
 	"libs": ["rbf"],
-	"importPaths": ["source", "../rbflib/interface"],
-	"lflags": ["-L../rbflib/lib"],
-	"preBuildCommands": ["pandoc -s -t man source/help.md -o views/help.1", "man views/help.1 | col -b > views/help.txt"],
+	"importPaths": ["source", "../rbf/interface"],
+	"lflags": ["-L../rbf/lib"],
+	"preBuildCommands": ["pandoc -s -t man source/doc/help.md -o views/help.1", "man views/help.1 | col -b > views/help.txt"],
 }

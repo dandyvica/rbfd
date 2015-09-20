@@ -9,10 +9,10 @@ import std.conv;
 
 import rbf.field;
 import rbf.record;
+import rbf.recordfilter;
 import rbf.layout;
 import rbf.reader;
 import rbf.writers.writer;
-//import rbf.conf;
 import rbf.config;
 
 import overpunch;
@@ -53,7 +53,16 @@ int main(string[] argv)
 		// need to get rid of some records?
 		if (opts.isFieldFilterSet) {
 			// prune each record off of field names
-			layout.prunePerRecord(opts.filteredFields);
+			layout.removeFields(opts.filteredFields);
+		}
+
+		// if a record filter is set, check if field names belong to layout
+		if (opts.isRecordFilterSet) {
+			foreach (RecordClause c; opts.filteredRecords) {
+				if (c.fieldName !in layout) {
+					throw new Exception("error: field name %s not in layout".format(c.fieldName));
+				}
+			}
 		}
 
 		// create new reader according to what is passed in the command
@@ -77,7 +86,7 @@ int main(string[] argv)
 			auto fieldList = settings[opts.inputLayout].skipField.split(",");
 			fieldList = array(fieldList.map!(s => s.strip));
 			layout.pruneAll(fieldList);
-			writefln("SKipping fields %s", fieldList);
+			writefln("info: skipping fields %s", fieldList);
 		}
 
 		// create new writer to generate outputFileName matching the outputFormat
@@ -120,7 +129,7 @@ int main(string[] argv)
 
 			// do we filter out records?
 			if (opts.isRecordFilterSet) {
-				if (!rec.matchFilter(opts.filteredRecords))
+				if (!rec.matchRecordFilter(opts.filteredRecords))
 					continue;
 			}
 
