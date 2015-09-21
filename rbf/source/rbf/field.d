@@ -65,7 +65,14 @@ public:
 
 		// set type according to what is passed
 		_type = type;
-		_fieldType = new FieldType(type);
+
+		// create new type
+		try {
+			_fieldType = new FieldType(type);
+		}
+		catch (Exception e) {
+			writeln("error: wrong type %s when creating field %s,".format(type,name));
+		}
 	}
 
 	// copy a field with all its data
