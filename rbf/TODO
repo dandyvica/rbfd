@@ -11,3 +11,9 @@
 - throw excp if FIELD not in record field file: done
 - get rid of writer ctor for inheritated classes: not possible
 - add git tags to source files
+- add toStruct() method to Record
+- add exception if to!T trigger
+- add toXML() method to Record
+- add declaredLength to Record
+- add Record.validate() 
+- add Layout.toXML
