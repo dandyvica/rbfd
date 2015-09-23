@@ -17,3 +17,5 @@
 - add declaredLength to Record
 - add Record.validate() 
 - add Layout.toXML
+- implement dynmaic field types with regex pattern
+- implement a specific field container class and corresponding range
