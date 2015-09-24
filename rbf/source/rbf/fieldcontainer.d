@@ -7,24 +7,7 @@ import std.process;
 import std.range;
 import std.typecons;
 
-
-class Field {
-
-	string name;
-	ulong length;
-	string value;
-
-	this(string n) {
-		name = n;
-	}
-
-	override string toString() {
-		return "<name=%s, value=%s>".format(name, value);
-	}
-}
-
-
-
+immutable uint PRE_ALLOC_SIZE = 30;
 
 class FieldContainer(T) {
 	alias TNAME  = typeof(T.name);
@@ -37,7 +20,7 @@ class FieldContainer(T) {
 	//----------------------------------------------------------------------------
 	// ctor methods
 	//----------------------------------------------------------------------------
-	this(ushort preAllocSize=50) { list.reserve(preAllocSize); }
+	this(ushort preAllocSize=PRE_ALLOC_SIZE) { list.reserve(preAllocSize); }
 
 	//----------------------------------------------------------------------------
 	// properties
@@ -87,11 +70,8 @@ class FieldContainer(T) {
 	/// remove a single element at index i
 	void remove(size_t i) {
 		/// first get its name
-		list = list.remove(i);
-
-		// find its index in the map to remove it also here
-		auto name = this[i].name;
-		map[name] = map[name].remove!(e => e[1] == i);
+		TNAME name = this[i].name;
+		list.remove(i);
 	}
 
 	/// remove all elements matching name (as the same name may appear several times)
@@ -153,66 +133,5 @@ class FieldContainer(T) {
 	writefln("map    => %s", map);
 	//writefln("index  => %s", index);
 	}
-
-}
-
-/*
-class FieldContainerRange(T) {
-	FieldContainer!T fields;
-
-	this(FieldContainer!T f) { fields = f; }
-
-	@property bool empty() const { return fields.length == 0; }
-	@property ref FieldContainer!T front() { return fields[0]; }
-	void popFront() { fields.popFront(); }
-}
-
-FieldContainerRange!T myRange(T)(T elem) {
-	return new FieldContainerRange!T(elem);
-}
-*/
-
-
-
-void main(string[] argv)
-{
-
-	auto c = new FieldContainer!Field();
-	foreach (j; 1..3) {
-		foreach (i; 1..6) {
-			auto f = new Field("FIELD"~to!string(i));
-			f.value = to!string(j-1+i*i);
-			c ~= f;
-		}
-	}
-
-	//writeln(c.myRange.take(2));
-	c.inspect();
-
-  writefln("\nindexes=%s\n",c.index("FIELD5"));
-	writeln("\nremove"); c.remove("FIELD5"); c.inspect();
-	writeln("\nremove"); c.remove("FIELD5"); c.inspect();
-	writeln("\nremove"); c.remove(["FIELD1","FIELD3"]); c.inspect();
-	writeln("\nkeep"); c.keep(["FIELD2","FIELD4"]); c.inspect();
-
-	writefln("\nsum: %f", c.sum!float("FIELD2"));
-	c.inspect();
-
-	writeln("postblit");
-	auto d = c;
-
-	d.each!(e => e.value = "1");
-
-	foreach (e; d) {
-		writeln(e);
-	}
-	d.inspect;
-
-	writeln("\nremove(i)");
-	d.remove(0);
-
-	d.inspect();
-
-
 
 }

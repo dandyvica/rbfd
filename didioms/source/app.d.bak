@@ -19,7 +19,7 @@ class Field {
 	}
 
 	override string toString() {
-		return "<name=%s, value=%s>".format(name, value);
+		return "name=%s, value=%s".format(name, value);
 	}
 }
 
@@ -32,28 +32,17 @@ class FieldContainer(T) {
 
 	T[] list;
 	Tuple!(T, ulong)[][TNAME] map;
-
-
-	//----------------------------------------------------------------------------
-	// ctor methods
-	//----------------------------------------------------------------------------
-	this(ushort preAllocSize=50) { list.reserve(preAllocSize); }
-
-	//----------------------------------------------------------------------------
-	// properties
-	//----------------------------------------------------------------------------
+	//ulong[][TNAME] index;
 
 	@property ulong size() { return list.length; }
 	@property ulong length() {
 		return std.algorithm.iteration.sum(list.map!(e => e.length));
 	}
 
-	static string getMembersData(string memberName) {
-		return "return array(list.map!(e => e." ~ memberName ~ "));";
+	string getMembersData(string memberName) {
+		auto s = "return array(T.map!(e => e." ~ memberName ~ "));";
+		return (s);
 	}
-
-
-	TNAME[] t() { mixin(getMembersData("name")); }
 
 	//----------------------------------------------------------------------------
 	// add methods
@@ -62,7 +51,8 @@ class FieldContainer(T) {
 	void opOpAssign(string op)(T element) if (op == "~")
 	{
 		list ~= element;
-		map[element.name] ~= tuple(element, list.length-1);
+		map[element.name] ~= element;
+		index[element.name] ~= list.length-1;
 	}
 
 	//----------------------------------------------------------------------------
@@ -70,9 +60,8 @@ class FieldContainer(T) {
 	//----------------------------------------------------------------------------
 
 	T opIndex(size_t i) { return list[i]; }
-	T[] opIndex(TNAME name) { return array(map[name].map!(e => e[0])); }
+	T[] opIndex(TNAME name) { return map[name]; }
 	T[] opSlice(size_t i, size_t j) { return list[i..j]; }
-	ulong[] index(TNAME name) { return array(map[name].map!(e => e[1])); }
 
 	///
 /*
@@ -80,21 +69,18 @@ class FieldContainer(T) {
 
 	}*/
 
-  //----------------------------------------------------------------------------
-	// remove methods
-	//----------------------------------------------------------------------------
-
 	/// remove a single element at index i
 	void remove(size_t i) {
 		/// first get its name
-		list = list.remove(i);
-
-		// find its index in the map to remove it also here
-		auto name = this[i].name;
-		map[name] = map[name].remove!(e => e[1] == i);
+		TNAME name = this[i].name;
+		list.remove(i);
 	}
 
-	/// remove all elements matching name (as the same name may appear several times)
+	//----------------------------------------------------------------------------
+	// remove methods
+	//----------------------------------------------------------------------------
+
+	/// remove elements matching name (as the same name may appear several times)
 	void remove(TNAME name) {
 		list = list.remove!(f => f.name == name);
 
@@ -102,11 +88,12 @@ class FieldContainer(T) {
 		map.remove(name);
 	}
 
-	/// remove all elements in the list
+	// remove all elements in the list
 	void remove(TNAME[] name) { name.each!(e => this.remove(e)); }
 
-	/// remove all elements not in the list
+	// keep only but all elements of the list
 	void keep(TNAME[] name) {
+		//auto notPresent = list.find!("a != b")(name[0]);
 		list = array(list.filter!(e => name.canFind(e.name)));
 		auto keys = map.keys.filter!(e => !name.canFind(e));
 		keys.each!(e => map.remove(e));
@@ -121,37 +108,12 @@ class FieldContainer(T) {
 		return list.filter!(e => e.name == name).map!(e => to!U(e.value)).sum();
 	}
 
-	//----------------------------------------------------------------------------
-	// "iterator" methods
-	//----------------------------------------------------------------------------
-
-	int opApply(int delegate(ref T) dg)
-	{
-		int result = 0;
-
-		foreach (T e; list)	{
-		    result = dg(e);
-		    if (result)	break;
-		}
-		return result;
-	}
-
-	//----------------------------------------------------------------------------
-	// belonging methods
-	//----------------------------------------------------------------------------
-
-	T[]* opBinaryRight(string op)(TNAME name)
-	{
-		static if (op == "in") { return (name in map); }
-	}
-
-
 
 	void inspect() {
 		//list.each!(e => writeln(e));
 	writefln("list   => %s", list);
 	writefln("map    => %s", map);
-	//writefln("index  => %s", index);
+	writefln("index  => %s", index);
 	}
 
 }
@@ -176,7 +138,6 @@ FieldContainerRange!T myRange(T)(T elem) {
 
 void main(string[] argv)
 {
-
 	auto c = new FieldContainer!Field();
 	foreach (j; 1..3) {
 		foreach (i; 1..6) {
@@ -189,7 +150,6 @@ void main(string[] argv)
 	//writeln(c.myRange.take(2));
 	c.inspect();
 
-  writefln("\nindexes=%s\n",c.index("FIELD5"));
 	writeln("\nremove"); c.remove("FIELD5"); c.inspect();
 	writeln("\nremove"); c.remove("FIELD5"); c.inspect();
 	writeln("\nremove"); c.remove(["FIELD1","FIELD3"]); c.inspect();
@@ -197,22 +157,5 @@ void main(string[] argv)
 
 	writefln("\nsum: %f", c.sum!float("FIELD2"));
 	c.inspect();
-
-	writeln("postblit");
-	auto d = c;
-
-	d.each!(e => e.value = "1");
-
-	foreach (e; d) {
-		writeln(e);
-	}
-	d.inspect;
-
-	writeln("\nremove(i)");
-	d.remove(0);
-
-	d.inspect();
-
-
 
 }
