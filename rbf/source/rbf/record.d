@@ -16,22 +16,19 @@ import std.range;
 import std.container.array;
 
 import rbf.field;
+import rbf.fieldcontainer;
 import rbf.recordfilter;
 
-immutable preAllocSize = 30;
 
 /***********************************
  * This record class represents a record as found in record-based files
  */
-class Record {
+class Record : FieldContainer!Field {
 
 private:
 
 	string _name;										/// record name
 	string _description;						/// record descrption
-	Field[] _fieldList;							/// dynamic array used to store elements
-	Field[][string] _fieldMap; 			/// hash map to store fields (key is field name)
-	ulong _length;           				/// length of record = sum of field lengths
 	bool _keep = true;							/// true is we want to keep this record when
 																	/// looping using a reader
 
@@ -55,20 +52,13 @@ public:
 			_description = description;
 
 			// pre-allocate array of fields
-			_fieldList.reserve(preAllocSize);
+			super();
+			writefln("created %s %s", name, description);
 	}
 
 	// set/get properties
 	@property string name() { return _name; }
 	@property string description() { return _description; }
-
-	//@property string line() { return _line; }
-	//@property void line(string new_line) { _line = new_line; }
-
-	@property ulong length() { return _length; }
-
-	@property ulong size() { return _fieldList.length; }
-
 	@property bool keep() { return _keep; }
 	@property void keep(bool keep) { _keep = keep; }
 
@@ -94,7 +84,7 @@ public:
 		}
 
 		// assign each field to a slice of s
-		_fieldList.each!(f => f.value = s[f.lowerBound..f.upperBound]);
+		this.each!(f => f.value = s[f.lowerBound..f.upperBound]);
 	}
 
 	/**
@@ -110,7 +100,7 @@ public:
 	 */
 	@property string[] fieldNames()
 	{
-		 return array(_fieldList.map!(f => f.name));
+		mixin(FieldContainer!Field.getMembersData("name"));
 	}
 
 	/**
@@ -118,7 +108,7 @@ public:
 	 */
 	@property string[] fieldValues()
 	{
-		 return array(_fieldList.map!(f => f.value));
+		mixin(FieldContainer!Field.getMembersData("value"));
 	}
 
 	/**
@@ -126,35 +116,8 @@ public:
 	 */
 	@property string[] fieldRawValues()
 	{
-		 return array(_fieldList.map!(f => f.rawValue));
+		mixin(FieldContainer!Field.getMembersData("rawValue"));
 	}
-
-	/**
-	 * fields having the same name can be part of the same record. This method is
-	 * aimed at renaming automagically fields by adding a counter to each duplicate
-	 * The record is duplicated and not modified inline
-	 */
-	 void autoRename()
-	 {
-		foreach (fieldName; _fieldMap.byKey) {
-			// more than one instance?
-			if (_fieldMap[fieldName].length > 1) {
-
-				// rename each field
-				auto i = 1;
-				foreach (ref field; _fieldMap[fieldName]) {
-					// build new field name
-					field.name = field.name ~ to!string(i++);
-
-					// rebuld map
-					_fieldMap[field.name] ~= field;
-				}
-
-				// but now no more older field name!
-				_fieldMap.remove(fieldName);
-			}
-		}
-	 }
 
 
 	/**
@@ -172,220 +135,17 @@ public:
 	void opOpAssign(string op)(Field field) if (op == "~")
 	{
 		// set index & offset
-		field.index  = _fieldList.length;
+		field.index  = this.size;
 		field.offset = this.length;
 
-		// store a new element in array
-		_fieldList ~= field;
-
-		// store in map (used for auto-renaming)
-		_fieldMap[field.name] ~= field;
-
-		// we just added a new Field object, so increment length accordingly
-		_length += field.length;
+		// add element
+		super.opOpAssign!"~"(field);
 
 		// lower/upper bounds calculation inside the record
 		field.lowerBound = field.offset;
 		field.upperBound = field.offset + field.length;
 	}
 
-	/**
-	 * [] operator to retrieve i-th field object
-	 *
-	 * Params:
-	 *	i = index of the i-th field object to retrieve
-	 *
-	 * Examples:
-	 * --------------
-	 * auto f = record[0]  // returns the first field object
-	 * --------------
-	 */
-	Field opIndex(size_t i)
-	{
-		// i should fit within consistent bounds
-		enforce(0 <= i && i < _fieldList.length, "index %d is out of bounds for _fieldList[]".format(i));
-		return(_fieldList[i]);
-	}
-
-	/**
-	 * [] operator to retrieve field object whose name is passed as an argument
-	 *
-	 * Params:
-	 *	fieldName = name of the field to retrieve
-	 *
-	 * Examples:
-	 * --------------
-	 * auto f = record["FIELD1"]  // returns the field objects named FIELD1
-	 * --------------
-	 */
-	Field[] opIndex(string fieldName)
-	{
-		// check if fieldName is in the record
-		enforce(fieldName in this, "field %s is not found in record %s".format(fieldName, name));
-		return _fieldMap[fieldName];
-	}
-
-	/**
-	 * in operator: test if field whose name is passed as argument is found in record
-	 *
-	 * Params:
-	 *	fieldName = name of the field to check inclusion for
-	 *
-	 * Examples:
-	 * --------------
-	 * if ("FIELD1" in record) ...      // test if FIELD1 is in record
-	 * --------------
-	 */
-	Field[]* opBinaryRight(string op)(string fieldName)
-	{
-		static if (op == "in") { return (fieldName in _fieldMap); }
-	}
-
-	/**
-	 * range definition
-	 *
-	 * Examples:
-	 * --------------
-	 * foreach (Field f; record)
-	 	{ writeln(f); }
-	 * --------------
-	 */
-
-	 bool empty() { return _fieldList.length == 0; }
-	 ref Field front() { return _fieldList[0]; }
-	 void popFront() { _fieldList = _fieldList[1..$]; }
-
-	/**
-	 * to loop with foreach loop on all fields
-	 *
-	 * Examples:
-	 * --------------
-	 * foreach (Field f; record)
-	 	{ writeln(f); }
-	 * --------------
-	 */
-	int opApply(int delegate(ref Field) dg)
-	{
-		int result = 0;
-
-		for (int i = 0; i < _fieldList.length; i++)
-		{
-		    result = dg(_fieldList[i]);
-		    if (result)
-			break;
-		}
-		return result;
-	}
-
-	/**
-	 * duplicate a record with all its fields and values
-	 *
-	 * Examples:
-	 * --------------
-	 * auto copy = rec.dup();
-	 * --------------	 */
-	Record dup()
-	{
-		Record copied = new Record(name, description);
-		foreach (field; _fieldList) {
-			copied ~= field.dup();
-		}
-		return copied;
-	}
-
-	/**
-	 * remove all fields matching field name
-	 *
-	 * Examples:
-	 * --------------
-	 * rec.remove("FIELD1");
-	 * --------------	 */
-	void remove(string fieldName)
-	{
-		// remove all elements matching the fieldName
-		// attn: assigning back to _fieldList is normal because remove
-		// doesn't remove from array but just from range
-		_fieldList = _fieldList.remove!(f => f.name == fieldName);
-
-		// remove corresponding key
-		_fieldMap.remove(fieldName);
-	}
-
-	/**
-	 * remove all fields matching field name. Does nothing if field is not found
-	 * in record
-	 *
-	 * Examples:
-	 * --------------
-	 * rec.lazyRemove("FIELD1");
-	 * --------------	 */
-	void lazyRemove(string fieldName)
-	{
-		if (fieldName in this) this.remove(fieldName);
-	}
-
-	/**
-	 * keep only those fields specified
-	 *
-	 * Examples:
-	 * --------------
-	 * rec.keepOnly(["FIELD1", "FIELD2"]);
-	 * --------------	 */
-	void keepOnly(string[] listOfFieldNamesToKeep)
-	{
-		// build the list of field to remove =  those not found in
-		// listOfFieldNamesToKeep
-		auto listOfFieldNamesToRemove =
-			this.fieldNames.filter!(s => !listOfFieldNamesToKeep.canFind(s));
-
-		// now remove them
-		listOfFieldNamesToRemove.each!(s => this.remove(s));
-	}
-
-/**
-	 * get the i-th field whose is passed as argument in case of duplicate
-	 * field names (starting from 0)
-	 * Examples:
-	 * --------------
-	 * rec.get("FIELD",5) // return the field object of the 6-th field named FIELD
-	 * rec.get("FIELD") // return the first field object named FIELD
-	 * --------------
-	 */
-	Field get(string fieldName, ushort index = 0)
-  {
-		enforce(fieldName in this, "field %s is not found in record %s".format(fieldName, name));
-		enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
-
-		return _fieldMap[fieldName][index];
-	}
-
-	/**
-	 * to match an attribute more easily
-	 *
-	 * Examples:
-	 * --------------
-	 * rec.FIELD(5) returns the value of the 6-th field named FIELD
-	 * --------------
-	 */
-	string opDispatch(string fieldName)(ushort index)
-	{
-		enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
-		return this[fieldName][index].value;
-	}
-
-	/**
-	 * to match an attribute more easily
-	 *
-	 * Examples:
-	 * --------------
-	 * rec.FIELD1 returns the value of the field named FIELD1 in the record
-	 * --------------
-	 */
-	@property string opDispatch(string attrName)()
-	{
-		//writefln("attr=%s", this[name][0].value);
-		return this[attrName][0].value;
-	}
 
 	/**
 	 * print out Record properties with all field and record data
@@ -393,13 +153,25 @@ public:
 	override string toString()
 	{
 		auto s = "\nname=<%s>, description=<%s>, length=<%u>, keep=<%s>\n".format(name, description, length, keep);
-		foreach (field; _fieldList)
+		foreach (field; this)
 		{
 			s ~= field.toString();
 			s ~= "\n";
 		}
-		return(s);
+		return(s );
 	}
+
+	/**
+	 * return a string of the XML representation of Record
+	 */
+	string toXML() {
+		auto xml = `<record name="%s" description=""%s">`.format(name, description);
+		xml ~= join(array(this[].map!(e => "\t" ~ e.toXML)), "\n");
+		xml ~= "</record>";
+
+		return xml;
+	}
+
 
 	/**
 	 * match a record against a set of boolean conditions to filter data
@@ -447,7 +219,9 @@ unittest {
 
 	// main test
 	auto rec = new Record("RECORD_A", "This is my main and top record");
+	writeln("avant");
 	rec ~= new Field("FIELD1", "Desc1", "A/N", 10);
+	writeln("apres");
 	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
 	rec ~= new Field("FIELD3", "Desc3", "A/N", 10);
 	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
@@ -473,7 +247,7 @@ unittest {
 	assert(rec[0].name == "FIELD1");
 	assert(rec[0].description == "Desc1");
 	assert(rec[0].length == 10);
-	assert(rec[0].type == FieldType.ALPHANUMERICAL);
+	//assert(rec[0].type == AtomicType.ALPHANUMERICAL);
 
 
 
@@ -481,68 +255,15 @@ unittest {
 
 	writeln(rec);
 
-  auto rec2 = rec.dup;
-	rec2.remove("FIELD2");
-	writeln(rec2);
 
 	rec.keepOnly(["FIELD3","FIELD2"]);
 	writeln(rec);
 
-	core.stdc.stdlib.exit(0);
+	//core.stdc.stdlib.exit(0);
 
-
-
-
-
-
-
-
-
-	// get value
-	assert(rec.value == s);
-
-	// dup
-	auto copy = rec.dup();
-	assert(copy.value == s);
-
-	// index
-	assert(rec[0].name == "FIELD1");
-	assert(rec["FIELD1"][0].value == "AAAAAAAAAA");
-
-	writeln("Fields");
-
-	foreach (Field f; rec) {
-		writeln(f);
-	}
 
 	writeln(rec.fieldNames);
 	writeln(rec.fieldValues);
-
-
-	auto rec_renamed = rec.dup;
-	rec_renamed.autoRename();
-
-	writeln(rec_renamed.fieldNames);
-	writeln(rec_renamed);
-
-	//writeln(rec.matchCondition(["FIELD_A1 == AAAAA", "FIELD_A2=10"]));
-	//writeln("toto");
-	//writeln("FIELD_B1" in rec);
-	assert("FIELD21" in rec_renamed);
-
-	//writeln(rec_renamed.toTxt());
-	struct S {
-		string _a;
-		this(string a) { _a = a; }
-		@property string opDispatch(string attr)() {
-			enum s = attr;
-			return "toto";
-		}
-	}
-
-	auto s1 = new S("aaa");
-	writefln("passed values=%s, %s, %s",
-		rec.FIELD1, rec_renamed.FIELD21, rec.FIELD2(2));
 
 
 }

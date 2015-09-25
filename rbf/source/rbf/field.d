@@ -148,6 +148,14 @@ public:
 	}
 
 	/**
+	 * return a string of the XML representation of Field
+	 */
+	string toXML() {
+		return `<field elem="%d" position="%d" name="%s" description="%s" length="%d" type="%s"/>`
+				.format(index+1, offset+1, name, description, length, declaredType);
+	}
+
+	/**
 	 * test if field value matches condition using the operator.
 	 *
 	 *  Example: FIELD1 = TEST
@@ -168,9 +176,9 @@ unittest {
 	writefln("-------------------------------------------------------------");
 
 	// check wrong arguments
-	assertThrown(new Field("","Ticket/Document Number","A", 5));
-	assertThrown(new Field("TDNR","Ticket/Document Number","B", 5));
-	assertThrown(new Field("TDNR","Ticket/Document Number","A", 0));
+	assertThrown(new Field("","First field","A", 5));
+	assertThrown(new Field("FIELD1","First field","B", 5));
+	assertThrown(new Field("FIELD1","First field","A", 0));
 
 	// create new field and check methods
 	auto f = new Field("FIELD1","First field","AN",5);
@@ -178,7 +186,7 @@ unittest {
 	assert(f.name == "FIELD1");
 	assert(f.description == "First field");
 	assert(f.length == 5);
-	assert(f.type == FieldType.ALPHANUMERICAL);
+	assert(f.declaredType == "AN");
 
 	// test methods
 	f.value = "12345";

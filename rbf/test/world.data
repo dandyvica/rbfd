@@ -1,6 +1,6 @@
 # data taken from http://www.nationsonline.org/oneworld/asia.htm
-# inspired from https://en.wikipedia.org/wiki/List_of_continents_by_GDP_%28nominal%29
-CONTAsia           43,820,000          16,920,000          29.5%     Shanghai            
+# inspired from https://en.wikipedia.org/wiki/List_of_continents_by_GDP_28nominal29
+CONTAsia           43,820,000          16,920,000          29.5     Shanghai            
 COUNChina                         1,338,100,000       Beijing             
 COUNChina, Hong Kong SAR          7,000,000           Hong Kong           
 COUNChina, Macau SAR              500,000             Macau City          
@@ -54,7 +54,7 @@ COUNSyria                         22,500,000          Damascus
 COUNTurkey                        73,600,000          Ankara              
 COUNUnited Arab Emirates          5,400,000           Abu Dhabi           
 COUNYemen                         23,600,000          Sanaa               
-CONTAfrica         30,370,000          11,730,000          20.4%     Lagos               
+CONTAfrica         30,370,000          11,730,000          20.4     Lagos               
 COUNBurundi                       8,500,000           Bujumbura           
 COUNComoros                       727,000             Moroni              
 COUNDjibouti                      900,000             Djibouti            
@@ -112,11 +112,11 @@ COUNSaint Helena                  6,000               Jamestown
 COUNSenegal                       12,500,000          Dakar               
 COUNSierra Leone                  5,800,000           Freetown            
 COUNTogo                          6,800,000           Lomé                
-CONTNorth America  24,709,000          9,540,000           16.5%     Mexico City         
+CONTNorth America  24,709,000          9,540,000           16.5     Mexico City         
 COUNCanada                        34,00,000           Ottawa - Toronto    
 COUNMexico                        112,000,000         Mexico (City)       
 COUNUnited States                 313,000,000         Washington - New York
-CONTSouth America  17,840,000          6,890,000           12.0%     São Paulo           
+CONTSouth America  17,840,000          6,890,000           12.0     São Paulo           
 COUNArgentina                     40,500,000          Buenos Aires        
 COUNBolivia                       10,400,000          La Paz, Sucre       
 COUNBrazil                        193,300,000         Brasilia - São Paulo
@@ -130,8 +130,8 @@ COUNPeru                          29,500,000          Lima
 COUNSuriname                      500,000             Paramaribo          
 COUNUruguay                       3,400,000           Montevideo          
 COUNVenezuela                     28,800,000          Caracas             
-CONTAntarctica     13,720,000          5,300,000           9.2%      Villa Las Estrellas 
-CONTEurope         10,180,000          3,930,000           6.8%      Moscow              
+CONTAntarctica     13,720,000          5,300,000           9.2      Villa Las Estrellas 
+CONTEurope         10,180,000          3,930,000           6.8      Moscow              
 COUNBelarus                       9,500,000           Minsk               
 COUNBulgaria                      7,500,000           Sofia               
 COUNCzech Republic                10,500,000          Prague              
@@ -183,7 +183,7 @@ COUNLuxembourg                    500,000             Luxembourg
 COUNMonaco                        40,000              Monaco              
 COUNNetherlands                   16,600,000          The Hague, Amsterdam
 COUNSwitzerland                   7,800,000           Bern - Zürich       
-CONTOceania        9,008,500           3,478,200           5.9%      Sydney              
+CONTOceania        9,008,500           3,478,200           5.9      Sydney              
 COUNAustralia                     22,400,000          Canberra - Sydney   
 COUNNew Zealand                   4,400,000           Wellington - Auckland
 COUNFiji                          900,000             Suva                

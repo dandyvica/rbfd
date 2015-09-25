@@ -53,8 +53,8 @@ int main(string[] argv)
 
 		// need to get rid of some records?
 		if (opts.isFieldFilterSet) {
-			// prune each record off of field names
-			layout.removeFields(opts.filteredFields);
+			// only keep specified fields
+			layout.keepOnly(opts.filteredFields);
 		}
 
 		// if a record filter is set, check if field names belong to layout
@@ -86,7 +86,7 @@ int main(string[] argv)
 		if (settings[opts.inputLayout].skipField != "") {
 			auto fieldList = settings[opts.inputLayout].skipField.split(",");
 			fieldList = array(fieldList.map!(s => s.strip));
-			layout.pruneAll(fieldList);
+			layout.removeFromAllRecords(fieldList);
 			writefln("info: skipping fields %s", fieldList);
 		}
 

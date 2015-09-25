@@ -210,8 +210,6 @@ class S {
 
 	string[] list;
 
-	Range r;
-
 	struct Range {
 		string[] items;
 
@@ -235,14 +233,13 @@ class S {
 
 	this(string[] l) {
 		list = l.dup;
-
-		r = Range(list);
 	}
-
-	@property Range range() { return r; }
 
 	override string toString() { return join(list, "-"); }
 
+	Range opSlice() {
+		return Range(list);
+	}
 
 }
 
@@ -312,8 +309,9 @@ void main(string[] argv)
 	auto s = new S(["FIELD_A", "FIELD_B", "FIELD_A", "FIELD_B", "FIELD_C"]);
 	writeln(s);
 
-	s.range.each!writeln;
-	writeln(s.range.filter!(a => a.endsWith("_A")));
-	writeln(s.range.filter!(a => a.endsWith("_C")));
+	s[].each!writeln;
+	writeln(s[].filter!(a => a.endsWith("_A")));
+	writeln(s[].filter!(a => a.endsWith("_C")));
+
 
 }

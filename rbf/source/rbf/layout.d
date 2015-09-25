@@ -185,22 +185,18 @@ public:
 	 * layout.prunePerRecords(recList);
 	 * --------------
 	 */
-	void removeFields(string[][string] recordMap) {
+	void keepOnly(string[][string] recordMap) {
 			// recordMap contains a list of fields to keep in each record
 			// the key of recordMap is a record name
-			// for all those records, keep only those provided
-			foreach (rec; _records) {
-				// recname is not concerned
-				if (rec.name in recordMap) {
-					// keep only those found
-					if (recordMap[rec.name] != [])
-						_records[rec.name].keepOnly(recordMap[rec.name]);
- 				}
-				else {
-					// but we want all other not requested to not be kept
-					_records[rec.name].keep = false;
-				}
+			// for all those records, keep only those fields provided
+			foreach (e; recordMap.byKeyValue) {
+				_records[e.key].keepOnly(e.value);
 			}
+
+			// for all other records non provided, just get rid of them
+			_records.byKey
+							.filter!(e => e !in recordMap)
+							.each!(e => _records[e].keep = false);
 	}
 
 	/**
@@ -215,10 +211,8 @@ public:
 	 * layout.pruneAll(["FIELD1", "FIELD2"]);
 	 * --------------
 	 */
-	void pruneAll(string[] fieldList) {
-		foreach (rec; _records) {
-			fieldList.each!(fieldName => rec.lazyRemove(fieldName));
-		}
+	void removeFromAllRecords(string[] fieldList) {
+		_records.each!(r => r.keepOnly(fieldList));
 	}
 
 	/**
@@ -232,6 +226,8 @@ public:
 				stderr.writefln("record %s is not matching declared length (%d instead of %d)",
 					rec.name, rec.length, _length);
 			}
+
+			writeln(rec.toXML);
 		}
 	}
 
@@ -243,8 +239,10 @@ unittest {
 	writeln(__FILE__);
 	writefln("-------------------------------------------------------------");
 
-	auto layout = new Layout("./test/world_data.xml");
+	writefln("---- avant layout");
 
+	auto layout = new Layout("./test/world_data.xml");
+	writefln("---- apres layout");
 	foreach (rec; layout)
 	{
 		writeln(rec);

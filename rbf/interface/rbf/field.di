@@ -52,6 +52,7 @@ class Field
 			@property void lowerBound(ulong new_bound);
 			@property void upperBound(ulong new_bound);
 			override string toString();
+			string toXML();
 			bool isFieldFilterMatched(in string op, in string rvalue);
 		}
 	}

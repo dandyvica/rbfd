@@ -184,7 +184,7 @@ unittest {
 	//auto conditions = rbf.readCondition("conds.txt");
 	//writeln(conditions);
 
-	rbf.ignoreRegexPattern = "^#";
+	//rbf.ignoreRegexPattern = "^#";
 	//rbf.register_mapper = &mapper;
 
 	foreach (rec; rbf) {

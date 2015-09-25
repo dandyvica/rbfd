@@ -87,24 +87,30 @@ Writer writerFactory(in string output, in string mode, Layout layout)
 
 unittest {
 
+	import rbf.reader;
+	import std.regex;
+
 	writefln("-------------------------------------------------------------");
 	writeln(__FILE__);
 	writefln("-------------------------------------------------------------");
 
-	auto reader = new Reader("../test/world.data", "../test/world_data.xml", (line => line[0..4]));
-	reader.ignore_pattern = "^#";
+	auto layout = new Layout("./test/world_data.xml");
+
+	auto reader = new Reader("./test/world.data", layout, (line => line[0..4]));
+	reader.ignoreRegexPattern = regex("^#");
 
 
-	auto writer1 = writer("test.html", "html", reader.layout);
+	auto writer1 = writerFactory("test.html", "html", reader.layout);
 	foreach (rec; reader) { writer1.write(rec); }
 
-	auto writer2 = writer("test.txt", "txt", reader.layout);
+	auto writer2 = writerFactory("test.txt", "txt", reader.layout);
 	foreach (rec; reader) { writer2.write(rec); }
 
-	auto writer3 = writer("test.csv", "csv", reader.layout);
+	auto writer3 = writerFactory("test.csv", "csv", reader.layout);
 	foreach (rec; reader) { writer3.write(rec); }
 
-	auto writer4 = writer("test.xlsx", "xlsx", reader.layout);
+	auto writer4 = writerFactory("test.xlsx", "xlsx", reader.layout);
+	writer4.zipper = "/usr/bin/zip";
 	foreach (rec; reader) { writer4.write(rec); }
 
 	writer4.close();

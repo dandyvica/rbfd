@@ -39,8 +39,8 @@ class Layout
 			}
 			int opApply(int delegate(ref Record) dg);
 			override string toString();
-			void removeFields(string[][string] recordMap);
-			void pruneAll(string[] fieldList);
+			void keepOnly(string[][string] recordMap);
+			void removeFromAllRecords(string[] fieldList);
 			void validate();
 		}
 	}
