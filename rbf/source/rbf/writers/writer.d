@@ -1,4 +1,5 @@
 module rbf.writers.writer;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.file;
@@ -36,8 +37,9 @@ public:
 	/**
 	 * creates a new Writer object for converting record-based files
 	 *
-	 * Params:
-	 *  outputFileName = name of the output file (or database name in case of sqlite3)
+	 Params:
+	 outputFileName = name of the output file (or database name in case of sqlite3)
+	 create = true if file is created during constructor
 	 */
 	this(in string outputFileName, in bool create = true)
 	{
@@ -90,15 +92,10 @@ unittest {
 	import rbf.reader;
 	import std.regex;
 
-	writefln("-------------------------------------------------------------");
-	writeln(__FILE__);
-	writefln("-------------------------------------------------------------");
-
 	auto layout = new Layout("./test/world_data.xml");
 
 	auto reader = new Reader("./test/world.data", layout, (line => line[0..4]));
 	reader.ignoreRegexPattern = regex("^#");
-
 
 	auto writer1 = writerFactory("test.html", "html", reader.layout);
 	foreach (rec; reader) { writer1.write(rec); }
@@ -110,7 +107,7 @@ unittest {
 	foreach (rec; reader) { writer3.write(rec); }
 
 	auto writer4 = writerFactory("test.xlsx", "xlsx", reader.layout);
-	writer4.zipper = "/usr/bin/zip";
+	version(linux) { writer4.zipper = "/usr/bin/zip"; }
 	foreach (rec; reader) { writer4.write(rec); }
 
 	writer4.close();

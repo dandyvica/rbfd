@@ -4,6 +4,7 @@
  * Version: 0.1
  */
 module rbf.reader;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.file;
@@ -63,7 +64,7 @@ public:
 	 *
 	 * Params:
 	 *  rbFile = path/name of the file to read
-	 *  xmlFile = xml file containing fields & records definitions
+	 *  layout = layout object
 	 *  recIndentifier = function used to map each record
 	 */
 	this(string rbFile, Layout layout, GET_RECORD_FUNCTION recIndentifier)
@@ -169,28 +170,12 @@ public:
 
 unittest {
 
-	writefln("-------------------------------------------------------------");
-	writeln(__FILE__);
-	writefln("-------------------------------------------------------------");
-
-	void mapper(Record rec) {
-		foreach (f; rec) { f.value = "TTT"; }
-	}
-
-	auto layout = new Layout("../test/world_data.xml");
-
-	auto rbf = new Reader("../test/world.data", layout, (line => line[0..4] ));
-
-	//auto conditions = rbf.readCondition("conds.txt");
-	//writeln(conditions);
-
-	//rbf.ignoreRegexPattern = "^#";
-	//rbf.register_mapper = &mapper;
+	auto layout = new Layout("./test/world_data.xml");
+	auto rbf = new Reader("./test/world.data", layout, (line => line[0..4]));
+	rbf.ignoreRegexPattern = regex("^#");
 
 	foreach (rec; rbf) {
-		//if (rec.matchCondition(conditions)) writeln(rec.toTxt);
-		//writeln(rec.toTxt()());
-		writeln(rec.toTxt());
+		assert("NAME" in rec);
 	}
 
 

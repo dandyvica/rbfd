@@ -29,10 +29,27 @@ package:
 	TLENGTH _length;		/// current length of the container when adding elements
 
 public:
-	//----------------------------------------------------------------------------
-	// ctor methods
-	//----------------------------------------------------------------------------
+	/**	Constructor taking an optional parameter
+
+	Params:
+	preAllocSize = preallocation of the inner array
+
+	*/
 	this(ushort preAllocSize=PRE_ALLOC_SIZE) { _list.reserve(preAllocSize); }
+
+	/**	Constructor taking an input range
+
+	Params:
+	r = range
+
+	*/
+	this(Range r) {
+		this();
+		foreach (e; r) {
+			this ~= e;
+		}
+	}
+
 
 	struct Range {
 		T[] items;
@@ -56,7 +73,7 @@ public:
 		T opIndex(size_t i) { return items[i]; }
 	}
 
-	/// return a range on the container
+	/// Return a range on the container
 	Range opSlice() {
 		return Range(_list);
 	}
@@ -64,7 +81,7 @@ public:
 	//----------------------------------------------------------------------------
 	// properties
 	//----------------------------------------------------------------------------
-	/// get container number of elements
+	/// Get container number of elements
 	@property ulong size() { return _list.length; }
 
 	/// get length of all elements
@@ -77,7 +94,7 @@ public:
 		return "return array(_list.map!(e => e." ~ memberName ~ "));";
 	}
 
-	/// get all elements names
+	/// Return all elements names
 	TNAME[] names() { mixin(getMembersData("name")); }
 
 	//----------------------------------------------------------------------------
@@ -96,10 +113,15 @@ public:
 	// index methods
 	//----------------------------------------------------------------------------
 	/**
-	 * [] operator to retrieve i-th element object
+	 * [] operator to retrieve i-th element
 	 *
 	 * Params:
-	 *	i = index of the i-th element object to retrieve
+	 *	i = index of the i-th element to retrieve
+
+	 Returns:
+
+	 An element of type T
+
 	 */
 	T opIndex(size_t i) {
 		assert(0 <= i && i < _list.length, "index %d is out of bounds for _list[]".format(i));
@@ -107,23 +129,42 @@ public:
 	}
 
 	/**
-	 * [] operator to retrieve field object whose name is passed as an argument
-	 *
-	 * Params:
-	 *	name = name of the element to retrieve
+	* [] operator to retrieve field object whose name is passed as an argument
+	*
+	* Params:
+	* name = name of the element to retrieve
+
+	 Returns:
+	 An array of elements of type T
 	 */
 	T[] opIndex(TNAME name) {
 		assert(name in this, "element %s is not found in container".format(name));
 		return _map[name];
 	}
 
-	/// slicing operator
+	/**
+
+	Slicing operating
+
+	Params:
+	i = lower index
+	j = upper index
+
+	Returns:
+	An array of elements of type T
+
+	*/
+
 	T[] opSlice(size_t i, size_t j) { return _list[i..j]; }
 
 	/**
 		 * get the i-th field whose is passed as argument in case of duplicate
 		 * field names (starting from 0)
-		 */
+
+		 Returns:
+		 An array of elements of type T
+
+	*/
 	T get(TNAME name, ushort index = 0)
   {
 		assert(name in this, "field %s is not found in record %s".format(name));
@@ -133,7 +174,14 @@ public:
 	}
 
 	/**
-	 * to match an element more easily
+	 * Get the value of element
+
+	 Params:
+ 	 name = name of the element to retrieve
+
+ 	 Returns:
+ 	 value of the first element found
+
 	 */
 	@property TVALUE opDispatch(TNAME name)()
 	{
@@ -153,7 +201,12 @@ public:
 	// remove methods
 	//----------------------------------------------------------------------------
 
-	/// remove all elements matching name (as the same name may appear several times)
+	/** remove all elements matching name (as the same name may appear several times)
+
+	Params:
+	name = name of the elements to remove
+
+	*/
 	void remove(TNAME name) {
 		_list = _list.remove!(f => f.name == name);
 		// remove corresponding key
@@ -173,7 +226,7 @@ public:
 	//----------------------------------------------------------------------------
 	// reduce methods
 	//----------------------------------------------------------------------------
-	/// sum of elements converted to type U
+	/// Returns the sum of elements converted to type U
 	U sum(U)(TNAME name) {
 		return _list.filter!(e => e.name == name).map!(e => to!U(e.value)).sum();
 	}
@@ -288,7 +341,10 @@ unittest {
 	// range test
 	static assert(isBidirectionalRange!(typeof(c[])));
 	//c[].each!(e => assert(e.name.startsWtih("FIELD")));
+	auto r = array(c[].take(1));
+	assert(r[0].name == "FIELD1");
 
+	// build a new container based on range
 	auto a = c[].filter!(e => e.name == "FIELD3");
-	writeln(typeid(a));
+	//auto d = new FieldContainer!Field(a);
 }

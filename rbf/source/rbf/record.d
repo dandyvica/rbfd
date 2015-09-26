@@ -4,12 +4,12 @@
  * Version: 0.3
  */
 module rbf.record;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.conv;
 import std.string;
 import std.algorithm;
-//import std.algorithm.mutation;
 import std.array;
 import std.regex;
 import std.range;
@@ -209,19 +209,15 @@ public:
 
 
 import std.exception;
+///
 unittest {
-	writefln("-------------------------------------------------------------");
-	writeln(__FILE__);
-	writefln("-------------------------------------------------------------");
-
 	// check wrong arguments
 	assertThrown(new Record("", "Rec description"));
 
 	// main test
 	auto rec = new Record("RECORD_A", "This is my main and top record");
-	writeln("avant");
+
 	rec ~= new Field("FIELD1", "Desc1", "A/N", 10);
-	writeln("apres");
 	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
 	rec ~= new Field("FIELD3", "Desc3", "A/N", 10);
 	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
@@ -230,13 +226,6 @@ unittest {
 	// test properties
 	assert(rec.name == "RECORD_A");
 	assert(rec.description == "This is my main and top record");
-	assert(rec.length == 50);
-	assert(rec.size == 5);
-	assert(rec.keep == true);
-
-	// test in
-	assert("NON_PRESENT" !in rec);
-	assert("FIELD1" in rec);
 
 	// set value
 	auto s = "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEE";
@@ -247,23 +236,8 @@ unittest {
 	assert(rec[0].name == "FIELD1");
 	assert(rec[0].description == "Desc1");
 	assert(rec[0].length == 10);
-	//assert(rec[0].type == AtomicType.ALPHANUMERICAL);
-
-
-
-
-
-	writeln(rec);
-
-
-	rec.keepOnly(["FIELD3","FIELD2"]);
-	writeln(rec);
-
-	//core.stdc.stdlib.exit(0);
-
-
-	writeln(rec.fieldNames);
-	writeln(rec.fieldValues);
+	assert(rec.fieldNames == ["FIELD1", "FIELD2", "FIELD3", "FIELD2", "FIELD2"]);
+	assert(rec.fieldValues == ["AAAAAAAAAA", "BBBBBBBBBB", "CCCCCCCCCC", "DDDDDDDDDD", "EEEEEEEEEE"]);
 
 
 }

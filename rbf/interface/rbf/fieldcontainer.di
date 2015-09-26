@@ -26,6 +26,14 @@ class FieldContainer(T)
 			{
 				_list.reserve(preAllocSize);
 			}
+			this(Range r)
+			{
+				this();
+				foreach (e; r)
+				{
+					this ~= e;
+				}
+			}
 			struct Range
 			{
 				T[] items;

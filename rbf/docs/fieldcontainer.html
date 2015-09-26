@@ -32,6 +32,9 @@ c ~= <font color=blue>new</font> Field(<font color=red>"FIELD4"</font>, <font co
 <font color=blue>assert</font>(c.length == 150);
 <font color=blue>assert</font>(c.names == [<font color=red>"FIELD1"</font>,<font color=red>"FIELD2"</font>,<font color=red>"FIELD2"</font>,<font color=red>"FIELD3"</font>,<font color=red>"FIELD3"</font>,<font color=red>"FIELD3"</font>,<font color=red>"FIELD4"</font>]);
 
+<font color=green>// opEquals
+</font><font color=blue>assert</font>(c == [<font color=red>"FIELD1"</font>,<font color=red>"FIELD2"</font>,<font color=red>"FIELD2"</font>,<font color=red>"FIELD3"</font>,<font color=red>"FIELD3"</font>,<font color=red>"FIELD3"</font>,<font color=red>"FIELD4"</font>]);
+
 <font color=green>// opindex
 </font><font color=blue>assert</font>(c[0] == tuple(<font color=red>"FIELD1"</font>,<font color=red>"value1"</font>,<font color=red>"A/N"</font>,10UL));
 <font color=blue>assert</font>(c[<font color=red>"FIELD3"</font>].length == 3);
@@ -49,7 +52,22 @@ c ~= <font color=blue>new</font> Field(<font color=red>"FIELD4"</font>, <font co
 </font><font color=blue>assert</font>(c.sum!<font color=blue>int</font>(<font color=red>"FIELD3"</font>) == 150);
 <font color=blue>assert</font>(c.min!<font color=blue>int</font>(<font color=red>"FIELD3"</font>) == 40);
 <font color=blue>assert</font>(c.max!<font color=blue>int</font>(<font color=red>"FIELD3"</font>) == 60);
-</pre>
+
+<font color=green>// in
+</font><font color=blue>assert</font>(<font color=red>"FIELD4"</font> <font color=blue>in</font> c);
+<font color=blue>assert</font>(<font color=red>"FIELD10"</font> !<font color=blue>in</font> c);
+
+<font color=green>// misc
+</font><font color=blue>assert</font>(c.count(<font color=red>"FIELD3"</font>) == 3);
+
+<font color=green>// range test
+</font><font color=blue>static</font> <font color=blue>assert</font>(isBidirectionalRange!(<font color=blue>typeof</font>(c[])));
+<font color=green>//c[].each!(e =&gt; assert(e.name.startsWtih("FIELD")));
+</font>
+<font color=green>// build a new container based on range
+</font><font color=blue>auto</font> a = c[].filter!(e =&gt; e.name == <font color=red>"FIELD3"</font>);
+<font color=green>//auto d = new FieldContainer!Field(a);
+</font></pre>
 <br><br>
 <dl><dt><big><a name="FieldContainer._list"></a>T[] <u>_list</u>;
 </big></dt>
@@ -68,9 +86,34 @@ c ~= <font color=blue>new</font> Field(<font color=red>"FIELD4"</font>, <font co
 current length of the container when adding elements<br><br>
 
 </dd>
+<dt><big><a name="FieldContainer.this"></a>this(ushort <i>preAllocSize</i> = PRE_ALLOC_SIZE);
+</big></dt>
+<dd>Constructor taking an optional parameter
+<br><br>
+<b>Params:</b><br>
+<table><tr><td>ushort <i>preAllocSize</i></td>
+<td>preallocation of the inner array</td></tr>
+</table><br>
+
+</dd>
+<dt><big><a name="FieldContainer.this.2"></a>this(Range <i>r</i>);
+</big></dt>
+<dd>Constructor taking an input range
+<br><br>
+<b>Params:</b><br>
+<table><tr><td>Range <i>r</i></td>
+<td>range</td></tr>
+</table><br>
+
+</dd>
+<dt><big><a name="FieldContainer.opSlice"></a>Range <u>opSlice</u>();
+</big></dt>
+<dd>Return a range on the container<br><br>
+
+</dd>
 <dt><big><a name="FieldContainer.size"></a>@property ulong <u>size</u>();
 </big></dt>
-<dd>get container number of elements<br><br>
+<dd>Get container number of elements<br><br>
 
 </dd>
 <dt><big><a name="FieldContainer.length"></a>@property ulong <u>length</u>();
@@ -80,7 +123,7 @@ current length of the container when adding elements<br><br>
 </dd>
 <dt><big><a name="FieldContainer.names"></a>TNAME[] <u>names</u>();
 </big></dt>
-<dd>get all elements <u>names</u><br><br>
+<dd>Return all elements <u>names</u><br><br>
 
 </dd>
 <dt><big><a name="FieldContainer.opOpAssign"></a>void <u>opOpAssign</u>(string op)(T <i>element</i>) if (op == "~");
@@ -90,12 +133,14 @@ current length of the container when adding elements<br><br>
 </dd>
 <dt><big><a name="FieldContainer.opIndex"></a>T <u>opIndex</u>(size_t <i>i</i>);
 </big></dt>
-<dd>[] operator to retrieve <i>i</i>-th element object
+<dd>[] operator to retrieve <i>i</i>-th element
 <br><br>
 <b>Params:</b><br>
 <table><tr><td>size_t <i>i</i></td>
-<td>index of the <i>i</i>-th element object to retrieve</td></tr>
+<td>index of the <i>i</i>-th element to retrieve</td></tr>
 </table><br>
+<b>Returns:</b><br>
+An element of type T<br><br>
 
 </dd>
 <dt><big><a name="FieldContainer.opIndex.2"></a>T[] <u>opIndex</u>(TNAME <i>name</i>);
@@ -106,22 +151,43 @@ current length of the container when adding elements<br><br>
 <table><tr><td>TNAME <i>name</i></td>
 <td><i>name</i> of the element to retrieve</td></tr>
 </table><br>
+<b>Returns:</b><br>
+An array of elements of type T<br><br>
 
 </dd>
-<dt><big><a name="FieldContainer.opSlice"></a>T[] <u>opSlice</u>(size_t <i>i</i>, size_t <i>j</i>);
+<dt><big><a name="FieldContainer.opSlice.2"></a>T[] <u>opSlice</u>(size_t <i>i</i>, size_t <i>j</i>);
 </big></dt>
-<dd>slicing operator<br><br>
+<dd>Slicing operating
+<br><br>
+<b>Params:</b><br>
+<table><tr><td>size_t <i>i</i></td>
+<td>lower index</td></tr>
+<tr><td>size_t <i>j</i></td>
+<td>upper index</td></tr>
+</table><br>
+<b>Returns:</b><br>
+An array of elements of type T<br><br>
 
 </dd>
 <dt><big><a name="FieldContainer.get"></a>T <u>get</u>(TNAME <i>name</i>, ushort <i>index</i> = 0);
 </big></dt>
 <dd><u>get</u> the i-th field whose is passed as argument in case of duplicate
- field names (starting from 0)<br><br>
+ field names (starting from 0)
+<br><br>
+<b>Returns:</b><br>
+An array of elements of type T<br><br>
 
 </dd>
 <dt><big><a name="FieldContainer.opDispatch"></a>@property TVALUE <u>opDispatch</u>(TNAME name)();
 </big></dt>
-<dd>to match an element more easily<br><br>
+<dd>Get the value of element
+<br><br>
+<b>Params:</b><br>
+<table><tr><td>name</td>
+<td>name of the element to retrieve</td></tr>
+</table><br>
+<b>Returns:</b><br>
+value of the first element found<br><br>
 
 </dd>
 <dt><big><a name="FieldContainer.opDispatch.2"></a>TVALUE <u>opDispatch</u>(TNAME name)(ushort <i>index</i>);
@@ -131,7 +197,12 @@ current length of the container when adding elements<br><br>
 </dd>
 <dt><big><a name="FieldContainer.remove"></a>void <u>remove</u>(TNAME <i>name</i>);
 </big></dt>
-<dd><u>remove</u> all elements matching <i>name</i> (as the same <i>name</i> may appear several times)<br><br>
+<dd><u>remove</u> all elements matching <i>name</i> (as the same <i>name</i> may appear several times)
+<br><br>
+<b>Params:</b><br>
+<table><tr><td>TNAME <i>name</i></td>
+<td><i>name</i> of the elements to <u>remove</u></td></tr>
+</table><br>
 
 </dd>
 <dt><big><a name="FieldContainer.remove.2"></a>void <u>remove</u>(TNAME[] <i>name</i>);
@@ -146,7 +217,7 @@ current length of the container when adding elements<br><br>
 </dd>
 <dt><big><a name="FieldContainer.sum"></a>U <u>sum</u>(U)(TNAME <i>name</i>);
 </big></dt>
-<dd><u>sum</u> of elements converted to type U<br><br>
+<dd>Returns the <u>sum</u> of elements converted to type U<br><br>
 
 </dd>
 <dt><big><a name="FieldContainer.max"></a>U <u>max</u>(U)(TNAME <i>name</i>);
@@ -159,7 +230,7 @@ current length of the container when adding elements<br><br>
 <dd>get the minimum of all elements converted to type U<br><br>
 
 </dd>
-<dt><big><a name="FieldContainer.opApply"></a>int <u>opApply</u>(int delegate(ref T) <i>dg</i>);
+<dt><big><a name="FieldContainer.opBinaryRight"></a>T[]* <u>opBinaryRight</u>(string op)(TNAME <i>name</i>);
 </big></dt>
 <dd>iter<br><br>
 

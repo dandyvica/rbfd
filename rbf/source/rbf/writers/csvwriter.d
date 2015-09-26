@@ -1,4 +1,5 @@
 module rbf.writers.csvwriter;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.file;

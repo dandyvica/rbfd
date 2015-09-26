@@ -16,7 +16,37 @@ Alain Viguier
 <dl><dt><big><a name="Record"></a>class <u>Record</u>: <u>rbf.fieldcontainer.FieldContainer!(Field).FieldContainer</u>;
 </big></dt>
 <dd>This record class represents a record as found in record-based files<br><br>
+<b>Examples:</b><br>
+<pre class="d_code">
+<font color=green>// check wrong arguments
+</font>assertThrown(<font color=blue>new</font> <u>Record</u>(<font color=red>""</font>, <font color=red>"Rec description"</font>));
 
+<font color=green>// main test
+</font><font color=blue>auto</font> rec = <font color=blue>new</font> <u>Record</u>(<font color=red>"RECORD_A"</font>, <font color=red>"This is my main and top record"</font>);
+
+rec ~= <font color=blue>new</font> Field(<font color=red>"FIELD1"</font>, <font color=red>"Desc1"</font>, <font color=red>"A/N"</font>, 10);
+rec ~= <font color=blue>new</font> Field(<font color=red>"FIELD2"</font>, <font color=red>"Desc2"</font>, <font color=red>"A/N"</font>, 10);
+rec ~= <font color=blue>new</font> Field(<font color=red>"FIELD3"</font>, <font color=red>"Desc3"</font>, <font color=red>"A/N"</font>, 10);
+rec ~= <font color=blue>new</font> Field(<font color=red>"FIELD2"</font>, <font color=red>"Desc2"</font>, <font color=red>"A/N"</font>, 10);
+rec ~= <font color=blue>new</font> Field(<font color=red>"FIELD2"</font>, <font color=red>"Desc2"</font>, <font color=red>"A/N"</font>, 10);
+
+<font color=green>// test properties
+</font><font color=blue>assert</font>(rec.name == <font color=red>"RECORD_A"</font>);
+<font color=blue>assert</font>(rec.description == <font color=red>"This is my main and top record"</font>);
+
+<font color=green>// set value
+</font><font color=blue>auto</font> s = <font color=red>"AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEE"</font>;
+rec.value = s;
+<font color=blue>assert</font>(rec.value == s);
+
+<font color=green>// test fields
+</font><font color=blue>assert</font>(rec[0].name == <font color=red>"FIELD1"</font>);
+<font color=blue>assert</font>(rec[0].description == <font color=red>"Desc1"</font>);
+<font color=blue>assert</font>(rec[0].length == 10);
+<font color=blue>assert</font>(rec.fieldNames == [<font color=red>"FIELD1"</font>, <font color=red>"FIELD2"</font>, <font color=red>"FIELD3"</font>, <font color=red>"FIELD2"</font>, <font color=red>"FIELD2"</font>]);
+<font color=blue>assert</font>(rec.fieldValues == [<font color=red>"AAAAAAAAAA"</font>, <font color=red>"BBBBBBBBBB"</font>, <font color=red>"CCCCCCCCCC"</font>, <font color=red>"DDDDDDDDDD"</font>, <font color=red>"EEEEEEEEEE"</font>]);
+</pre>
+<br><br>
 <dl><dt><big><a name="Record.this"></a>this(in string <i>name</i>, in string <i>description</i>);
 </big></dt>
 <dd>creates a new record object
