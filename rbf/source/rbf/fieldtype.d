@@ -1,10 +1,12 @@
 module rbf.fieldtype;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.conv;
 import std.string;
 import std.regex;
 import std.algorithm;
+import std.exception;
 
 /***********************************
  * all possible field types for a field
@@ -18,19 +20,21 @@ enum AtomicType {
 	ALPHANUMERICAL
 }
 
+/***********************************
+ * types boil down to only 2 basic types
+ */
 enum RootType { STRING, NUMERIC }
 
 // filter matching method pointer
 alias MATCH_FILTER = bool delegate(string,string,string);
 
 /***********************************
- *This field class represents a field as found
- * in record-based files
+ * This field type class represents possible field types
  */
 class FieldType {
 private:
 
-	string _declaredType;								/// the field type as read from the layout file
+	string _stringType;								/// the field type as read from the layout file
 	AtomicType _atom;										/// the corresponding "real" type
 	RootType _root;											/// main type
 	Regex!char _re;				  						/// the pattern the field should stick to
@@ -38,21 +42,16 @@ private:
 
 public:
 	/**
- 	 * creates a new type for a field object
+ 	 * creates a new type from a string type
 	 *
 	 * Params:
 	 *  type = whether the field holds numerical, alphanumerical... data
-	 *
-	 * Examples:
-  	 * -----------------------------------------------------------------------
- 	 * auto ft = new FieldType('A/N');
-  	 * -----------------------------------------------------------------------
 	 */
 	this(in string type)
 	// verify pre-conditions
 	{
 		// set type according to what is passed
-		_declaredType = type;
+		_stringType = type;
 
 		switch (type)
 		{
@@ -86,21 +85,54 @@ public:
 				throw new Exception("error: unknown field type %s".format(type));
 		}
 	}
+	///
+	unittest {
+		auto ft = new FieldType("A/N");
+		assertThrown(new FieldType("COMPLEX"));
+	}
 
-	// properties
+	/// return atomic type
 	@property AtomicType type() { return _atom; }
+	///
+	unittest {
+		auto ft = new FieldType("A/N");
+		assert(ft.type == AtomicType.ALPHANUMERICAL);
+	}
+
+	/// return root type which is either only string or numeric
 	@property RootType rootType() { return _root; }
+	///
+	unittest {
+		auto ft = new FieldType("N");
+		assert(ft.rootType == RootType.NUMERIC);
+	}
+
+	/// set field type regex pattern
 	@property void pattern(string p) { _re = regex(p); }
 
-	// toString
+	/// return the string type passed to ctor
+	@property string stringType() { return _stringType; }
+	///
+	unittest {
+		auto ft = new FieldType("N");
+		assert(ft.stringType == "N");
+	}
+
+
+	/// toString
 	override string toString()
 	{
 		return format("type=%s, rootType=%s, pattern=%s", _atom, _root, _re);
 	}
 
-	// test a filter
+	/// test a filter
 	bool testFieldFilter(string lvalue, string op, string rvalue) {
 		return _filterTestCallback(lvalue, op, rvalue);
+	}
+	///
+	unittest {
+		auto ft = new FieldType("N");
+		assert(ft.testFieldFilter("50", ">", "40"));
 	}
 
 	// templated tester for testing a value against a filter and an operator
@@ -129,23 +161,5 @@ public:
 		}
 		return condition;
 	}
-
-}
-
-
-import std.exception;
-unittest {
-	writefln("-------------------------------------------------------------");
-	writeln(__FILE__);
-	writefln("-------------------------------------------------------------");
-
-	// check wrong arguments
-	assertThrown(new FieldType("B"));
-
-	// create new field and check methods
-	auto ft = new FieldType("AN");
-
-	assert(ft.type == AtomicType.ALPHANUMERICAL);
-	writeln(ft);
 
 }

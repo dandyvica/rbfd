@@ -53,7 +53,7 @@ public:
 
 			// pre-allocate array of fields
 			super();
-			writefln("created %s %s", name, description);
+			//writefln("created %s %s", name, description);
 	}
 
 	// set/get properties

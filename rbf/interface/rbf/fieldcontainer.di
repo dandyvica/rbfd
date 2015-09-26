@@ -1,5 +1,6 @@
 // D import file generated from 'source/rbf/fieldcontainer.d'
 module rbf.fieldcontainer;
+pragma (msg, "========> Compiling module ", "rbf.fieldcontainer");
 import std.stdio;
 import std.container.array;
 import std.conv;
@@ -48,6 +49,10 @@ class FieldContainer(T)
 				{
 					return items[tail];
 				}
+				@property Range save()
+				{
+					return this;
+				}
 				void popBack()
 				{
 					tail--;
@@ -55,6 +60,10 @@ class FieldContainer(T)
 				void popFront()
 				{
 					head++;
+				}
+				T opIndex(size_t i)
+				{
+					return items[i];
 				}
 			}
 			Range opSlice()
@@ -72,6 +81,10 @@ class FieldContainer(T)
 			static string getMembersData(string memberName)
 			{
 				return "return array(_list.map!(e => e." ~ memberName ~ "));";
+			}
+			TNAME[] names()
+			{
+				mixin(getMembersData("name"));
 			}
 			void opOpAssign(string op)(T element) if (op == "~")
 			{
@@ -136,17 +149,6 @@ class FieldContainer(T)
 				auto values = _list.filter!((e) => e.name == name).map!((e) => to!U(e.value));
 				return values.reduce!(std.algorithm.comparison.min);
 			}
-			int opApply(int delegate(ref T) dg)
-			{
-				int result = 0;
-				foreach (T e; _list)
-				{
-					result = dg(e);
-					if (result)
-						break;
-				}
-				return result;
-			}
 			T[]* opBinaryRight(string op)(TNAME name)
 			{
 				static if (op == "in")
@@ -159,10 +161,9 @@ class FieldContainer(T)
 			{
 				return _list.count!"a.name == b"(name);
 			}
-			void inspect()
+			bool opEquals(TNAME[] list)
 			{
-				writefln("_list   => %s", _list);
-				writefln("_map    => %s", _map);
+				return names == list;
 			}
 		}
 	}

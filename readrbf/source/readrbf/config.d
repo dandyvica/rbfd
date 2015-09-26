@@ -1,4 +1,5 @@
 module rbf.config;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.file;
@@ -13,13 +14,11 @@ import std.range;
 import std.functional;
 import std.regex;
 
-//static Config configSettings;
-
 import yaml;
 
 alias RECORD_MAPPER = string delegate(string);
 
-// configuration file name
+/// configuration file name
 immutable yamlSettings = "rbf.yaml";
 
 
@@ -51,29 +50,33 @@ public:
 	/**
 	 * read the YAML configuration file
 	 *
-	 * Examples:
-	 * --------------
-	 * auto conf = new Setting();
-	 * --------------
+   * Params:
+	 * 	yamlConfigFile = optional file configuration file
 	 */
-	this() {
+	this(string yamlConfigFile) {
 
     // settings file
     string settingsFile;
 
-    // first possible location is current directory
-    if (exists(getcwd ~ yamlSettings)) {
-      settingsFile = getcwd ~ yamlSettings;
+    // if file is passed, take it
+    if (yamlConfigFile != "") {
+      settingsFile = yamlConfigFile;
     }
     else {
-      // YAML settings file location is OS-dependent
-      version(linux) {
-        _rbfhome = environment["HOME"] ~ "/.rbf/";
-        settingsFile = _rbfhome ~ "rbf.yaml";
+      // first possible location is current directory
+      if (exists(getcwd ~ yamlSettings)) {
+        settingsFile = getcwd ~ yamlSettings;
       }
-      version(win64) {
-        _rbfhome = environment["APPDATA"];
-         settingsFile = _rbfhome ~ `\local\rbf\rbf.yaml`;
+      else {
+        // YAML settings file location is OS-dependent
+        version(linux) {
+          _rbfhome = environment["HOME"] ~ "/.rbf/";
+          settingsFile = _rbfhome ~ "rbf.yaml";
+        }
+        version(win64) {
+          _rbfhome = environment["APPDATA"];
+           settingsFile = _rbfhome ~ `\local\rbf\rbf.yaml`;
+        }
       }
     }
 

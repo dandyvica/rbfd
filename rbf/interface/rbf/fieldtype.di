@@ -1,10 +1,12 @@
 // D import file generated from 'source/rbf/fieldtype.d'
 module rbf.fieldtype;
+pragma (msg, "========> Compiling module ", "rbf.fieldtype");
 import std.stdio;
 import std.conv;
 import std.string;
 import std.regex;
 import std.algorithm;
+import std.exception;
 enum AtomicType 
 {
 	FLOAT,
@@ -23,7 +25,7 @@ class FieldType
 {
 	private 
 	{
-		string _declaredType;
+		string _stringType;
 		AtomicType _atom;
 		RootType _root;
 		Regex!char _re;
@@ -34,6 +36,7 @@ class FieldType
 			@property AtomicType type();
 			@property RootType rootType();
 			@property void pattern(string p);
+			@property string stringType();
 			override string toString();
 			bool testFieldFilter(string lvalue, string op, string rvalue);
 			static string testFilter(T)(string op)
@@ -80,4 +83,3 @@ class FieldType
 		}
 	}
 }
-import std.exception;

@@ -1,4 +1,5 @@
 module rbf.layout;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.file;
@@ -10,6 +11,10 @@ import std.algorithm;
 
 import rbf.field;
 import rbf.record;
+
+version(unittest) {
+	immutable test_file = "./test/world_data.xml";
+}
 
 
 /***********************************
@@ -29,11 +34,6 @@ public:
 	 *
 	 * Params:
 	 *	xmlFile = name of the record/field definition list
-	 *
-	 * Examples:
-	 * --------------
-	 * auto layout = new Layout("my_def_file.xml");
-	 * --------------
 	 */
 	this(string xmlFile)
 	{
@@ -87,6 +87,11 @@ public:
 
 		xml.parse();
 	}
+	///
+	unittest {
+		auto l = new Layout(test_file);
+		assertThrown(new Layout("foo.xml"));
+	}
 
 	/**
 	 * associative array of all records
@@ -97,11 +102,17 @@ public:
 	 * string description of the XML structure
 	 */
 	@property string description() { return _description; }
+	///
+	unittest {
+		auto l = new Layout(test_file);
+		assert(l.description == "Continents, countries, cities");
+	}
 
 	/**
 	 * length of each record of the XML structure
 	 */
 	@property ulong length() { return _length; }
+
 
 	/**
 	 * [] operator to retrieve the record by name
@@ -114,9 +125,16 @@ public:
 	{
 		return _records[recName];
 	}
+	///
+	unittest {
+		auto l = new Layout(test_file);
+		assert(l.records.length == 2);
+		assert(l["CONT"].name == "CONT");
+		assert(l["COUN"].description == "Country data");
+	}
 
 	/**
-	 * test if a field name is present in record
+	 * test if a field name is present in layout (== in all records)
 	 *
 	 * Params:
 	 * 	fieldName = name of the field to look for
@@ -135,15 +153,13 @@ public:
 			return null;
 		}
 	}
-
-	/**
-	 * to loop with foreach loop on all records of the layout
-	 *
-	 */
-	 /*
-	 @property bool empty() const { return _records.length == 0; }
-	 @property ref Layout front() { return _records[0]; }
-	 void popFront() { _records = _records[1..$]; }*/
+	///
+	unittest {
+		auto l = new Layout(test_file);
+		assert("CAPITAL" in l);
+		assert("POPULATION" in l);
+		assert("FOO" !in l);
+	}
 
  	/**
 	 * to loop with foreach loop on all records of the layout
@@ -198,27 +214,35 @@ public:
 							.filter!(e => e !in recordMap)
 							.each!(e => _records[e].keep = false);
 	}
+	///
+	unittest {
+		auto l = new Layout(test_file);
+		l.keepOnly(["CONT": ["NAME", "POPULATION"], "COUN": ["CAPITAL"]]);
+		assert(l["CONT"] == ["NAME", "POPULATION"]);
+		assert(l["COUN"] == ["CAPITAL"]);
+	}
 
 	/**
-	 * for each record, remove each field in the list. If field
+	 * for each record, remove each field not in the list. If field
 	 * is not in the record, just loop
 	 *
 	 * Params:
 	 *	fieldList = list of fields to get rid of
-	 *
-	 * Examples:
-	 * --------------
-	 * layout.pruneAll(["FIELD1", "FIELD2"]);
-	 * --------------
 	 */
 	void removeFromAllRecords(string[] fieldList) {
-		_records.each!(r => r.keepOnly(fieldList));
+		_records.each!(r => r.remove(fieldList));
+	}
+	///
+	unittest {
+		auto l = new Layout(test_file);
+		l.removeFromAllRecords(["ID", "NAME", "POPULATION"]);
+		assert(l["CONT"] == ["AREA", "DENSITY", "CITY"]);
+		assert(l["COUN"] == ["CAPITAL"]);
 	}
 
 	/**
 	 * validate syntax: check if record length is matching file length
 	 * is not in the record, just loop
-	 * --------------
 	 */
 	void validate() {
 		foreach (rec; this) {
@@ -232,21 +256,4 @@ public:
 	}
 
 
-}
-
-unittest {
-	writefln("-------------------------------------------------------------");
-	writeln(__FILE__);
-	writefln("-------------------------------------------------------------");
-
-	writefln("---- avant layout");
-
-	auto layout = new Layout("./test/world_data.xml");
-	writefln("---- apres layout");
-	foreach (rec; layout)
-	{
-		writeln(rec);
-	}
-
-	//core.stdc.stdlib.exit(0);
 }

@@ -1,4 +1,5 @@
 module rbf.fieldcontainer;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.container.array;
@@ -11,7 +12,9 @@ import std.typecons;
 
 immutable uint PRE_ALLOC_SIZE = 30;
 
-
+/***********************************
+ * Generic container for field-like objects
+ */
 class FieldContainer(T) {
 package:
 
@@ -38,20 +41,22 @@ public:
 		ulong tail = 0;
 
 		this(T[] list) {
-
 				items = list;
 				head = 0;
 				tail = list.length - 1;
-
 		}
 
 		@property bool empty() const { return items.length == head; }
 		@property ref T front() { return items[head]; }
 		@property ref T back() { return items[tail]; }
+		@property Range save() { return this; }
 		void popBack() {  tail--; }
 		void popFront() {	head++;	}
+
+		T opIndex(size_t i) { return items[i]; }
 	}
 
+	/// return a range on the container
 	Range opSlice() {
 		return Range(_list);
 	}
@@ -59,7 +64,10 @@ public:
 	//----------------------------------------------------------------------------
 	// properties
 	//----------------------------------------------------------------------------
+	/// get container number of elements
 	@property ulong size() { return _list.length; }
+
+	/// get length of all elements
 	@property ulong length() { return _length; }
 
 	//----------------------------------------------------------------------------
@@ -69,9 +77,13 @@ public:
 		return "return array(_list.map!(e => e." ~ memberName ~ "));";
 	}
 
+	/// get all elements names
+	TNAME[] names() { mixin(getMembersData("name")); }
+
 	//----------------------------------------------------------------------------
 	// add methods
 	//----------------------------------------------------------------------------
+	/// append a new element
 	void opOpAssign(string op)(T element) if (op == "~") {
 		_list ~= element;
 		_map[element.name] ~= element;
@@ -88,11 +100,6 @@ public:
 	 *
 	 * Params:
 	 *	i = index of the i-th element object to retrieve
-	 *
-	 * Examples:
-	 * --------------
-	 * auto e = fieldContainer[0]  // returns the first element object
-	 * --------------
 	 */
 	T opIndex(size_t i) {
 		assert(0 <= i && i < _list.length, "index %d is out of bounds for _list[]".format(i));
@@ -103,28 +110,19 @@ public:
 	 * [] operator to retrieve field object whose name is passed as an argument
 	 *
 	 * Params:
-	 *	name of the element to retrieve
-	 *
-	 * Examples:
-	 * --------------
-	 * auto e = fieldContainer["FIELD1"]  // returns the elemnt objects named FIELD1
-	 * --------------
+	 *	name = name of the element to retrieve
 	 */
 	T[] opIndex(TNAME name) {
 		assert(name in this, "element %s is not found in container".format(name));
 		return _map[name];
 	}
 
+	/// slicing operator
 	T[] opSlice(size_t i, size_t j) { return _list[i..j]; }
 
 	/**
 		 * get the i-th field whose is passed as argument in case of duplicate
 		 * field names (starting from 0)
-		 * Examples:
-		 * --------------
-		 * fieldContainer.get("FIELD",5) // return the field object of the 6-th field named FIELD
-		 * fieldContainer.get("FIELD") // return the first field object named FIELD
-		 * --------------
 		 */
 	T get(TNAME name, ushort index = 0)
   {
@@ -136,11 +134,6 @@ public:
 
 	/**
 	 * to match an element more easily
-	 *
-	 * Examples:
-	 * --------------
-	 * fieldContainer.FIELD1 returns the value of the fieldContainer named FIELD1
-	 * --------------
 	 */
 	@property TVALUE opDispatch(TNAME name)()
 	{
@@ -149,19 +142,12 @@ public:
 
 	/**
 	 * to match an element more easily
-	 *
-	 * Examples:
-	 * --------------
-	 * fieldContainer.FIELD(5) returns the value of the 6-th element named FIELD
-	 * --------------
 	 */
 	TVALUE opDispatch(TNAME name)(ushort index)
 	{
 		//enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
 		return _map[name][index].value;
 	}
-
-
 
   //----------------------------------------------------------------------------
 	// remove methods
@@ -187,18 +173,18 @@ public:
 	//----------------------------------------------------------------------------
 	// reduce methods
 	//----------------------------------------------------------------------------
-	// sum of elements converted to type U
+	/// sum of elements converted to type U
 	U sum(U)(TNAME name) {
 		return _list.filter!(e => e.name == name).map!(e => to!U(e.value)).sum();
 	}
 
-	// get the maximum of all elements converted to type U
+	/// get the maximum of all elements converted to type U
 	U max(U)(TNAME name) {
 		auto values = _list.filter!(e => e.name == name).map!(e => to!U(e.value));
 		return values.reduce!(std.algorithm.comparison.max);
 	}
 
-	// get the minimum of all elements converted to type U
+	/// get the minimum of all elements converted to type U
 	U min(U)(TNAME name) {
 		auto values = _list.filter!(e => e.name == name).map!(e => to!U(e.value));
 		return values.reduce!(std.algorithm.comparison.min);
@@ -207,6 +193,8 @@ public:
 	//----------------------------------------------------------------------------
 	// "iterator" methods
 	//----------------------------------------------------------------------------
+	/// iter
+	/*
 	int opApply(int delegate(ref T) dg)	{
 		int result = 0;
 
@@ -215,7 +203,7 @@ public:
 		    if (result)	break;
 		}
 		return result;
-	}
+	}*/
 
 	//----------------------------------------------------------------------------
 	// belonging methods
@@ -225,18 +213,18 @@ public:
 		static if (op == "in") { return (name in _map); }
 	}
 
+
+
 	//----------------------------------------------------------------------------
 	// misc. methods
 	//----------------------------------------------------------------------------
-	// count number of elements having the same name
+	/// count number of elements having the same name
 	auto count(TNAME name) { return _list.count!("a.name == b")(name); }
 
-
-	void inspect() {
-		//_list.each!(e => writeln(e));
-	writefln("_list   => %s", _list);
-	writefln("_map    => %s", _map);
-	//writefln("index  => %s", index);
+	/// test if all elements match names
+	bool opEquals(TNAME[] list)
+	{
+		return names == list;
 	}
 
 	//----------------------------------------------------------------------------
@@ -245,60 +233,62 @@ public:
 
 
 }
-
-
-
+///
 unittest {
 
 	import rbf.field;
 
-	writefln("-------------------------------------------------------------");
-	writeln(__FILE__);
-	writefln("-------------------------------------------------------------");
+	auto c = new FieldContainer!Field();
+	c ~= new Field("FIELD1", "value1", "A/N", 10);
+	c ~= new Field("FIELD2", "value2", "A/N", 30);
+	c ~= new Field("FIELD2", "value2", "A/N", 30);
+	c ~= new Field("FIELD3", "value3", "N", 20);
+	c ~= new Field("FIELD3", "value3", "N", 20);
+	c ~= new Field("FIELD3", "value3", "N", 20);
+	c ~= new Field("FIELD4", "value4", "A/N", 20);
 
-		auto c = new FieldContainer!Field();
-		foreach (j; 1..3) {
-			foreach (i; 1..6) {
-				auto f = new Field("FIELD"~to!string(i),"First field","AN",5);
-				f.value = to!string(j-1+i*i);
-				c ~= f;
-			}
-		}
+	auto i=1;
+	foreach (f; c) {
+		f.value = to!string(i++*10);
+	}
 
-		//writeln(c.myRange.take(2));
-		c.inspect();
+	// properties
+	assert(c.size == 7);
+	assert(c.length == 150);
+	assert(c.names == ["FIELD1","FIELD2","FIELD2","FIELD3","FIELD3","FIELD3","FIELD4"]);
 
-	  //writefln("\nindexes=%s\n",c.index("FIELD5"));
-		writeln("\nremove"); c.remove("FIELD5"); c.inspect();
-		writeln("\nremove"); c.remove("FIELD5"); c.inspect();
-		writeln("\nremove"); c.remove(["FIELD1","FIELD3"]); c.inspect();
-		writeln("\nkeep"); c.keepOnly(["FIELD2","FIELD4"]); c.inspect();
+	// opEquals
+	assert(c == ["FIELD1","FIELD2","FIELD2","FIELD3","FIELD3","FIELD3","FIELD4"]);
 
-		writefln("\ncount: %d", c.count("FIELD2"));
+	// opindex
+	assert(c[0] == tuple("FIELD1","value1","A/N",10UL));
+	assert(c["FIELD3"].length == 3);
+	assert(c["FIELD3"][1].value!int == 50);
+	assert(c[2..4][1] == tuple("FIELD3", "value3", "N", 20UL));
 
-		writefln("\nsum: %f", c.sum!float("FIELD2"));
-		writefln("\nmax: %f", c.max!float("FIELD2"));
-		c.inspect();
+	// get
+	assert(c.get("FIELD3") == tuple("FIELD3", "value3", "N", 20UL));
 
-		writeln("postblit");
-		auto d = c;
+	// dispatch
+	assert(c.FIELD3 == "40");
+	assert(c.FIELD3(1) == "50");
 
-		d.each!(e => e.value = "1");
+	// arithmetic
+	assert(c.sum!int("FIELD3") == 150);
+	assert(c.min!int("FIELD3") == 40);
+	assert(c.max!int("FIELD3") == 60);
 
-		foreach (e; d) {
-			writeln(e);
-		}
-		d.inspect;
+	// in
+	assert("FIELD4" in c);
+	assert("FIELD10" !in c);
 
-		writeln("------------------------------------------------------------");
+	// misc
+	assert(c.count("FIELD3") == 3);
 
-		auto e = new FieldContainer!Field();
-		e ~= new Field("FIELD_A","First field","AN",5);
-		e ~= new Field("FIELD_B","First field","AN",5);
-		e ~= new Field("FIELD_B","First field","AN",5);
-		e ~= new Field("FIELD_B","First field","AN",5);
-		e ~= new Field("FIELD_A","First field","AN",5);
-		e ~= new Field("FIELD_C","First field","AN",5);
+	// range test
+	static assert(isBidirectionalRange!(typeof(c[])));
+	//c[].each!(e => assert(e.name.startsWtih("FIELD")));
 
-
+	auto a = c[].filter!(e => e.name == "FIELD3");
+	writeln(typeid(a));
 }

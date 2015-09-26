@@ -95,7 +95,7 @@ public:
 
 				_worksheetFile[rec.name].startRow();
 				rec.each!(f => _worksheetFile[rec.name].strCell(format(`%s (%s,%d)`,
-					f.name, f.declaredType, f.length)));
+					f.name, f.fieldType.stringType, f.length)));
 				_worksheetFile[rec.name].endRow();
 			}
 		}

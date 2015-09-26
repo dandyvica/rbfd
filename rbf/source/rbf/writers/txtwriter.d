@@ -1,4 +1,5 @@
 module rbf.writers.txtwriter;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.file;
@@ -29,7 +30,7 @@ public:
 				_fh.writeln();
 
 			rec.each!(
-				f => 	_fh.writef("%-*s|", f.cell_length, f.name)
+				f => 	_fh.writef("%-*s|", f.cellLength, f.name)
 			);
 
 				/*
@@ -41,7 +42,7 @@ public:
 	  }
 
 		rec.each!(
-			f => 	_fh.writef("%-*s|", f.cell_length, f.value)
+			f => 	_fh.writef("%-*s|", f.cellLength, f.value)
 		);
 
 /*

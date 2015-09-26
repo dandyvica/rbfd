@@ -1,10 +1,13 @@
 // D import file generated from 'source/rbf/field.d'
 module rbf.field;
+pragma (msg, "========> Compiling module ", "rbf.field");
 import std.stdio;
 import std.conv;
 import std.string;
 import std.regex;
 import std.algorithm;
+import std.typecons;
+import std.exception;
 import rbf.fieldtype;
 class Field
 {
@@ -14,7 +17,6 @@ class Field
 		string _name;
 		immutable string _description;
 		immutable ulong _length;
-		immutable string _type;
 		string _rawValue;
 		string _strValue;
 		ulong _index;
@@ -25,15 +27,13 @@ class Field
 		immutable ulong _cellLength;
 		public 
 		{
-			this(in string name, in string description, in string type, in ulong length);
-			Field dup();
+			this(in string name, in string description, FieldType ftype, in ulong length);
+			this(in string name, in string description, in string stringType, in ulong length);
 			@property string name();
-			@property void name(string name);
 			@property string description();
 			@property FieldType fieldType();
-			@property string declaredType();
 			@property ulong length();
-			@property ulong cell_length();
+			@property ulong cellLength();
 			@property string value();
 			@property T value(T)()
 			{
@@ -54,7 +54,7 @@ class Field
 			override string toString();
 			string toXML();
 			bool isFieldFilterMatched(in string op, in string rvalue);
+			bool opEquals(Tuple!(string, string, string, ulong) t);
 		}
 	}
 }
-import std.exception;

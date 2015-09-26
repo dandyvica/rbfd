@@ -1,5 +1,6 @@
 // D import file generated from 'source/rbf/config.d'
 module rbf.config;
+pragma (msg, "========> Compiling module ", "rbf.config");
 import std.stdio;
 import std.file;
 import std.string;
@@ -34,7 +35,7 @@ class Setting
 		string _rbfhome;
 		public 
 		{
-			this();
+			this(string yamlConfigFile);
 			@property string zipper();
 			LayoutConfig opIndex(string layoutName);
 		}

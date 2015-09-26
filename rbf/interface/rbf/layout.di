@@ -1,5 +1,6 @@
 // D import file generated from 'source/rbf/layout.d'
 module rbf.layout;
+pragma (msg, "========> Compiling module ", "rbf.layout");
 import std.stdio;
 import std.file;
 import std.string;
@@ -9,6 +10,10 @@ import std.exception;
 import std.algorithm;
 import rbf.field;
 import rbf.record;
+version (unittest)
+{
+	immutable test_file = "./test/world_data.xml";
+}
 class Layout
 {
 	private 

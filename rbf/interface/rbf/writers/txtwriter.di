@@ -1,5 +1,6 @@
 // D import file generated from 'source/rbf/writers/txtwriter.d'
 module rbf.writers.txtwriter;
+pragma (msg, "========> Compiling module ", "rbf.writers.txtwriter");
 import std.stdio;
 import std.file;
 import std.string;
