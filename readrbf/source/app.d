@@ -13,10 +13,10 @@ import rbf.recordfilter;
 import rbf.layout;
 import rbf.reader;
 import rbf.writers.writer;
-import rbf.config;
 
 import overpunch;
 import args;
+import config;
 
 
 int main(string[] argv)

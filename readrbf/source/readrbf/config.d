@@ -1,4 +1,4 @@
-module rbf.config;
+module config;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
@@ -53,7 +53,7 @@ public:
    * Params:
 	 * 	yamlConfigFile = optional file configuration file
 	 */
-	this(string yamlConfigFile) {
+	this(string yamlConfigFile = "") {
 
     // settings file
     string settingsFile;

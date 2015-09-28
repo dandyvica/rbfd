@@ -21,3 +21,5 @@
 - implement lazy mode
 - implment log file
 - test on Windows
+- add allowDuplicates to container
+- implement opCall to container??

@@ -17,9 +17,6 @@ import std.regex;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
-//import rbf.conf;
-
-//import util.common;
 
 // definition of useful aliases
 alias GET_RECORD_FUNCTION = string delegate(string);   /// alias for a function pointer which identifies a record

@@ -10,9 +10,9 @@ import std.regex;
 import std.range;
 import std.container.array;
 import rbf.field;
-import rbf.fieldcontainer;
+import rbf.nameditems;
 import rbf.recordfilter;
-class Record : FieldContainer!Field
+class Record : NamedItemsContainer!(Field, true)
 {
 	private 
 	{

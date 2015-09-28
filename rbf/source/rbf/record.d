@@ -16,14 +16,14 @@ import std.range;
 import std.container.array;
 
 import rbf.field;
-import rbf.fieldcontainer;
+import rbf.nameditems;
 import rbf.recordfilter;
 
 
 /***********************************
  * This record class represents a record as found in record-based files
  */
-class Record : FieldContainer!Field {
+class Record : NamedItemsContainer!(Field,true) {
 
 private:
 
@@ -100,7 +100,7 @@ public:
 	 */
 	@property string[] fieldNames()
 	{
-		mixin(FieldContainer!Field.getMembersData("name"));
+		mixin(NamedItemsContainer!(Field,true).getMembersData("name"));
 	}
 
 	/**
@@ -108,7 +108,7 @@ public:
 	 */
 	@property string[] fieldValues()
 	{
-		mixin(FieldContainer!Field.getMembersData("value"));
+		mixin(NamedItemsContainer!(Field,true).getMembersData("value"));
 	}
 
 	/**
@@ -116,7 +116,7 @@ public:
 	 */
 	@property string[] fieldRawValues()
 	{
-		mixin(FieldContainer!Field.getMembersData("rawValue"));
+		mixin(NamedItemsContainer!(Field,true).getMembersData("rawValue"));
 	}
 
 

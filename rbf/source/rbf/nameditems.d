@@ -1,4 +1,4 @@
-module rbf.fieldcontainer;
+module rbf.nameditems;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
@@ -9,18 +9,26 @@ import std.string;
 import std.process;
 import std.range;
 import std.typecons;
+import std.exception;
 
 immutable uint PRE_ALLOC_SIZE = 30;
 
 /***********************************
  * Generic container for field-like objects
  */
-class FieldContainer(T) {
+class NamedItemsContainer(T, bool allowDuplicates) {
 package:
 
 	alias TNAME  = typeof(T.name);
 	alias TVALUE = typeof(T.value);
 	alias TLENGTH = typeof(T.length);
+
+	// useful type alias whether the container accepts duplcates or not
+	static if (allowDuplicates) {
+		alias TRETURN = T[];
+	}
+	else
+		alias TRETURN = T;
 
 	T[] _list;					/// track all fields within a dynamic array
 	T[][TNAME] _map;		/// and as several instance of the same field can exist,
@@ -103,6 +111,14 @@ public:
 	/// append a new element
 	void opOpAssign(string op)(T element) if (op == "~") {
 		_list ~= element;
+
+		// if no duplicates is allowed, need to test it
+		static if (!allowDuplicates) {
+			assert(element.name !in _map,
+				"error: element name %s already in container".format(element.name));
+		}
+
+
 		_map[element.name] ~= element;
 
 		// added one element, so length is greater
@@ -137,9 +153,12 @@ public:
 	 Returns:
 	 An array of elements of type T
 	 */
-	T[] opIndex(TNAME name) {
+	TRETURN opIndex(TNAME name) {
 		assert(name in this, "element %s is not found in container".format(name));
-		return _map[name];
+		static if (allowDuplicates)
+			return _map[name];
+		else
+			return _map[name][0];
 	}
 
 	/**
@@ -167,8 +186,12 @@ public:
 	*/
 	T get(TNAME name, ushort index = 0)
   {
-		assert(name in this, "field %s is not found in record %s".format(name));
-		assert(0 <= index && index < _map[name].length, "field %s, index %d is out of bounds".format(name,index));
+		assert(name in this, "element %s is not found in record %s".format(name));
+		assert(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name,index));
+
+		static if (!allowDuplicates) {
+			assert(index == 0, "error: cannot call get method with index %d without allowing duplcated");
+		}
 
 		return _map[name][index];
 	}
@@ -191,7 +214,7 @@ public:
 	/**
 	 * to match an element more easily
 	 */
-	TVALUE opDispatch(TNAME name)(ushort index)
+	TVALUE opDispatch(TNAME name)(ushort index) if (allowDuplicates)
 	{
 		//enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
 		return _map[name][index].value;
@@ -291,7 +314,7 @@ unittest {
 
 	import rbf.field;
 
-	auto c = new FieldContainer!Field();
+	auto c = new NamedItemsContainer!(Field,true)();
 	c ~= new Field("FIELD1", "value1", "A/N", 10);
 	c ~= new Field("FIELD2", "value2", "A/N", 30);
 	c ~= new Field("FIELD2", "value2", "A/N", 30);
@@ -347,4 +370,43 @@ unittest {
 	// build a new container based on range
 	auto a = c[].filter!(e => e.name == "FIELD3");
 	//auto d = new FieldContainer!Field(a);
+
+
+	// do not accept duplicates
+	auto d = new NamedItemsContainer!(Field,false)();
+	d ~= new Field("FIELD1", "value1", "A/N", 10);
+	d ~= new Field("FIELD2", "value2", "A/N", 30);
+	//assertThrown(d ~= new Field("FIELD2", "value2", "A/N", 30));
+	d ~= new Field("FIELD3", "value3", "N", 20);
+	d ~= new Field("FIELD4", "value4", "A/N", 20);
+
+	i=1;
+	foreach (f; d) {
+		f.value = to!string(i++*10);
+	}
+
+	// properties
+	assert(d.size == 4);
+	assert(d.length == 80);
+	assert(d.names == ["FIELD1","FIELD2","FIELD3","FIELD4"]);
+
+	// opEquals
+	assert(d == ["FIELD1","FIELD2","FIELD3","FIELD4"]);
+
+	// opindex
+	assert(d[0] == tuple("FIELD1","value1","A/N",10UL));
+	assert(d["FIELD3"] == tuple("FIELD3", "value3", "N", 20UL));
+	assert(d["FIELD3"].value!int == 30);
+	assert(d[1..3][1] == tuple("FIELD3", "value3", "N", 20UL));
+
+	// get
+	assert(d.get("FIELD3") == tuple("FIELD3", "value3", "N", 20UL));
+
+	// dispatch
+	assert(d.FIELD3 == "30");
+	assert(!__traits(compiles, d.FIELD3(1) == "50"));
+
+	// belong to
+	assert("FIELD3" in d);
+
 }
