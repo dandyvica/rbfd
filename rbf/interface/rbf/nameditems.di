@@ -13,42 +13,42 @@ import std.exception;
 immutable uint PRE_ALLOC_SIZE = 30;
 class NamedItemsContainer(T, bool allowDuplicates)
 {
-	package 
+	protected 
 	{
 		alias TNAME = typeof(T.name);
 		alias TVALUE = typeof(T.value);
 		alias TLENGTH = typeof(T.length);
+		alias TLIST = T[];
+		alias TMAP = T[][TNAME];
 		static if (allowDuplicates)
 		{
-			alias TRETURN = T[];
+			alias TRETURN = TLIST;
+			ref TRETURN _contextMap(T[][TNAME] map, TNAME name)
+			{
+				return map[name];
+			}
 		}
 		else
 		{
 			alias TRETURN = T;
+			ref TRETURN _contextMap(T[][TNAME] map, TNAME name)
+			{
+				return map[name][0];
+			}
 		}
-		T[] _list;
-		T[][TNAME] _map;
+		TLIST _list;
+		TMAP _map;
 		TLENGTH _length;
+		string _name;
+		string _description;
 		public 
 		{
-			this(ushort preAllocSize = PRE_ALLOC_SIZE)
-			{
-				_list.reserve(preAllocSize);
-			}
-			this(Range r)
-			{
-				this();
-				foreach (e; r)
-				{
-					this ~= e;
-				}
-			}
 			struct Range
 			{
-				T[] items;
+				private TLIST items;
 				ulong head = 0;
 				ulong tail = 0;
-				this(T[] list)
+				this(TLIST list)
 				{
 					items = list;
 					head = 0;
@@ -83,9 +83,17 @@ class NamedItemsContainer(T, bool allowDuplicates)
 					return items[i];
 				}
 			}
-			Range opSlice()
+			this(ushort preAllocSize = PRE_ALLOC_SIZE)
 			{
-				return Range(_list);
+				_list.reserve(preAllocSize);
+			}
+			this(Range)(Range r)
+			{
+				this();
+				foreach (e; r)
+				{
+					this ~= e;
+				}
 			}
 			@property ulong size()
 			{
@@ -94,6 +102,22 @@ class NamedItemsContainer(T, bool allowDuplicates)
 			@property ulong length()
 			{
 				return _length;
+			}
+			@property string name()
+			{
+				return _name;
+			}
+			@property void name(string name)
+			{
+				_name = name;
+			}
+			@property string description()
+			{
+				return _description;
+			}
+			@property void description(string description)
+			{
+				_description = description;
 			}
 			static string getMembersData(string memberName)
 			{
@@ -122,18 +146,15 @@ class NamedItemsContainer(T, bool allowDuplicates)
 			TRETURN opIndex(TNAME name)
 			{
 				assert(name in this, "element %s is not found in container".format(name));
-				static if (allowDuplicates)
-				{
-					return _map[name];
-				}
-				else
-				{
-					return _map[name][0];
-				}
+				return _contextMap(_map, name);
 			}
 			T[] opSlice(size_t i, size_t j)
 			{
 				return _list[i..j];
+			}
+			Range opSlice()
+			{
+				return Range(_list);
 			}
 			T get(TNAME name, ushort index = 0)
 			{
@@ -182,6 +203,17 @@ class NamedItemsContainer(T, bool allowDuplicates)
 			{
 				auto values = _list.filter!((e) => e.name == name).map!((e) => to!U(e.value));
 				return values.reduce!(std.algorithm.comparison.min);
+			}
+			int sorted(int delegate(ref TRETURN) dg)
+			{
+				int result = 0;
+				foreach (TNAME name; sort(_map.keys))
+				{
+					result = dg(_contextMap(_map, name));
+					if (result)
+						break;
+				}
+				return result;
 			}
 			T[]* opBinaryRight(string op)(TNAME name)
 			{

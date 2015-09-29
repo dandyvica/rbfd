@@ -219,7 +219,7 @@ public:
 	 * return a string of the XML representation of Field
 	 */
 	string toXML() {
-		return `<field elem="%d" position="%d" name="%s" description="%s" length="%d" type="%s"/>`
+		return `<field seqnum="%d" position="%d" name="%s" description="%s" length="%d" type="%s"/>`
 				.format(index+1, offset+1, name, description, length, fieldType);
 	}
 

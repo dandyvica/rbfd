@@ -27,8 +27,6 @@ class Record : NamedItemsContainer!(Field,true) {
 
 private:
 
-	string _name;										/// record name
-	string _description;						/// record descrption
 	bool _keep = true;							/// true is we want to keep this record when
 																	/// looping using a reader
 
@@ -48,17 +46,16 @@ public:
 	this(in string name, in string description)
 	{
 			enforce(name != "", "record name should not be empty!");
-			_name        = name;
-			_description = description;
 
 			// pre-allocate array of fields
 			super();
-			//writefln("created %s %s", name, description);
+
+			// fill container name/desc
+			this.name = name;
+			this.description = description;
 	}
 
 	// set/get properties
-	@property string name() { return _name; }
-	@property string description() { return _description; }
 	@property bool keep() { return _keep; }
 	@property void keep(bool keep) { _keep = keep; }
 

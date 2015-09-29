@@ -17,55 +17,45 @@ immutable uint PRE_ALLOC_SIZE = 30;
  * Generic container for field-like objects
  */
 class NamedItemsContainer(T, bool allowDuplicates) {
-package:
+protected:
 
-	alias TNAME  = typeof(T.name);
-	alias TVALUE = typeof(T.value);
+	alias TNAME   = typeof(T.name);
+	alias TVALUE  = typeof(T.value);
 	alias TLENGTH = typeof(T.length);
+	alias TLIST   = T[];
+	alias TMAP	  = T[][TNAME];
 
 	// useful type alias whether the container accepts duplcates or not
 	static if (allowDuplicates) {
-		alias TRETURN = T[];
+		alias TRETURN = TLIST;
+		ref TRETURN _contextMap(T[][TNAME] map, TNAME name) { return map[name]; }
 	}
-	else
+	else {
 		alias TRETURN = T;
+		ref TRETURN _contextMap(T[][TNAME] map, TNAME name) { return map[name][0]; }
+	}
 
-	T[] _list;					/// track all fields within a dynamic array
-	T[][TNAME] _map;		/// and as several instance of the same field can exist,
+	TLIST _list;				/// track all fields within a dynamic array
+	TMAP _map;					/// and as several instance of the same field can exist,
 											/// need to keep track of all instances
 
 	TLENGTH _length;		/// current length of the container when adding elements
 
+	string _name;				/// container name
+	string _description;/// container descrption
+
+
+
+
 public:
-	/**	Constructor taking an optional parameter
-
-	Params:
-	preAllocSize = preallocation of the inner array
-
-	*/
-	this(ushort preAllocSize=PRE_ALLOC_SIZE) { _list.reserve(preAllocSize); }
-
-	/**	Constructor taking an input range
-
-	Params:
-	r = range
-
-	*/
-	this(Range r) {
-		this();
-		foreach (e; r) {
-			this ~= e;
-		}
-	}
-
 
 	struct Range {
-		T[] items;
+		private TLIST items;
 
 		ulong head = 0;
 		ulong tail = 0;
 
-		this(T[] list) {
+		this(TLIST list) {
 				items = list;
 				head = 0;
 				tail = list.length - 1;
@@ -81,10 +71,30 @@ public:
 		T opIndex(size_t i) { return items[i]; }
 	}
 
-	/// Return a range on the container
-	Range opSlice() {
-		return Range(_list);
+
+	/**	Constructor taking an optional parameter
+
+	Params:
+	preAllocSize = preallocation of the inner array
+
+	*/
+	this(ushort preAllocSize=PRE_ALLOC_SIZE) { _list.reserve(preAllocSize); }
+
+	/**	Constructor taking an input range
+
+	Params:
+	r = range
+
+	*/
+	this(Range)(Range r) {
+		this();
+		foreach (e; r) {
+			this ~= e;
+		}
 	}
+
+
+
 
 	//----------------------------------------------------------------------------
 	// properties
@@ -94,6 +104,14 @@ public:
 
 	/// get length of all elements
 	@property ulong length() { return _length; }
+
+	// get/set name of the container
+	@property string name() { return _name; }
+	@property void name(string name ) { _name = name; }
+
+	// get/set description of the container
+	@property string description() { return _description; }
+	@property void description(string description) { _description = description; }
 
 	//----------------------------------------------------------------------------
 	// useful mapper generation
@@ -118,7 +136,7 @@ public:
 				"error: element name %s already in container".format(element.name));
 		}
 
-
+		// add element
 		_map[element.name] ~= element;
 
 		// added one element, so length is greater
@@ -155,10 +173,7 @@ public:
 	 */
 	TRETURN opIndex(TNAME name) {
 		assert(name in this, "element %s is not found in container".format(name));
-		static if (allowDuplicates)
-			return _map[name];
-		else
-			return _map[name][0];
+		return _contextMap(_map, name);
 	}
 
 	/**
@@ -175,6 +190,11 @@ public:
 	*/
 
 	T[] opSlice(size_t i, size_t j) { return _list[i..j]; }
+
+	/// Return a range on the container
+	Range opSlice() {
+		return Range(_list);
+	}
 
 	/**
 		 * get the i-th field whose is passed as argument in case of duplicate
@@ -269,17 +289,18 @@ public:
 	//----------------------------------------------------------------------------
 	// "iterator" methods
 	//----------------------------------------------------------------------------
-	/// iter
-	/*
-	int opApply(int delegate(ref T) dg)	{
+	// foreach loop on sorted items by name
+	int sorted(int delegate(ref TRETURN) dg)
+	{
 		int result = 0;
 
-		foreach (T e; _list)	{
-		    result = dg(e);
-		    if (result)	break;
+		foreach (TNAME name; sort(_map.keys)) {
+				result = dg(_contextMap(_map, name));
+				if (result)
+					break;
 		}
 		return result;
-	}*/
+	}
 
 	//----------------------------------------------------------------------------
 	// belonging methods
@@ -288,8 +309,6 @@ public:
 	{
 		static if (op == "in") { return (name in _map); }
 	}
-
-
 
 	//----------------------------------------------------------------------------
 	// misc. methods
@@ -363,22 +382,23 @@ unittest {
 
 	// range test
 	static assert(isBidirectionalRange!(typeof(c[])));
-	//c[].each!(e => assert(e.name.startsWtih("FIELD")));
+	c[].each!(e => assert(e.name.startsWith("FIELD")));
 	auto r = array(c[].take(1));
 	assert(r[0].name == "FIELD1");
 
 	// build a new container based on range
 	auto a = c[].filter!(e => e.name == "FIELD3");
-	//auto d = new FieldContainer!Field(a);
+	auto e = new NamedItemsContainer!(Field,true)(a);
+	assert(e.size == 3);
 
 
 	// do not accept duplicates
 	auto d = new NamedItemsContainer!(Field,false)();
-	d ~= new Field("FIELD1", "value1", "A/N", 10);
-	d ~= new Field("FIELD2", "value2", "A/N", 30);
+	d ~= new Field("FIELD2", "value2", "A/N", 10);
+	d ~= new Field("FIELD1", "value1", "A/N", 30);
 	//assertThrown(d ~= new Field("FIELD2", "value2", "A/N", 30));
-	d ~= new Field("FIELD3", "value3", "N", 20);
-	d ~= new Field("FIELD4", "value4", "A/N", 20);
+	d ~= new Field("FIELD4", "value4", "N", 20);
+	d ~= new Field("FIELD3", "value3", "A/N", 20);
 
 	i=1;
 	foreach (f; d) {
@@ -388,25 +408,32 @@ unittest {
 	// properties
 	assert(d.size == 4);
 	assert(d.length == 80);
-	assert(d.names == ["FIELD1","FIELD2","FIELD3","FIELD4"]);
+	assert(d.names == ["FIELD2","FIELD1","FIELD4","FIELD3"]);
 
 	// opEquals
-	assert(d == ["FIELD1","FIELD2","FIELD3","FIELD4"]);
+	assert(d == ["FIELD2","FIELD1","FIELD4","FIELD3"]);
 
 	// opindex
-	assert(d[0] == tuple("FIELD1","value1","A/N",10UL));
-	assert(d["FIELD3"] == tuple("FIELD3", "value3", "N", 20UL));
-	assert(d["FIELD3"].value!int == 30);
-	assert(d[1..3][1] == tuple("FIELD3", "value3", "N", 20UL));
+	assert(d[0] == tuple("FIELD2", "value2", "A/N", 10UL));
+	assert(d["FIELD3"] == tuple("FIELD3", "value3", "A/N", 20UL));
+	assert(d["FIELD3"].value!int == 40);
+	assert(d[1..3][1] == tuple("FIELD4", "value4", "N", 20UL));
 
 	// get
-	assert(d.get("FIELD3") == tuple("FIELD3", "value3", "N", 20UL));
+	assert(d.get("FIELD3") == tuple("FIELD3", "value3", "A/N", 20UL));
 
 	// dispatch
-	assert(d.FIELD3 == "30");
+	assert(d.FIELD3 == "40");
 	assert(!__traits(compiles, d.FIELD3(1) == "50"));
 
 	// belong to
 	assert("FIELD3" in d);
+
+	// test sorted foreach
+	string[] names;
+	foreach (f; &d.sorted) {
+		names ~= f.name;
+	}
+	assert(names == ["FIELD1","FIELD2","FIELD3","FIELD4"]);
 
 }

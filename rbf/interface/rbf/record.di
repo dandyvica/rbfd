@@ -16,14 +16,10 @@ class Record : NamedItemsContainer!(Field, true)
 {
 	private 
 	{
-		string _name;
-		string _description;
 		bool _keep = true;
 		public 
 		{
 			this(in string name, in string description);
-			@property string name();
-			@property string description();
 			@property bool keep();
 			@property void keep(bool keep);
 			@property void value(string s);
