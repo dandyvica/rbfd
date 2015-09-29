@@ -83,10 +83,7 @@ Writer writerFactory(in string output, in string mode, Layout layout)
 			throw new Exception("error: writer unknown mode <%s>".format(mode));
 	}
 }
-
-
-
-
+///
 unittest {
 
 	import rbf.reader;

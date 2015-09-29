@@ -139,7 +139,7 @@ public:
 			recordName = _recordIdentifier(line);
 
 			// record not found ? So loop
-			if (recordName !in _layout.records) {
+			if (recordName !in _layout) {
 				writefln("error: record name <%s> not found!!", recordName);
 				continue;
 			}

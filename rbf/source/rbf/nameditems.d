@@ -171,7 +171,7 @@ public:
 	 Returns:
 	 An array of elements of type T
 	 */
-	TRETURN opIndex(TNAME name) {
+	ref TRETURN opIndex(TNAME name) {
 		assert(name in this, "element %s is not found in container".format(name));
 		return _contextMap(_map, name);
 	}
@@ -188,7 +188,6 @@ public:
 	An array of elements of type T
 
 	*/
-
 	T[] opSlice(size_t i, size_t j) { return _list[i..j]; }
 
 	/// Return a range on the container
@@ -305,9 +304,9 @@ public:
 	//----------------------------------------------------------------------------
 	// belonging methods
 	//----------------------------------------------------------------------------
-	T[]* opBinaryRight(string op)(TNAME name)
+	TLIST* opBinaryRight(string op)(TNAME name)	if (op == "in")
 	{
-		static if (op == "in") { return (name in _map); }
+		return (name in _map);
 	}
 
 	//----------------------------------------------------------------------------

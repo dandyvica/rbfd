@@ -143,7 +143,7 @@ class NamedItemsContainer(T, bool allowDuplicates)
 				assert(0 <= i && i < _list.length, "index %d is out of bounds for _list[]".format(i));
 				return _list[i];
 			}
-			TRETURN opIndex(TNAME name)
+			ref TRETURN opIndex(TNAME name)
 			{
 				assert(name in this, "element %s is not found in container".format(name));
 				return _contextMap(_map, name);
@@ -215,13 +215,9 @@ class NamedItemsContainer(T, bool allowDuplicates)
 				}
 				return result;
 			}
-			T[]* opBinaryRight(string op)(TNAME name)
+			TLIST* opBinaryRight(string op)(TNAME name) if (op == "in")
 			{
-				static if (op == "in")
-				{
-					return name in _map;
-				}
-
+				return name in _map;
 			}
 			auto count(TNAME name)
 			{

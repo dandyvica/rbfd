@@ -11,6 +11,7 @@ import std.algorithm;
 
 import rbf.field;
 import rbf.record;
+import rbf.nameditems;
 
 version(unittest) {
 	immutable test_file = "./test/world_data.xml";
@@ -20,13 +21,7 @@ version(unittest) {
 /***********************************
  * This class build the list of records and fields from an XML definition file
  */
-class Layout {
-
-private:
-
-	Record[string] _records;			/// used to hold record definition as build from XML file
-	string _description;					/// description as found is the XML <rbfile> tag
-	ulong _length;								/// length if found is <rbfile> table
+class Layout : NamedItemsContainer!(Record,false) {
 
 public:
 	/**
@@ -41,7 +36,6 @@ public:
 		enforce(exists(xmlFile), "XML definition file %s not found".format(xmlFile));
 
 
-		string[string] fd;		/// associative array to hold field data
 		string recName = "";	/// to save the record name when we find a <record> tag
 
 
@@ -51,8 +45,9 @@ public:
 		// create a new parser
 		auto xml = new DocumentParser(s);
 
-		// save description of the structure
-		_description = xml.tag.attr["description"];
+		// save metadata of the structure
+		description = xml.tag.attr["description"];
+		name = std.path.baseName(xmlFile);
 
 		// save length if any
 		if ("reclength" in xml.tag.attr) {
@@ -66,7 +61,7 @@ public:
 			recName = xml.tag.attr["name"];
 
 			// create a Record object and store it into our record aa
-			_records[recName] = new Record(recName, xml.tag.attr["description"]);
+			this  ~= new Record(recName, xml.tag.attr["description"]);
 		};
 
 		// read <field> definitions, create field and add field to previously created record
@@ -81,7 +76,7 @@ public:
 			);
 
 			// add field to our record
-			_records[recName] ~= field;
+			this[recName] ~= field;
 		};
 
 
@@ -93,88 +88,12 @@ public:
 		assertThrown(new Layout("foo.xml"));
 	}
 
-	/**
-	 * associative array of all records
-	 */
-	@property Record[string] records() { return _records; }
-
-	/**
-	 * string description of the XML structure
-	 */
-	@property string description() { return _description; }
 	///
 	unittest {
 		auto l = new Layout(test_file);
-		assert(l.description == "Continents, countries, cities");
-	}
-
-	/**
-	 * length of each record of the XML structure
-	 */
-	@property ulong length() { return _length; }
-
-
-	/**
-	 * [] operator to retrieve the record by name
-	 *
-	 * Params:
-	 * 	recName = name of the record to retrieve
-	 *
-	 */
-	ref Record opIndex(string recName)
-	{
-		return _records[recName];
-	}
-	///
-	unittest {
-		auto l = new Layout(test_file);
-		assert(l.records.length == 2);
-		assert(l["CONT"].name == "CONT");
-		assert(l["COUN"].description == "Country data");
-	}
-
-	/**
-	 * test if a field name is present in layout (== in all records)
-	 *
-	 * Params:
-	 * 	fieldName = name of the field to look for
-	 *
-	 */
-	Field[]* opBinaryRight(string op)(string fieldName)
-	{
-		static if (op == "in") {
-			// loop on all records to search for this field
-			foreach (rec; this) {
-				auto f = fieldName in rec;
-				if (f) return f;
-			}
-
-			// nothing found at this point
-			return null;
-		}
-	}
-	///
-	unittest {
-		auto l = new Layout(test_file);
-		assert("CAPITAL" in l);
-		assert("POPULATION" in l);
+		assert("COUN" in l);
+		assert("CONT" in l);
 		assert("FOO" !in l);
-	}
-
- 	/**
-	 * to loop with foreach loop on all records of the layout
-	 *
-	 */
-	int opApply(int delegate(ref Record) dg)
-	{
-		int result = 0;
-
-		foreach (recName; sort(_records.keys)) {
-				result = dg(_records[recName]);
-				if (result)
-			break;
-		}
-		return result;
 	}
 
 	/**
@@ -206,13 +125,11 @@ public:
 			// the key of recordMap is a record name
 			// for all those records, keep only those fields provided
 			foreach (e; recordMap.byKeyValue) {
-				_records[e.key].keepOnly(e.value);
+				this[e.key].keepOnly(e.value);
 			}
 
-			// for all other records non provided, just get rid of them
-			_records.byKey
-							.filter!(e => e !in recordMap)
-							.each!(e => _records[e].keep = false);
+			// for all other records not provided, just get rid of them
+			this[].filter!(e => e.name !in recordMap).each!(e => e.keep = false);
 	}
 	///
 	unittest {
@@ -230,7 +147,7 @@ public:
 	 *	fieldList = list of fields to get rid of
 	 */
 	void removeFromAllRecords(string[] fieldList) {
-		_records.each!(r => r.remove(fieldList));
+		this[].each!(r => r.remove(fieldList));
 	}
 	///
 	unittest {

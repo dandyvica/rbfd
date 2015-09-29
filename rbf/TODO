@@ -19,7 +19,7 @@
 - implement a specific field container class and corresponding range: done
 - test UTF8
 - implement lazy mode
-- implment log file
+- implement log file
 - test on Windows
-- add allowDuplicates to container
+- add allowDuplicates to container: done
 - implement opCall to container??

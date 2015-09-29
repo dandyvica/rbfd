@@ -130,7 +130,6 @@ public:
 		assert(field1.fieldType.stringType == "A/N");
 	}
 
-
 	/// read property for field length
 	@property ulong length() { return _length; }
 	///

@@ -7,4 +7,4 @@ lib/*
 obj/*
 bin/*
 temp/*
-interface/dub*
+interface/rbf/dub*
