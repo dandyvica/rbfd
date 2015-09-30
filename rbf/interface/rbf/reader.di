@@ -7,6 +7,8 @@ import std.string;
 import std.conv;
 import std.exception;
 import std.regex;
+import std.range;
+import std.algorithm;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
@@ -31,7 +33,26 @@ class Reader
 			@property Layout layout();
 			@property ulong currentReadSize();
 			@property ulong inputFileSize();
-			int opApply(int delegate(ref Record) dg);
+			Record _getRecordFromLine(char[] lineReadFromFile);
+			struct Range
+			{
+				private 
+				{
+					File _fh;
+					ulong _nbChars = (ulong).max;
+					char[] _buffer;
+					Reader _outerThis;
+					Record rec;
+					public 
+					{
+						this(string fileName, Reader outer);
+						@property bool empty();
+						@property ref Record front();
+						void popFront();
+					}
+				}
+			}
+			Range opSlice();
 		}
 	}
 }

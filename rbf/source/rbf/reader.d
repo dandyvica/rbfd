@@ -12,6 +12,8 @@ import std.string;
 import std.conv;
 import std.exception;
 import std.regex;
+import std.range;
+import std.algorithm;
 
 
 import rbf.field;
@@ -53,7 +55,6 @@ private:
 
 	/// input file size
 	ulong _inputFileSize;
-
 
 public:
 	/**
@@ -104,7 +105,96 @@ public:
 
 	@property ulong currentReadSize() { return _currentReadSize; }
 
+	/// return the file size of the input file in bytes
 	@property ulong inputFileSize() { return _inputFileSize; }
+
+
+	Record _getRecordFromLine(char[] lineReadFromFile) {
+
+		// get rid of \n
+		auto line = lineReadFromFile.idup;
+
+		// if line is matching the ignore pattern, just loop
+		if (!_ignoreRegex.empty && matchFirst(line, _ignoreRegex)) {
+			return null;
+		}
+
+		// try to fetch corresponding record name for line we've read
+		auto recordName = _recordIdentifier(line);
+
+		// record not found ? So loop
+		if (recordName !in _layout) {
+			writefln("error: record name <%s> not found!!", recordName);
+			return null;
+		}
+
+		// do we keep this record?
+		if (!_layout[recordName].keep) return null;
+
+		// now we can safely save our values
+		// set record value (and fields)
+		_layout[recordName].value = line;
+
+		// is a mapper registered? so we need to call it
+		if (_mapper)
+			_mapper(_layout[recordName]);
+
+		// return to caller our record
+		return _layout[recordName];
+
+	}
+
+
+	// inner structure for defining a range for our container
+	struct Range {
+		private:
+			File _fh;
+			ulong _nbChars = ulong.max;
+			char[] _buffer;
+			Reader _outerThis;
+			Record rec;
+
+		public:
+				// this constructor will be called from helper function []
+				// need to get access to the outer class this
+			this(string fileName, Reader outer) {
+				_fh = File(fileName);
+				_outerThis = outer;
+			}
+
+			// because file pointer moves ahead, all logic is in this method
+			@property bool empty() {
+				do {
+					// read one line from file
+					_nbChars = _fh.readln(_buffer);
+
+					// if eof, just return
+					if (_nbChars == 0) { return true; }
+
+					// get rid of \n
+					_buffer = _buffer.stripRight('\n');
+
+					// try to get a record from that line
+					// call outer class this
+					rec = _outerThis._getRecordFromLine(_buffer);
+				} while (rec is null);
+
+				return false;
+			}
+			@property ref Record front() {
+				//writefln("rec=%s", rec.name);
+				return rec;
+			}
+			// does nothing because file pointer already move on
+			void popFront() {	}
+
+	}
+
+	/// Return a range on the container
+	Range opSlice() {
+		return Range(_rbFile, this);
+	}
+
 
 	/**
 	 * used to loop on foreach on all records of the file
@@ -115,6 +205,7 @@ public:
 	 * 	{ writeln(rec); }
 	 * -----------------------------
 	 */
+	/*
 	int opApply(int delegate(ref Record) dg)
 	{
 		int result = 0;
@@ -161,17 +252,24 @@ public:
 				break;
 		}
 		return result;
-	}
+	}*/
 
 }
-
+///
 unittest {
 
 	auto layout = new Layout("./test/world_data.xml");
-	auto rbf = new Reader("./test/world.data", layout, (line => line[0..4]));
-	rbf.ignoreRegexPattern = regex("^#");
+	auto reader = new Reader("./test/world.data", layout, (line => line[0..4]));
+	reader.ignoreRegexPattern = regex("^#");
 
-	foreach (rec; rbf) {
+	// range is called by adding []
+	//reader[].take(1).each!(s => writeln(s));
+	//reader[].filter!(e => e.name == "CONT").each!(e => writeln(e["NAME"]));
+	auto a = array(reader[].filter!(e => e.name == "CONT"));
+	foreach (r; a) { writeln(r.name, " ", r.NAME); }
+
+	// foreach is as always
+	foreach (rec; reader) {
 		assert("NAME" in rec);
 	}
 

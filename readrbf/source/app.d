@@ -40,8 +40,13 @@ int main(string[] argv)
 		auto settings = new Setting();
 
 		// manage arguments passed from the command line
-		writeln(argv);
+		//writeln(argv);
 		auto opts = new CommandLineOption(argv);
+
+		// pgm meta?
+		if (opts.pgmMetadata) {
+			writefln("Compiled on %s with %s version %d", __DATE__, __VENDOR__, __VERSION__);
+		}
 
 		// define new layout corresponding to the requested layout
 		auto layout = new Layout(settings[opts.inputLayout].xmlFile);

@@ -49,6 +49,7 @@ protected:
 
 public:
 
+	// inner structure for defining a range for our container
 	struct Range {
 		private TLIST items;
 

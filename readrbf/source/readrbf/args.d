@@ -25,9 +25,9 @@ public:
 	string inputLayout;							/// input file layout
 	string outputFormat = "txt";		/// output format HTML, TXT, ...
 	string outputFileName;					/// name of the final converted file
-	string fieldFilterFile;					/// if any, name of the clause file
-	string recordFilterFile;
-	string pgmVersion;
+	string fieldFilterFile;					/// if any, name of the field fitler file
+	string recordFilterFile;				/// if any, name of the record filter file
+	bool   pgmMetadata;						  /// whether to print out metadat
 
 	bool verbose     = false;
 	bool dontWrite   = false;
@@ -66,7 +66,7 @@ public:
 			"o", &outputFormat,
 			"f", &fieldFilterFile,
 			"r", &recordFilterFile,
-			"V", &pgmVersion,
+			"m", &pgmMetadata,
 			"v", &verbose,
 			"s", &samples,
 			"b", &dontWrite,
