@@ -14,6 +14,9 @@ the %APPDATA%\\local\\rbf directory (Windows).
 
 # OPTIONS
 
+-b
+: Benchmark: don't write output file but just read input file
+
 -c
 : Validate layout structure
 

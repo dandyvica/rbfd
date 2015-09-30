@@ -69,7 +69,7 @@ public:
 			"V", &pgmVersion,
 			"v", &verbose,
 			"s", &samples,
-			"d", &dontWrite,
+			"b", &dontWrite,
 			"p", &progressBar,
 			"c", &checkLayout
 		);
