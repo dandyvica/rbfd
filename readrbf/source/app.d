@@ -44,7 +44,7 @@ int main(string[] argv)
 		auto opts = new CommandLineOption(argv);
 
 		// pgm meta?
-		if (opts.pgmMetadata) {
+		if (opts.bPgmMetadata) {
 			writefln("Compiled on %s with %s version %d", __DATE__, __VENDOR__, __VERSION__);
 		}
 
@@ -52,7 +52,7 @@ int main(string[] argv)
 		auto layout = new Layout(settings[opts.inputLayout].xmlFile);
 
 		// syntax validation requested
-		if (opts.checkLayout) {
+		if (opts.bCheckLayout) {
 			layout.validate;
 		}
 
@@ -63,6 +63,7 @@ int main(string[] argv)
 		}
 
 		// if a record filter is set, check if field names belong to layout
+/*
 		if (opts.isRecordFilterSet) {
 			foreach (RecordClause c; opts.filteredRecords) {
 				if (c.fieldName !in layout) {
@@ -70,7 +71,7 @@ int main(string[] argv)
 				}
 			}
 		}
-
+*/
 		// create new reader according to what is passed in the command
 		// line and the configuration found in JSON properties file
 		auto reader = new Reader(opts.inputFileName, layout,	settings[opts.inputLayout].mapper);
@@ -82,12 +83,12 @@ int main(string[] argv)
 			reader.recordTransformer = &overpunch.overpunch;
 		}
 
-		// do we want to ignore some lines?
+		// do we want to ignore some lines based on regex?
 		if (!settings[opts.inputLayout].ignoreRecord.empty) {
 			reader.ignoreRegexPattern = settings[opts.inputLayout].ignoreRecord;
 		}
 
-		// do we want to get rid of some fields for all records?
+		// do we want to always get rid of some fields for all records?
 		if (settings[opts.inputLayout].skipField != "") {
 			auto fieldList = settings[opts.inputLayout].skipField.split(",");
 			fieldList = array(fieldList.map!(s => s.strip));
@@ -104,10 +105,11 @@ int main(string[] argv)
 		}
 
 		// if verbose option is requested, print out what's possible
-		if (opts.verbose) {
+		if (opts.bVerbose) {
 			opts.printOptions;
 		}
 
+/*
 		// stuff to correctly display a progress bar
 		immutable termWidth = 78;
 		//auto inputFileSize = getSize(opts.inputFileName);
@@ -116,16 +118,17 @@ int main(string[] argv)
 
 		//writef("\n%s", progressBar);
 		writeln();
-
+*/
 		// now loop for each record in the file
 		foreach (rec; reader)
 		{
+/*
 			// if progress bar, print out moving cursor
-			if (opts.progressBar && nbReadRecords % 4096 == 0) {
+			if (opts.bProgressBar && nbReadRecords % 4096 == 0) {
 				writef("read %.0f %% of %u bytes\r",
 							reader.currentReadSize/to!float(reader.inputFileSize)*100.0, reader.inputFileSize);
 			}
-
+*/
 
 				// if samples is set, break if record count is reached
 			if (opts.samples != 0 && nbReadRecords >= opts.samples) break;
@@ -140,7 +143,7 @@ int main(string[] argv)
 			}
 
 			// don't want to write? Just loop
-			if (opts.dontWrite) continue;
+			if (opts.bJustRead) continue;
 
 			// use our writer to generate the file
 			writer.write(rec);
@@ -154,7 +157,7 @@ int main(string[] argv)
 		auto elapsedtime = Clock.currTime() - starttime;
 		writefln("\nRecords: %d read, %d written\nElapsed time = %s",
 			nbReadRecords, nbWrittenRecords, elapsedtime);
-		if (!opts.dontWrite)
+		if (!opts.bJustRead)
 				writefln("Created file %s, size = %d bytes",
 								opts.outputFileName, getSize(opts.outputFileName));
 	}

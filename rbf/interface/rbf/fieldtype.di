@@ -15,7 +15,7 @@ enum AtomicType
 	ALPHABETICAL,
 	ALPHANUMERICAL,
 }
-enum RootType 
+enum BaseType 
 {
 	STRING,
 	NUMERIC,
@@ -25,23 +25,23 @@ class FieldType
 {
 	private 
 	{
-		string _stringType;
-		AtomicType _atom;
-		RootType _root;
+		string _name;
+		BaseType _baseType;
+		AtomicType _type;
 		Regex!char _re;
 		MATCH_FILTER _filterTestCallback;
 		public 
 		{
-			this(in string type);
+			this(string name, string type, string baseType);
 			@property AtomicType type();
-			@property RootType rootType();
+			@property BaseType baseType();
 			@property void pattern(string p);
-			@property string stringType();
+			@property string name();
 			override string toString();
 			bool testFieldFilter(string lvalue, string op, string rvalue);
 			static string testFilter(T)(string op)
 			{
-				static if (is(T t == string))
+				static if (is(T == string))
 				{
 					return "condition = (lvalue" ~ op ~ "rvalue);";
 				}
@@ -63,6 +63,11 @@ class FieldType
 						mixin(testFilter!T("=="));
 						break;
 					}
+					case "!=":
+					{
+						mixin(testFilter!T("!="));
+						break;
+					}
 					case "<":
 					{
 						mixin(testFilter!T("<"));
@@ -72,6 +77,20 @@ class FieldType
 					{
 						mixin(testFilter!T(">"));
 						break;
+						static if (is(T == string))
+						{
+							case "~":
+							{
+								condition = !match(lvalue, regex(rvalue)).empty;
+								break;
+							}
+							case "!~":
+							{
+								condition = match(lvalue, regex(rvalue)).empty;
+								break;
+							}
+						}
+
 					}
 					default:
 					{

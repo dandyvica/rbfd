@@ -8,7 +8,10 @@ import std.regex;
 import std.algorithm;
 import std.typecons;
 import std.exception;
+import std.typecons;
 import rbf.fieldtype;
+string[2][string] defaultTypes;
+static this();
 class Field
 {
 	private 

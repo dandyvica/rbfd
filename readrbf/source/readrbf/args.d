@@ -9,6 +9,7 @@ import std.regex;
 import std.algorithm;
 import std.path;
 import std.exception;
+import std.traits;
 
 import rbf.recordfilter;
 
@@ -27,13 +28,12 @@ public:
 	string outputFileName;					/// name of the final converted file
 	string fieldFilterFile;					/// if any, name of the field fitler file
 	string recordFilterFile;				/// if any, name of the record filter file
-	bool   pgmMetadata;						  /// whether to print out metadat
 
-	bool verbose     = false;
-	bool dontWrite   = false;
-	bool progressBar = false;
-	bool checkLayout = false;
-
+	bool bPgmMetadata;						  /// whether to print out metadat
+	bool bVerbose;
+	bool bJustRead;									/// if true, don't write data
+	bool bProgressBar;
+	bool bCheckLayout;
 
 	RecordFilter filteredRecords;
 	string[][string] filteredFields;
@@ -66,12 +66,12 @@ public:
 			"o", &outputFormat,
 			"f", &fieldFilterFile,
 			"r", &recordFilterFile,
-			"m", &pgmMetadata,
-			"v", &verbose,
+			"m", &bPgmMetadata,
+			"v", &bVerbose,
 			"s", &samples,
-			"b", &dontWrite,
-			"p", &progressBar,
-			"c", &checkLayout
+			"b", &bJustRead,
+			"p", &bProgressBar,
+			"c", &bCheckLayout
 		);
 	}
 	catch (Exception e) {
@@ -103,16 +103,17 @@ public:
 	outputFileName = baseName(inputFileName) ~ "." ~ outputFormat;
 }
 
-/*
-	@property string inputFileName() { return _inputFileName; }
-	@property string outputFileName() { return _outputFileName; }
-	@property string inputLayout() { return _inputLayout; }
-	@property string outputFormat() { return _outputFormat; }
-*/
 	@property bool isFieldFilterSet() { return fieldFilterFile != ""; }
 	@property bool isRecordFilterSet() { return recordFilterFile != ""; }
 
+	/// useful helper
 	void printOptions() {
+		foreach (member; FieldNameTuple!CommandLineOption)
+     {
+				mixin("writeln(\"" ~ member ~ ": \"," ~ member ~ ");");
+     }
+
+/*
 		writefln("input file: %s", inputFileName);
 		writefln("file layout: %s", inputLayout);
 		writefln("output format: %s", outputFormat);
@@ -126,6 +127,7 @@ public:
 			writefln("record filter file: %s", recordFilterFile);
 			writefln("\trecords to filter: %s", filteredRecords);
 		}
+*/
 	}
 
 private:

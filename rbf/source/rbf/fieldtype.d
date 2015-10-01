@@ -23,7 +23,7 @@ enum AtomicType {
 /***********************************
  * types boil down to only 2 basic types
  */
-enum RootType { STRING, NUMERIC }
+enum BaseType { STRING, NUMERIC }
 
 // filter matching method pointer
 alias MATCH_FILTER = bool delegate(string,string,string);
@@ -34,9 +34,10 @@ alias MATCH_FILTER = bool delegate(string,string,string);
 class FieldType {
 private:
 
-	string _stringType;								/// the field type as read from the layout file
-	AtomicType _atom;										/// the corresponding "real" type
-	RootType _root;											/// main type
+	string _name;
+	BaseType _baseType;								    /// the field type as read from the layout file
+	AtomicType _type;										/// the corresponding "real" type
+	//BaseType _root;											/// main type
 	Regex!char _re;				  						/// the pattern the field should stick to
 	MATCH_FILTER _filterTestCallback;  	/// method to test whether a value matches a filter
 
@@ -47,82 +48,67 @@ public:
 	 * Params:
 	 *  type = whether the field holds numerical, alphanumerical... data
 	 */
-	this(in string type)
+	this(string name, string type, string baseType)
 	// verify pre-conditions
 	{
 		// set type according to what is passed
-		_stringType = type;
+		_name     = name;
+		_type     = to!AtomicType(type);
+		_baseType = to!BaseType(baseType);
 
-		switch (type)
+		final switch (_type)
 		{
-			case "N":
-				_atom = AtomicType.FLOAT;
-				_root = RootType.NUMERIC;
+			case AtomicType.FLOAT:
 				_filterTestCallback = &matchFilter!float;
 				break;
-			case "I":
-				_atom = AtomicType.INTEGER;
-				_root = RootType.NUMERIC;
+			case AtomicType.INTEGER:
 				_filterTestCallback = &matchFilter!long;
 				break;
-			case "D":
-				_atom = AtomicType.DATE;
-				_root = RootType.STRING;
+			case AtomicType.DATE:
 				_filterTestCallback = &matchFilter!string;
 				break;
-			case "A":
-				_atom = AtomicType.ALPHABETICAL;
-				_root = RootType.STRING;
+			case AtomicType.ALPHABETICAL:
 				_filterTestCallback = &matchFilter!string;
 				break;
-			case "AN":
-			case "A/N":
-				_atom = AtomicType.ALPHANUMERICAL;
-				_root = RootType.STRING;
+			case AtomicType.ALPHANUMERICAL:
 				_filterTestCallback = &matchFilter!string;
 				break;
-			default:
-				throw new Exception("error: unknown field type %s".format(type));
 		}
-	}
-	///
-	unittest {
-		auto ft = new FieldType("A/N");
-		assertThrown(new FieldType("COMPLEX"));
 	}
 
 	/// return atomic type
-	@property AtomicType type() { return _atom; }
+	@property AtomicType type() { return _type; }
 	///
 	unittest {
-		auto ft = new FieldType("A/N");
-		assert(ft.type == AtomicType.ALPHANUMERICAL);
+		auto ft = new FieldType("N", "FLOAT", "NUMERIC");
+		assert(ft.type == AtomicType.FLOAT);
 	}
 
 	/// return root type which is either only string or numeric
-	@property RootType rootType() { return _root; }
+	@property BaseType baseType() { return _baseType; }
 	///
 	unittest {
-		auto ft = new FieldType("N");
-		assert(ft.rootType == RootType.NUMERIC);
+		auto ft = new FieldType("N", "FLOAT", "NUMERIC");
+		assert(ft.baseType == BaseType.NUMERIC);
 	}
 
 	/// set field type regex pattern
 	@property void pattern(string p) { _re = regex(p); }
 
 	/// return the string type passed to ctor
-	@property string stringType() { return _stringType; }
+	@property string name() { return _name; }
+
 	///
 	unittest {
-		auto ft = new FieldType("N");
-		assert(ft.stringType == "N");
+		auto ft = new FieldType("N", "FLOAT", "NUMERIC");
+		assert(ft.name == "N");
 	}
 
 
 	/// toString
 	override string toString()
 	{
-		return format("type=%s, rootType=%s, pattern=%s", _atom, _root, _re);
+		return format("type=%s, baseType=%s, pattern=%s", _type, _baseType, _re);
 	}
 
 	/// test a filter
@@ -131,13 +117,13 @@ public:
 	}
 	///
 	unittest {
-		auto ft = new FieldType("N");
+		auto ft = new FieldType("N", "FLOAT", "NUMERIC");
 		assert(ft.testFieldFilter("50", ">", "40"));
 	}
 
 	// templated tester for testing a value against a filter and an operator
 	static string testFilter(T)(string op) {
-		static if (is(T t == string))
+		static if (is(T == string))
 			return "condition = (lvalue" ~ op ~ "rvalue);";
 		else
 			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
@@ -150,12 +136,23 @@ public:
 			case "==":
 				mixin(testFilter!T("=="));
 				break;
+			case "!=":
+				mixin(testFilter!T("!="));
+				break;
 			case "<":
 				mixin(testFilter!T("<"));
 				break;
 			case ">":
 				mixin(testFilter!T(">"));
 				break;
+			static if (is(T == string)) {
+				case "~":
+					condition = !match(lvalue, regex(rvalue)).empty;
+					break;
+				case "!~":
+					condition = match(lvalue, regex(rvalue)).empty;
+					break;
+			}
 			default:
 				throw new Exception("error: operator %s not supported".format(operator));
 		}

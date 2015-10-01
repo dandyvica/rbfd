@@ -8,8 +8,23 @@ import std.regex;
 import std.algorithm;
 import std.typecons;
 import std.exception;
+import std.typecons;
 
 import rbf.fieldtype;
+
+//
+string[2][string] defaultTypes;
+
+static this() {
+	defaultTypes = [
+		"A"	 : ["ALPHABETICAL", "STRING"],
+		"AN" : ["ALPHANUMERICAL", "STRING"],
+		"A/N": ["ALPHANUMERICAL", "STRING"],
+		"I"  : ["INTEGER", "NUMERIC"],
+		"N"  : ["FLOAT", "NUMERIC"],
+		"D"  : ["DATE", "STRING"]
+	];
+}
 
 /***********************************
  *This field class represents a field as found
@@ -67,13 +82,21 @@ public:
 	}
 	///
 	unittest {
-		auto field1 = new Field("FIELD1", "Field description", new FieldType("A/N"), 15);
+		auto field1 = new Field("FIELD1", "Field description", new FieldType("N", "FLOAT", "NUMERIC"), 15);
 	}
 
 	/// second constructor
 	this(in string name, in string description, in string stringType, in ulong length)
 	{
-		this(name, description, new FieldType(stringType), length);
+		if (stringType !in defaultTypes) {
+			throw new Exception("error: unkown default type %s".format(stringType));
+		}
+		this(
+			name,
+			description,
+			new FieldType(stringType, defaultTypes[stringType][0], defaultTypes[stringType][1]),
+			length
+		);
 	}
 	///
 	unittest {
@@ -127,7 +150,7 @@ public:
 	///
 	unittest {
 		auto field1 = new Field("FIELD1", "This is field #1", "A/N", 15);
-		assert(field1.fieldType.stringType == "A/N");
+		assert(field1.fieldType.name == "A/N");
 	}
 
 	/// read property for field length
@@ -241,7 +264,7 @@ public:
 		return
 			name == t[0] &&
 			description == t[1] &&
-			fieldType.stringType == t[2] &&
+			fieldType.name == t[2] &&
 			length == t[3];
 	}
 	///
