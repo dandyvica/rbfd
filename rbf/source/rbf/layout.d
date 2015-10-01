@@ -9,12 +9,14 @@ import std.conv;
 import std.exception;
 import std.algorithm;
 
+import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
 import rbf.nameditems;
 
 version(unittest) {
 	immutable test_file = "./test/world_data.xml";
+	immutable test_file_fieldtype = "./test/world_data_with_types.xml";
 }
 
 
@@ -22,6 +24,9 @@ version(unittest) {
  * This class build the list of records and fields from an XML definition file
  */
 class Layout : NamedItemsContainer!(Record,false) {
+
+private:
+	FieldType[string] ftype;
 
 public:
 	/**
@@ -54,6 +59,24 @@ public:
 			_length = to!ulong(xml.tag.attr["reclength"]);
 		}
 
+		// read <fieldtype> definitions and keep types
+		xml.onStartTag["fieldtype"] = (ElementParser xml)
+		{
+			// save record name
+			auto ftName = xml.tag.attr["name"];
+			auto type = xml.tag.attr["type"];
+
+			// save field type base on its name
+			ftype[ftName] = new FieldType(ftName, toLower(type));
+
+			// pattern is optional
+			string pattern;
+			if ("pattern" in xml.tag.attr) {
+				pattern = xml.tag.attr["pattern"];
+				ftype[ftName].pattern = pattern;
+			}
+		};
+
 		// read <record> definitions and create a new record object
 		xml.onStartTag["record"] = (ElementParser xml)
 		{
@@ -67,13 +90,27 @@ public:
 		// read <field> definitions, create field and add field to previously created record
 		xml.onStartTag["field"] = (ElementParser xml)
 		{
-			// fetch field name
-			auto field = new Field(
-				xml.tag.attr["name"],
-				xml.tag.attr["description"],
-				xml.tag.attr["type"],
-				to!uint(xml.tag.attr["length"])
-			);
+			// fetch field type
+			auto type = xml.tag.attr["type"];
+
+			// already existing type from <fieldtype> ?
+			Field field;
+			if (type in ftype) {
+					field = new Field(
+						xml.tag.attr["name"],
+						xml.tag.attr["description"],
+						ftype[type],
+						to!uint(xml.tag.attr["length"])
+					);
+			}
+			// otherwise just create with fetched type
+			else
+				field = new Field(
+					xml.tag.attr["name"],
+					xml.tag.attr["description"],
+					xml.tag.attr["type"],
+					to!uint(xml.tag.attr["length"])
+				);
 
 			// add field to our record
 			this[recName] ~= field;
@@ -91,6 +128,11 @@ public:
 	///
 	unittest {
 		auto l = new Layout(test_file);
+		assert("COUN" in l);
+		assert("CONT" in l);
+		assert("FOO" !in l);
+
+		l = new Layout(test_file_fieldtype);
 		assert("COUN" in l);
 		assert("CONT" in l);
 		assert("FOO" !in l);

@@ -13,17 +13,16 @@ import std.exception;
 * in a record-based file
  */
 enum AtomicType {
-	FLOAT,
-	INTEGER,
-	DATE,
-	ALPHABETICAL,
-	ALPHANUMERICAL
+	decimal,
+	integer,
+	date,
+	string
 }
 
 /***********************************
  * types boil down to only 2 basic types
  */
-enum BaseType { STRING, NUMERIC }
+enum BaseType { string, numeric }
 
 // filter matching method pointer
 alias MATCH_FILTER = bool delegate(string,string,string);
@@ -37,7 +36,6 @@ private:
 	string _name;
 	BaseType _baseType;								    /// the field type as read from the layout file
 	AtomicType _type;										/// the corresponding "real" type
-	//BaseType _root;											/// main type
 	Regex!char _re;				  						/// the pattern the field should stick to
 	MATCH_FILTER _filterTestCallback;  	/// method to test whether a value matches a filter
 
@@ -48,29 +46,29 @@ public:
 	 * Params:
 	 *  type = whether the field holds numerical, alphanumerical... data
 	 */
-	this(string name, string type, string baseType)
+	this(string name, string type)
 	// verify pre-conditions
 	{
 		// set type according to what is passed
 		_name     = name;
 		_type     = to!AtomicType(type);
-		_baseType = to!BaseType(baseType);
 
 		final switch (_type)
 		{
-			case AtomicType.FLOAT:
+			case AtomicType.decimal:
+				_baseType = BaseType.numeric;
 				_filterTestCallback = &matchFilter!float;
 				break;
-			case AtomicType.INTEGER:
+			case AtomicType.integer:
+				_baseType = BaseType.numeric;
 				_filterTestCallback = &matchFilter!long;
 				break;
-			case AtomicType.DATE:
+			case AtomicType.date:
+				_baseType = BaseType.string;
 				_filterTestCallback = &matchFilter!string;
 				break;
-			case AtomicType.ALPHABETICAL:
-				_filterTestCallback = &matchFilter!string;
-				break;
-			case AtomicType.ALPHANUMERICAL:
+			case AtomicType.string:
+				_baseType = BaseType.string;
 				_filterTestCallback = &matchFilter!string;
 				break;
 		}
@@ -80,16 +78,16 @@ public:
 	@property AtomicType type() { return _type; }
 	///
 	unittest {
-		auto ft = new FieldType("N", "FLOAT", "NUMERIC");
-		assert(ft.type == AtomicType.FLOAT);
+		auto ft = new FieldType("N", "decimal");
+		assert(ft.type == AtomicType.decimal);
 	}
 
 	/// return root type which is either only string or numeric
 	@property BaseType baseType() { return _baseType; }
 	///
 	unittest {
-		auto ft = new FieldType("N", "FLOAT", "NUMERIC");
-		assert(ft.baseType == BaseType.NUMERIC);
+		auto ft = new FieldType("N", "decimal");
+		assert(ft.baseType == BaseType.numeric);
 	}
 
 	/// set field type regex pattern
@@ -100,7 +98,7 @@ public:
 
 	///
 	unittest {
-		auto ft = new FieldType("N", "FLOAT", "NUMERIC");
+		auto ft = new FieldType("N", "decimal");
 		assert(ft.name == "N");
 	}
 
@@ -117,8 +115,14 @@ public:
 	}
 	///
 	unittest {
-		auto ft = new FieldType("N", "FLOAT", "NUMERIC");
+		auto ft = new FieldType("N", "decimal");
 		assert(ft.testFieldFilter("50", ">", "40"));
+		assert(ft.testFieldFilter("40", "==", "40"));
+		assertThrown(ft.testFieldFilter("40", "~", "40"));
+
+		ft = new FieldType("A", "string");
+		assert(ft.testFieldFilter("AABBBBB", "~", "^AA"));
+		assert(ft.testFieldFilter("AABBBBB", "!~", "^BA"));
 	}
 
 	// templated tester for testing a value against a filter and an operator

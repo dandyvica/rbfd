@@ -9,16 +9,15 @@ import std.algorithm;
 import std.exception;
 enum AtomicType 
 {
-	FLOAT,
-	INTEGER,
-	DATE,
-	ALPHABETICAL,
-	ALPHANUMERICAL,
+	decimal,
+	integer,
+	date,
+	string,
 }
 enum BaseType 
 {
-	STRING,
-	NUMERIC,
+	string,
+	numeric,
 }
 alias MATCH_FILTER = bool delegate(string, string, string);
 class FieldType
@@ -32,7 +31,7 @@ class FieldType
 		MATCH_FILTER _filterTestCallback;
 		public 
 		{
-			this(string name, string type, string baseType);
+			this(string name, string type);
 			@property AtomicType type();
 			@property BaseType baseType();
 			@property void pattern(string p);

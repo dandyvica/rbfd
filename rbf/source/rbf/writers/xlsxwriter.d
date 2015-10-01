@@ -111,7 +111,7 @@ public:
 		// for each record, just write data to worksheet
 		// depending on its type, an Excel cell doesn't contain the same XML
 		foreach (field; record) {
-			if (field.fieldType.baseType == BaseType.STRING)
+			if (field.fieldType.baseType == BaseType.string)
 			{
 				_worksheetFile[record.name].strCell(field.value);
 			}

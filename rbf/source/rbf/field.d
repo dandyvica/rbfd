@@ -13,16 +13,16 @@ import std.typecons;
 import rbf.fieldtype;
 
 //
-string[2][string] defaultTypes;
+string[string] defaultTypes;
 
 static this() {
 	defaultTypes = [
-		"A"	 : ["ALPHABETICAL", "STRING"],
-		"AN" : ["ALPHANUMERICAL", "STRING"],
-		"A/N": ["ALPHANUMERICAL", "STRING"],
-		"I"  : ["INTEGER", "NUMERIC"],
-		"N"  : ["FLOAT", "NUMERIC"],
-		"D"  : ["DATE", "STRING"]
+		"A"	 : "string",
+		"AN" : "string",
+		"A/N": "string",
+		"I"  : "integer",
+		"N"  : "decimal",
+		"D"  : "date"
 	];
 }
 
@@ -82,7 +82,7 @@ public:
 	}
 	///
 	unittest {
-		auto field1 = new Field("FIELD1", "Field description", new FieldType("N", "FLOAT", "NUMERIC"), 15);
+		auto field1 = new Field("FIELD1", "Field description", new FieldType("N", "decimal"), 15);
 	}
 
 	/// second constructor
@@ -94,7 +94,7 @@ public:
 		this(
 			name,
 			description,
-			new FieldType(stringType, defaultTypes[stringType][0], defaultTypes[stringType][1]),
+			new FieldType(stringType, defaultTypes[stringType]),
 			length
 		);
 	}

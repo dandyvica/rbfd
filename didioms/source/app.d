@@ -65,9 +65,14 @@ void read_ln(string fn)
 
 class A {
 
+  string _fn;
+
+  this(string fn) {
+    _fn = fn;
+  }
 
 
-  //struct Range {
+  struct Range {
 
     private:
 
@@ -83,26 +88,33 @@ class A {
 
       this(string fn) {
           fh = File(fn);
-writefln("fh=%s", fh);
+          nbChars = fh.readln(buffer);
       }
 
       @property bool empty() const { return nbChars == 0; }
-  		@property ref char[] front() {
-        nbChars = fh.readln(buffer);
-        return buffer;
+  		@property string front() {
+        return buffer.dup.strip;
       }
-  		void popFront() { {} }
+  		void popFront() {
+        do {
+          nbChars = fh.readln(buffer);
+          if (nbChars == 0) return;
+        } while (buffer[0] == '#');
+      }
 
+    }
 
-  //}
-
-
+    /// Return a range on the container
+  	Range opSlice() {
+  		return Range(_fn);
+  	}
 
 }
 
 
 void main(string[] argv)
 {
+/*
 void f0() { read_string(argv[1]); }
 void f1() { read_array(argv[1]); }
 void f2() { read_ln(argv[1]); }
@@ -115,16 +127,16 @@ void f2() { read_ln(argv[1]); }
   writefln("Time for f0 (with strings): %s for %s loops", f0Result, argv[2]);
   writefln("Time for f1 (with array): %s for %s loops", f1Result, argv[2]);
   writefln("Time for f2 (with byChunk): %s for %s loops", f2Result, argv[2]);
+*/
 
+  auto a = new A(argv[1]);
 
 /*
-  auto fh = File(argv[1]);
+  foreach (l; a) {
+    writefln("l=<%s>", l);
+  }*/
 
-  char[] buf;
-
-  while (fh.readln(buf)) {
-    writeln(buf);
-  }
-*/
+  a[].filter!(e => !e.startsWith("1")).each!(e => writeln(e));
+  a[].filter!(e => !e.startsWith("1")).map!(e => "=>" ~ e).each!(e => writeln(e));
 
 }

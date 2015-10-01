@@ -144,7 +144,7 @@ public:
 
 	}
 
-
+/*
 	// inner structure for defining a range for our container
 	struct Range {
 		private:
@@ -187,6 +187,66 @@ public:
 			}
 			// does nothing because file pointer already move on
 			void popFront() {	}
+
+	}
+	*/
+
+	// inner structure for defining a range for our container
+	struct Range {
+		private:
+			File _fh;
+			ulong _nbChars = ulong.max;
+			char[] _buffer;
+			Reader _outerThis;
+			Record rec;
+
+		public:
+				// this constructor will be called from helper function []
+				// need to get access to the outer class this
+			this(string fileName, Reader outer) {
+				_fh = File(fileName);
+				_outerThis = outer;
+
+				do {
+					_nbChars = _fh.readln(_buffer);
+					if (_nbChars == 0) return;
+					rec = _outerThis._getRecordFromLine(_buffer);
+				} while (rec is null);
+
+			}
+
+			// because file pointer moves ahead, all logic is in this method
+			@property bool empty() { return _nbChars == 0; }
+			@property ref Record front() {
+				//writefln("rec=%s", rec.name);
+				return rec;
+			}
+			// does nothing because file pointer already move on
+			void popFront() {
+
+			/*
+				do {
+					nbChars = fh.readln(buffer);
+					if (nbChars == 0) return;
+				} while (buffer[0] == '#');*/
+
+				do {
+					// read one line from file
+					_nbChars = _fh.readln(_buffer);
+
+					// if eof, just return
+					if (_nbChars == 0) return;
+
+					// get rid of \n
+					_buffer = _buffer.stripRight('\n');
+
+					// try to get a record from that line
+					// call outer class this
+					rec = _outerThis._getRecordFromLine(_buffer);
+				} while (rec is null);
+
+
+			}
 
 	}
 
@@ -265,13 +325,14 @@ unittest {
 	// range is called by adding []
 	//reader[].take(1).each!(s => writeln(s));
 	//reader[].filter!(e => e.name == "CONT").each!(e => writeln(e["NAME"]));
-	auto a = array(reader[].filter!(e => e.name == "CONT"));
-	foreach (r; a) { writeln(r.name, " ", r.NAME); }
+	reader[].filter!(e => e.name == "CONT").each!(e => writeln(e["NAME"][0].value));
+	//foreach (r; reader) { writeln(r.name, " ", r.NAME); }
 
 	// foreach is as always
+	/*
 	foreach (rec; reader) {
 		assert("NAME" in rec);
-	}
+	}*/
 
 
 }

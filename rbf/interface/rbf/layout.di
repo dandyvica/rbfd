@@ -8,21 +8,27 @@ import std.xml;
 import std.conv;
 import std.exception;
 import std.algorithm;
+import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
 import rbf.nameditems;
 version (unittest)
 {
 	immutable test_file = "./test/world_data.xml";
+	immutable test_file_fieldtype = "./test/world_data_with_types.xml";
 }
 class Layout : NamedItemsContainer!(Record, false)
 {
-	public 
+	private 
 	{
-		this(string xmlFile);
-		override string toString();
-		void keepOnly(string[][string] recordMap);
-		void removeFromAllRecords(string[] fieldList);
-		void validate();
+		FieldType[string] ftype;
+		public 
+		{
+			this(string xmlFile);
+			override string toString();
+			void keepOnly(string[][string] recordMap);
+			void removeFromAllRecords(string[] fieldList);
+			void validate();
+		}
 	}
 }
