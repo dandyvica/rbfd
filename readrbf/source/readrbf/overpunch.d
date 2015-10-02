@@ -18,7 +18,7 @@ void overpunch(Record rec)
 	foreach (field; rec) {
 
 		// loop if not a numerical value
-		if (field.fieldType.rootType == RootType.STRING)
+		if (field.fieldType.baseType == BaseType.string)
 			continue;
 
 		auto s = field.value;

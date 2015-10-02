@@ -8,6 +8,7 @@ import std.exception;
 import std.algorithm;
 import std.array;
 import std.zip;
+import std.conv;
 
 import rbf.fieldtype;
 import rbf.field;
@@ -65,7 +66,7 @@ public:
 		// create xlsx files contained in an Excel file
 		// those ones contain sheet names
 		_contentTypesFile = new ContentTypes(_xlsxDir);
-		_workbookFile = new Workbook(_xlsxDir);
+		_workbookFile     = new Workbook(_xlsxDir);
 		_workbookRelsFile = new WorkbookRels(_xlsxDir);
 
 		// not this one
@@ -89,11 +90,17 @@ public:
 				_worksheetFile[rec.name].strCell(format("%s: %s", rec.name, rec.description));
 				_worksheetFile[rec.name].endRow();
 
-				// then create description columns and fields
+				// create field description row
 				_worksheetFile[rec.name].startRow();
 				rec.each!(f => _worksheetFile[rec.name].strCell(f.description));
 				_worksheetFile[rec.name].endRow();
 
+				// create field index row
+				_worksheetFile[rec.name].startRow();
+				rec.each!(f => _worksheetFile[rec.name].numCell(to!string(f.index+1)));
+				_worksheetFile[rec.name].endRow();
+
+				// create field name, type, length row
 				_worksheetFile[rec.name].startRow();
 				rec.each!(f => _worksheetFile[rec.name].strCell(format(`%s (%s,%d)`,
 					f.name, f.fieldType.name, f.length)));

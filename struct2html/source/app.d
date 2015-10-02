@@ -11,7 +11,6 @@ import std.exception;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
-import rbf.config;
 
 
 int main(string[] argv)
@@ -23,14 +22,12 @@ int main(string[] argv)
 	// %APPDATA%/local/rbf for Windows
 
 	try {
-		auto settings = new Setting();
-
 		// output HTML file name
-		auto htmlFile = format ~ ".html";
+		auto htmlFile = argv[2] ~ ".html";
 
 		// define new structure
-		auto layout = new Layout(settings[format].xmlFile);
-
+		auto layout = new Layout(argv[1]);
+/*
 		// validate layout
 		layout.validate;
 
@@ -41,7 +38,7 @@ int main(string[] argv)
 					format(rec.name, rec.length, layout.length));
 			}
 		}
-
+*/
 
 		// write out HTML header (uses bootstrap css framework)
 		auto html = File(htmlFile, "w");

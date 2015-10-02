@@ -8,6 +8,7 @@ import std.exception;
 import std.algorithm;
 import std.array;
 import std.zip;
+import std.conv;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
