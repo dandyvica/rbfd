@@ -27,7 +27,9 @@ class XLSXWriter : Writer
 		Rels _relsFile;
 		WorkbookRels _workbookRelsFile;
 		Worksheet[string] _worksheetFile;
+		bool[string] _alreadyInWorksheet;
 		void _create_zip();
+		void _create_worksheet(Record rec);
 		public 
 		{
 			this(string outputFileName, Layout layout);

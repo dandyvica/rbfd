@@ -6,21 +6,24 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  Menus, Process;
+  Menus, ExtCtrls, ComCtrls, Process;
 
 type
 
-  { TForm1 }
+  { TMain }
 
-  TForm1 = class(TForm)
-    Button1: TButton;
+  TMain = class(TForm)
+    btnInput: TButton;
     Button2: TButton;
     layoutType: TComboBox;
     Edit1: TEdit;
-    Label1: TLabel;
+    lblFileType: TLabel;
     OpenDialog1: TOpenDialog;
-    procedure Button1Click(Sender: TObject);
+    rgOutputType: TRadioGroup;
+    StatusBar1: TStatusBar;
+    procedure btnInputClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+
   private
     { private declarations }
   public
@@ -28,7 +31,7 @@ type
   end;
 
 var
-  Form1: TForm1;
+  Main: TMain;
 
   // name of the chose record-based file
   inputFile: string;
@@ -38,20 +41,22 @@ var
 
 implementation
 
-{ TForm1 }
+{ TMain }
 
-procedure TForm1.Button1Click(Sender: TObject);
+// select input file to convert
+procedure TMain.btnInputClick(Sender: TObject);
 begin
-  if Form1.OpenDialog1.Execute then
+  if Main.OpenDialog1.Execute then
   begin
-    inputFile := Form1.OpenDialog1.Filename;
-    ShowMessage(inputFile);
-
+    inputFile := Main.OpenDialog1.Filename;
     Edit1.text :=  inputFile;
+
+    // get file size to update status bar
+    StatusBar1.Panels.Items[0].Text := inputFile;
   end;
 end;
 
-procedure TForm1.Button2Click(Sender: TObject);
+procedure TMain.Button2Click(Sender: TObject);
 begin
    // Now we will create the TProcess object, and
    // assign it to the var converter
@@ -59,7 +64,7 @@ begin
 
    // Tell the new AProcess what the command to execute is.
    // Let's use the FreePascal compiler
-   converter.Executable := '/home/alain/projects/rbfd/readrbf/bin/readrbf';
+   converter.Executable := '/usr/local/bin/readrbf';
    converter.Parameters.Add('-l');
    converter.Parameters.Add(layoutType.Text);
    converter.Parameters.Add('-i');
@@ -80,6 +85,7 @@ begin
    converter.Free;
    ShowMessage('finished');
 end;
+
 
 begin
 

@@ -210,7 +210,7 @@ public:
 					rec.name, rec.length, _length);
 			}
 
-			writeln(rec.toXML);
+			//writeln(rec.toXML);
 		}
 	}
 

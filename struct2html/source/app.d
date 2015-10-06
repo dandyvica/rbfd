@@ -27,10 +27,10 @@ int main(string[] argv)
 
 		// define new structure
 		auto layout = new Layout(argv[1]);
-/*
+
 		// validate layout
 		layout.validate;
-
+/*
 		// checking first XML file compliance if layou length was specified
 		if (layout.length != 0) {
 			foreach (rec; layout) {

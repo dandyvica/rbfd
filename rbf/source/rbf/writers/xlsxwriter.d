@@ -30,6 +30,8 @@ private:
 	WorkbookRels _workbookRelsFile;
 	Worksheet[string]	_worksheetFile;
 
+	bool[string] _alreadyInWorksheet;
+
 	// create the zip archive as an XLSX file
 	void _create_zip() {
 		// ch dir to XLSX directory
@@ -43,6 +45,42 @@ private:
 		// now it's sace to remove all files
 		chdir("..");
 		rmdirRecurse(_xlsxDir);
+	}
+
+	// start creating worksheet for a Record
+	void _create_worksheet(Record rec) {
+		_contentTypesFile.fill(rec.name);
+		_workbookFile.fill(rec.name);
+		_workbookRelsFile.fill(rec.name);
+
+		// and also create sheets. We need an assoc. array to keep track
+		// of link between records and sheets
+		_worksheetFile[rec.name] = new Worksheet(_xlsxDir, rec.name);
+
+		// then create header (record name & record description)
+		_worksheetFile[rec.name].startRow();
+		_worksheetFile[rec.name].strCell(format("%s: %s", rec.name, rec.description));
+		_worksheetFile[rec.name].endRow();
+
+		// create field description row
+		_worksheetFile[rec.name].startRow();
+		rec.each!(f => _worksheetFile[rec.name].strCell(f.description));
+		_worksheetFile[rec.name].endRow();
+
+		// create field index row
+		_worksheetFile[rec.name].startRow();
+		rec.each!(f => _worksheetFile[rec.name].numCell(to!string(f.index+1)));
+		_worksheetFile[rec.name].endRow();
+
+		// create field type, length row
+		_worksheetFile[rec.name].startRow();
+		rec.each!(f => _worksheetFile[rec.name].strCell(format("%s-%d", f.fieldType.name, f.length)));
+		_worksheetFile[rec.name].endRow();
+
+		// create field name
+		_worksheetFile[rec.name].startRow();
+		rec.each!(f => _worksheetFile[rec.name].strCell(format("%s", f.name)));
+		_worksheetFile[rec.name].endRow();
 	}
 
 public:
@@ -75,6 +113,7 @@ public:
 
 		// for each record in the layout, fill data for file depending on worksheets
 		// only for records we want to keep
+/*
 		foreach (rec; layout) {
 			if (rec.keep) {
 				_contentTypesFile.fill(rec.name);
@@ -102,16 +141,25 @@ public:
 
 				// create field name, type, length row
 				_worksheetFile[rec.name].startRow();
-				rec.each!(f => _worksheetFile[rec.name].strCell(format(`%s (%s,%d)`,
+				rec.each!(f => _worksheetFile[rec.name].strCell(format(`%s - %s,%d`,
 					f.name, f.fieldType.name, f.length)));
 				_worksheetFile[rec.name].endRow();
 			}
 		}
-
+*/
 	}
 
 	override void write(Record record)
 	{
+		// don't keep this record?
+		if (!record.keep) return;
+
+		// worksheet exist?
+		if (record.name !in _alreadyInWorksheet) {
+			_alreadyInWorksheet[record.name] = true;
+			_create_worksheet(record);
+		}
+
 		// new excel row
 		_worksheetFile[record.name].startRow();
 
