@@ -30,7 +30,7 @@ private:
 	WorkbookRels _workbookRelsFile;
 	Worksheet[string]	_worksheetFile;
 
-	bool[string] _alreadyInWorksheet;
+	bool[string] _createdWorksheet;  /// true as soon as a sheet is created
 
 	// create the zip archive as an XLSX file
 	void _create_zip() {
@@ -49,10 +49,11 @@ private:
 
 	// start creating worksheet for a Record
 	void _create_worksheet(Record rec) {
+/*
 		_contentTypesFile.fill(rec.name);
 		_workbookFile.fill(rec.name);
 		_workbookRelsFile.fill(rec.name);
-
+*/
 		// and also create sheets. We need an assoc. array to keep track
 		// of link between records and sheets
 		_worksheetFile[rec.name] = new Worksheet(_xlsxDir, rec.name);
@@ -114,7 +115,7 @@ public:
 		// for each record in the layout, fill data for file depending on worksheets
 		// only for records we want to keep
 /*
-		foreach (rec; layout) {
+		foreach (rec; &layout.sorted) {
 			if (rec.keep) {
 				_contentTypesFile.fill(rec.name);
 				_workbookFile.fill(rec.name);
@@ -155,8 +156,8 @@ public:
 		if (!record.keep) return;
 
 		// worksheet exist?
-		if (record.name !in _alreadyInWorksheet) {
-			_alreadyInWorksheet[record.name] = true;
+		if (record.name !in _createdWorksheet) {
+			_createdWorksheet[record.name] = true;
 			_create_worksheet(record);
 		}
 
@@ -183,14 +184,33 @@ public:
 	override void close()
 	{
 		// gracefully end all xlsx files
+/*
 		_contentTypesFile.close;
 		_workbookFile.close;
 		_workbookRelsFile.close;
 		_relsFile.close;
-
+*/
+/*
 		foreach (sheet; _worksheetFile) {
 			sheet.close;
 		}
+*/
+
+		foreach (recName; sort(_worksheetFile.keys)) {
+			// fill metadata with record name
+			_contentTypesFile.fill(recName);
+			_workbookFile.fill(recName);
+			_workbookRelsFile.fill(recName);
+
+			// close sheet file
+			_worksheetFile[recName].close;
+		}
+
+		// gracefully end all xlsx files
+		_contentTypesFile.close;
+		_workbookFile.close;
+		_workbookRelsFile.close;
+		_relsFile.close;
 
 		// finally create zip
 		_create_zip();
