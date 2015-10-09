@@ -15,6 +15,13 @@ import rbf.layout;
 
 int main(string[] argv)
 {
+	// check args
+	if (argv.length == 1) {
+		writeln("\nConvert XML layout file to HTML file.\n\nUsage:\tlayout2html xmlfile [output_file]\n");
+		return 1;
+	}
+
+
 	auto format = argv[1];
 
 	// read JSON properties from rbf.json file located in:
@@ -23,7 +30,11 @@ int main(string[] argv)
 
 	try {
 		// output HTML file name
-		auto htmlFile = argv[2] ~ ".html";
+		File html;
+		if (argv.length == 3)
+			html = File(argv[2], "w");
+		else
+			html = stdout;
 
 		// define new structure
 		auto layout = new Layout(argv[1]);
@@ -41,13 +52,12 @@ int main(string[] argv)
 */
 
 		// write out HTML header (uses bootstrap css framework)
-		auto html = File(htmlFile, "w");
-
 		html.writeln(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">`);
 		html.writeln(`<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"></head>`);
 		html.writeln(`<style>@media print { h2 {page-break-before: always;} }</style>`);
 		html.writeln(`<body role="document"><div class="container theme-showcase" role="main">`);
-		html.writefln(`<div class="jumbotron"><h1 class="text-center">%s</h1></div>`, layout.description);
+		html.writefln(`<div class="jumbotron"><h1 class="text-center">%s (%s)</h1></div>`,
+				layout.description, layout.layoutVersion);
 		html.writeln(`<div class="container">`);
 
 	  // loop on each record (sorted)

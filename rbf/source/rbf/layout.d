@@ -28,6 +28,8 @@ class Layout : NamedItemsContainer!(Record,false) {
 private:
 	FieldType[string] ftype;
 
+	string _version;					/// layout version
+
 public:
 	/**
 	 * create all records based on the XML file structure
@@ -54,9 +56,12 @@ public:
 		description = xml.tag.attr["description"];
 		name = std.path.baseName(xmlFile);
 
-		// save length if any
+		// save length and version if any
 		if ("reclength" in xml.tag.attr) {
 			_length = to!ulong(xml.tag.attr["reclength"]);
+		}
+		if ("version" in xml.tag.attr) {
+			_version = xml.tag.attr["version"];
 		}
 
 		// read <fieldtype> definitions and keep types
@@ -150,6 +155,9 @@ public:
 		return s;
 	}
 
+	/// read property for name attribute
+	@property string layoutVersion() { return _version; }
+
 	/**
 	 * keep only fields specified for each record in the map
 	 *
@@ -206,7 +214,7 @@ public:
 	void validate() {
 		foreach (rec; this) {
 			if (rec.length != _length) {
-				stderr.writefln("record %s is not matching declared length (%d instead of %d)",
+				stderr.writefln("Warning: record %s is not matching declared length (%d instead of %d)",
 					rec.name, rec.length, _length);
 			}
 

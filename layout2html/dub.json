@@ -1,5 +1,5 @@
 {
-	"name": "struct2html",
+	"name": "layout2html",
 	"description": "Convert XML structure definition to a plain HTML file",
 	"authors": ["Alain Viguier"],
 	"homepage": "https://github.com/dandyvica/rbfd",

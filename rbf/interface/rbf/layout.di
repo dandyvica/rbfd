@@ -22,10 +22,12 @@ class Layout : NamedItemsContainer!(Record, false)
 	private 
 	{
 		FieldType[string] ftype;
+		string _version;
 		public 
 		{
 			this(string xmlFile);
 			override string toString();
+			@property string layoutVersion();
 			void keepOnly(string[][string] recordMap);
 			void removeFromAllRecords(string[] fieldList);
 			void validate();
