@@ -43,6 +43,7 @@ class Field
 				return to!T(_strValue) * sign;
 			}
 			@property void value(string s);
+			@property void setValue(string s);
 			@property string rawValue();
 			@property ulong index();
 			@property void index(ulong new_index);

@@ -116,6 +116,15 @@ public:
 		mixin(NamedItemsContainer!(Field,true).getMembersData("rawValue"));
 	}
 
+	/**
+	 * return the list of all field description contained in the record
+	 */
+	@property string[] fieldDescriptions()
+	{
+		mixin(NamedItemsContainer!(Field,true).getMembersData("description"));
+	}
+
+
 
 	/**
 	 * add a new Field object.

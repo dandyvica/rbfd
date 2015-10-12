@@ -34,6 +34,7 @@ public:
 	bool bJustRead;									/// if true, don't write data
 	bool bProgressBar;
 	bool bCheckLayout;
+	bool stdOutput;									/// if true, print to standard output
 
 	RecordFilter filteredRecords;
 	string[][string] filteredFields;
@@ -64,6 +65,7 @@ public:
 			std.getopt.config.required,
 			"l", &inputLayout,
 			"o", &outputFormat,
+			"O", &stdOutput,
 			"f", &fieldFilterFile,
 			"r", &recordFilterFile,
 			"m", &bPgmMetadata,

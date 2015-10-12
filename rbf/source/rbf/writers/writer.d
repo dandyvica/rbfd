@@ -43,8 +43,15 @@ public:
 	 */
 	this(in string outputFileName, in bool create = true)
 	{
+		// we might use standard output. So need to check out
 		_outputFileName = outputFileName;
-		if (create) _fh = File(_outputFileName, "w");
+
+		if (outputFileName != "") {
+			_outputFileName = outputFileName;
+			if (create) _fh = File(_outputFileName, "w");
+		}
+		else
+			_fh = stdout;
 	}
 
 	// zipper executable
@@ -59,7 +66,7 @@ public:
 		_fh = File(_outputFileName, "w");
 	}
 	void close() {
-		_fh.close();
+		if (_outputFileName != "") _fh.close();
 	}
 
 }

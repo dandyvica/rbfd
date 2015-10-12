@@ -34,25 +34,30 @@ class HTMLWriter : Writer {
 
 	override void write(Record rec)
 	{
+
 		// write fields as a HTML table
 		// start a new HTML table
 		if (_previousRecordName != rec.name) {
 
+			// first record is a special case
+			if (_previousRecordName != "") {
+				_fh.writefln("</table>");
+			}
+
       // write record name & description
-  		_fh.writefln(`<h2><span class="label label-primary">%s - %s</span></h2>`,
+  		_fh.writefln(`</table><h2><span class="label label-primary">%s - %s</span></h2>`,
   					rec.name, rec.description);
 
-			// start a new HTML table
-
-      // first, gracefully end previous table if any
-      if (_previousRecordName == "")
-			   _fh.write(`<table class="table table-striped">`);
-      else
-			   _fh.write(`</table><table class="table table-striped">`);
+			// gracefully end previous table and start a new HTML table
+			_fh.write(`<table class="table table-striped">`);
 
 			// print out headers
 			auto headers = array(rec.fieldNames.map!(f => htmlRowBuilder("th",f))).join("");
 			_fh.writefln("<thead><tr>%s</tr></thead>", headers);
+
+			// and field descriptions
+			auto desc = array(rec.fieldDescriptions.map!(f => htmlRowBuilder("th",f))).join("");
+			_fh.writefln("<tr>%s</tr>", desc);
 
       // print out first set of data
 			_fh.writefln("<tr>%s</tr>", _buildHTMLDataRow(rec));
@@ -65,7 +70,6 @@ class HTMLWriter : Writer {
     {
 			_fh.writefln("<tr>%s</tr>", _buildHTMLDataRow(rec));
     }
-
 	}
 
 	// end up HTML tags

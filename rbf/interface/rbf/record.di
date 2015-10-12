@@ -27,6 +27,7 @@ class Record : NamedItemsContainer!(Field, true)
 			@property string[] fieldNames();
 			@property string[] fieldValues();
 			@property string[] fieldRawValues();
+			@property string[] fieldDescriptions();
 			void opOpAssign(string op)(Field field) if (op == "~")
 			{
 				field.index = this.size;

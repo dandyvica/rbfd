@@ -36,6 +36,9 @@ html, tag, csv, txt, xlsx, sqlite3, ident. Defaulted to txt
 if not specified. ident means the output file format is
 the same than the input one
 
+-O
+: write to standard output only
+
 -p
 : Print out progress
 

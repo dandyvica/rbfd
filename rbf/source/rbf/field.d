@@ -47,7 +47,7 @@ private:
 	ulong _lowerBound;				        /// when adding a field to a record, give
 	ulong _upperBound;								/// absolute position within the line read
 
-	byte _valueSign = 1;			      /// sign of the scalar value if any
+	byte _valueSign = 1;			        /// sign of the scalar value if any
 
 	immutable ulong _cellLength; 			/// used ot correctly print ascii tables
 
@@ -188,7 +188,7 @@ public:
 		assert(field1.value!int == 50);
 	}
 
-	/// set field value
+	/// copy field value when read from a file
 	@property void value(string s)
 	{
 		_rawValue = s;
@@ -200,6 +200,31 @@ public:
 		field1.value = "50";
 		assert(field1.value == "50");
 	}
+
+	/// set field value
+	@property void setValue(string s)
+	{
+		// when field is string, we need to left justify with blanks
+		if (_fieldType.type == AtomicType.string) {
+			_strValue = s.strip();
+			_rawValue = _strValue.leftJustify(_length);
+		}
+		else if (_fieldType.type == AtomicType.decimal) {
+			_strValue = s.strip();
+			_rawValue = _strValue.rightJustify(_length,'0');
+		}
+	}
+	///
+	unittest {
+		auto field1 = new Field("FIELD1", "Desc1", "A", 10);
+		field1.setValue("AA");
+		assert(field1.rawValue == "AA        ");
+		field1 = new Field("FIELD1", "Desc1", "N", 10);
+		field1.setValue("12.34");
+		assert(field1.rawValue == "0000012.34");
+	}
+
+
 
 	/// read property for field raw value. Raw value is not stripped
 	@property string rawValue() { return _rawValue; }

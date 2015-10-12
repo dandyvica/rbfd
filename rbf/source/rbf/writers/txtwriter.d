@@ -33,23 +33,12 @@ public:
 				f => 	_fh.writef("%-*s|", f.cellLength, f.name)
 			);
 
-				/*
-			foreach (int j, name; rec.fieldNames) {
-				// left justifiy with - format
-				_fh.writef("%-*s|", rec[j].cell_length, name);
-			}*/
 			_fh.writeln();
 	  }
 
 		rec.each!(
 			f => 	_fh.writef("%-*s|", f.cellLength, f.value)
 		);
-
-/*
-		foreach (int j, value; rec.fieldValues) {
-			// left justifiy with - format
-			_fh.writef("%-*s|", rec[j].cell_length, value);
-		}*/
 
 		_fh.writeln();
 

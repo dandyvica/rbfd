@@ -45,7 +45,7 @@ int main(string[] argv)
 
 		// pgm meta?
 		if (opts.bPgmMetadata) {
-			writefln("Compiled on %s with %s version %d", __DATE__, __VENDOR__, __VERSION__);
+			stderr.writefln("Compiled on %s with %s version %d", __DATE__, __VENDOR__, __VERSION__);
 		}
 
 		// define new layout corresponding to the requested layout
@@ -93,11 +93,15 @@ int main(string[] argv)
 			auto fieldList = settings[opts.inputLayout].skipField.split(",");
 			fieldList = array(fieldList.map!(s => s.strip));
 			layout.removeFromAllRecords(fieldList);
-			writefln("info: skipping fields %s", fieldList);
+			stderr.writefln("info: skipping fields %s", fieldList);
 		}
 
 		// create new writer to generate outputFileName matching the outputFormat
-		auto writer = writerFactory(opts.outputFileName, opts.outputFormat, reader.layout);
+		Writer writer;
+		if (opts.stdOutput)
+			writer = writerFactory("", opts.outputFormat, reader.layout);
+		else
+			writer = writerFactory(opts.outputFileName, opts.outputFormat, reader.layout);
 
 		// in case of Excel output format, set zipper
 		if (opts.outputFormat == "xlsx") {
@@ -155,14 +159,14 @@ int main(string[] argv)
 
 		// print out some stats
 		auto elapsedtime = Clock.currTime() - starttime;
-		writefln("\nRecords: %d read, %d written\nElapsed time = %s",
+		stderr.writefln("\nRecords: %d read, %d written\nElapsed time = %s",
 			nbReadRecords, nbWrittenRecords, elapsedtime);
 		if (!opts.bJustRead)
-				writefln("Created file %s, size = %d bytes",
+				stderr.writefln("Created file %s, size = %d bytes",
 								opts.outputFileName, getSize(opts.outputFileName));
 	}
 	catch (Exception e) {
-		writeln(e.msg);
+		stderr.writeln(e.msg);
 		return 1;
 	}
 
