@@ -19,9 +19,21 @@ immutable uint PRE_ALLOC_SIZE = 30;
 class NamedItemsContainer(T, bool allowDuplicates, Meta...) {
 protected:
 
-	alias TNAME   = typeof(T.name);
-	//alias TVALUE  = typeof(T.value);
-	alias TLENGTH = typeof(T.length);
+	// first verify essential properties existence
+	// for .name: name is mandatory for T
+	static if (!__traits(hasMember, T, "name")) {
+		pragma(msg, "error: %s class has no <%s> member".format(T.stringof, "name"));
+	}
+	else
+		alias TNAME   = typeof(T.name);				/// alias for name property type
+
+	// for .length: length is optional for T
+	static if (__traits(hasMember, T, "length")) {
+		alias TLENGTH = typeof(T.length);
+		TLENGTH _length;		/// current length of the container when adding elements
+	}
+
+	// aliases for managing core container data
 	alias TLIST   = T[];
 	alias TMAP	  = T[][TNAME];
 
@@ -35,21 +47,21 @@ protected:
 		ref TRETURN _contextMap(T[][TNAME] map, TNAME name) { return map[name][0]; }
 	}
 
+	/// these are the core container store
 	TLIST _list;				/// track all fields within a dynamic array
 	TMAP _map;					/// and as several instance of the same field can exist,
 											/// need to keep track of all instances
 
-	TLENGTH _length;		/// current length of the container when adding elements
 
-	string _name;				/// container name
-	string _description;/// container description
+	//string _name;				/// container name
+	//string _description;/// container description
 
 	/// optional metadata
-	static if (Meta.length > 0) {
-		Meta[0] _metadata;
-	}
 
 public:
+static if (Meta.length > 0) {
+	Meta[0] meta;
+}
 
 	// inner structure for defining a range for our container
 	struct Range {
@@ -103,8 +115,11 @@ public:
 	@property ulong size() { return _list.length; }
 
 	/// get length of all elements
-	@property ulong length() { return _length; }
+	static if (__traits(hasMember, T, "length")) {
+		@property TLENGTH length() { return _length; }
+	}
 
+/*
 	// get/set name of the container
 	@property string name() { return _name; }
 	@property void name(string name ) { _name = name; }
@@ -112,12 +127,7 @@ public:
 	// get/set description of the container
 	@property string description() { return _description; }
 	@property void description(string description) { _description = description; }
-
-	/// optional metadata
-	static if (Meta.length > 0) {
-		@property Meta[0] meta() { return _metadata; }
-	}
-
+*/
 	//----------------------------------------------------------------------------
 	// useful mapper generation
 	//----------------------------------------------------------------------------
@@ -145,7 +155,7 @@ public:
 		_map[element.name] ~= element;
 
 		// added one element, so length is greater
-		_length += element.length;
+		static if (__traits(hasMember, T, "length")) _length += element.length;
 	}
 
 	//----------------------------------------------------------------------------
@@ -230,19 +240,23 @@ public:
  	 value of the first element found
 
 	 */
-	@property auto opDispatch(TNAME name)()
-	{
-		return _map[name][0].value;
-	}
+	// @property auto opDispatch(TNAME name)()
+	// {
+	// 	writefln("name=<%s>, this=<%s>, map=<%s>", name, __MODULE__, _map);
+	// 	return _map[name][0].value;
+	// }
 
 	/**
 	 * to match an element more easily
 	 */
-	auto opDispatch(TNAME name)(ushort index) if (allowDuplicates)
-	{
-		//enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
-		return _map[name][index].value;
-	}
+
+	// auto opDispatch(TNAME name)(ushort index) if (allowDuplicates)
+	// {
+	// 	//enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
+	// 	return _map[name][index].value;
+	// }
+
+
 
   //----------------------------------------------------------------------------
 	// remove methods
@@ -335,6 +349,8 @@ public:
 ///
 unittest {
 
+	writeln("========> testing ", __FILE__);	
+
 	import rbf.field;
 
 	auto c = new NamedItemsContainer!(Field,true)();
@@ -369,8 +385,8 @@ unittest {
 	assert(c.get("FIELD3") == tuple("FIELD3", "value3", "N", 20UL));
 
 	// dispatch
-	assert(c.FIELD3 == "40");
-	assert(c.FIELD3(1) == "50");
+	//assert(c.FIELD3 == "40");
+	//assert(c.FIELD3(1) == "50");
 
 	// arithmetic
 	assert(c.sum!int("FIELD3") == 150);
@@ -427,8 +443,8 @@ unittest {
 	assert(d.get("FIELD3") == tuple("FIELD3", "value3", "A/N", 20UL));
 
 	// dispatch
-	assert(d.FIELD3 == "40");
-	assert(!__traits(compiles, d.FIELD3(1) == "50"));
+	//assert(d.FIELD3 == "40");
+	//assert(!__traits(compiles, d.FIELD3(1) == "50"));
 
 	// belong to
 	assert("FIELD3" in d);
@@ -439,5 +455,13 @@ unittest {
 		names ~= f.name;
 	}
 	assert(names == ["FIELD1","FIELD2","FIELD3","FIELD4"]);
+
+	// test compilation with different structures
+	struct NoName {}
+	struct HasNameNoLength { string name; }
+	struct HasNameLength { string name; string length; }
+	assert(!__traits(compiles, new NamedItemsContainer!(NoName,true)()));
+	auto f1 = new NamedItemsContainer!(HasNameNoLength,true)();
+	auto f2 = new NamedItemsContainer!(HasNameLength,true)();
 
 }

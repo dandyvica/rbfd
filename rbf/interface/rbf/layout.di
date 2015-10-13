@@ -8,6 +8,7 @@ import std.xml;
 import std.conv;
 import std.exception;
 import std.algorithm;
+import std.regex;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
@@ -17,13 +18,18 @@ version (unittest)
 	immutable test_file = "./test/world_data.xml";
 	immutable test_file_fieldtype = "./test/world_data_with_types.xml";
 }
-struct LayoutMeta
+template LayoutCore()
 {
 	string name;
 	string description;
 	string file;
+}
+struct LayoutMeta
+{
+	mixin LayoutCore!();
 	ulong length;
 	string layoutVersion;
+	Regex!char ignoreRecord;
 }
 class Layout : NamedItemsContainer!(Record, false, LayoutMeta)
 {

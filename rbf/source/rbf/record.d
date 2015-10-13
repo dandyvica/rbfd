@@ -19,16 +19,21 @@ import rbf.field;
 import rbf.nameditems;
 import rbf.recordfilter;
 
+struct RecordMeta {
+	string name;
+	string description;
+	bool   keep = true;
+}
 
 /***********************************
  * This record class represents a record as found in record-based files
  */
-class Record : NamedItemsContainer!(Field,true) {
+class Record : NamedItemsContainer!(Field, true, RecordMeta) {
 
-private:
-
-	bool _keep = true;							/// true is we want to keep this record when
-																	/// looping using a reader
+// private:
+//
+// 	bool _keep = true;							/// true is we want to keep this record when
+// 																	/// looping using a reader
 
 public:
 	/**
@@ -51,13 +56,17 @@ public:
 			super();
 
 			// fill container name/desc
-			this.name = name;
-			this.description = description;
+			this.meta.name = name;
+			this.meta.description = description;
 	}
 
 	// set/get properties
-	@property bool keep() { return _keep; }
-	@property void keep(bool keep) { _keep = keep; }
+	//@property bool keep() { return _keep; }
+	//@property void keep(bool keep) { _keep = keep; }
+
+	@property string name() { return meta.name; }
+	@property string description() { return meta.description; }
+
 
 	/**
 	 * sets record value from one string
@@ -158,7 +167,7 @@ public:
 	 */
 	override string toString()
 	{
-		auto s = "\nname=<%s>, description=<%s>, length=<%u>, keep=<%s>\n".format(name, description, length, keep);
+		auto s = "\nname=<%s>, description=<%s>, length=<%u>, keep=<%s>\n".format(name, description, length, meta.keep);
 		foreach (field; this)
 		{
 			s ~= field.toString();
@@ -171,7 +180,7 @@ public:
 	 * return a string of the XML representation of Record
 	 */
 	string toXML() {
-		auto xml = `<record name="%s" description=""%s">`.format(name, description);
+		auto xml = `<record name="%s" description=""%s">`.format(meta.name, meta.description);
 		xml ~= join(array(this[].map!(e => "\t" ~ e.toXML)), "\n");
 		xml ~= "</record>";
 
@@ -217,6 +226,9 @@ public:
 import std.exception;
 ///
 unittest {
+	
+	writeln("========> testing ", __FILE__);
+
 	// check wrong arguments
 	assertThrown(new Record("", "Rec description"));
 

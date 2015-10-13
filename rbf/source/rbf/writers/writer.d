@@ -110,6 +110,8 @@ Writer writerFactory(in string output, in string mode, Layout layout)
 ///
 unittest {
 
+	writeln("========> testing ", __FILE__);	
+
 	import rbf.reader;
 	import std.regex;
 

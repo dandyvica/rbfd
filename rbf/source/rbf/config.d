@@ -38,6 +38,10 @@ struct LayoutConfig {
   RECORD_MAPPER mapper;
 }*/
 
+struct SettingCore {
+	mixin  LayoutCore;
+}
+
 struct SettingMeta {
   string zipper;      /// name and path of the zipper excutable
 }
@@ -45,7 +49,7 @@ struct SettingMeta {
 /***********************************
 	* class for reading XML definition file
  */
-class Setting : NamedItemsContainer!(LayoutMeta, false, SettingMeta) {
+class Setting : NamedItemsContainer!(SettingCore, false, SettingMeta) {
 
 public:
 	/**
@@ -60,27 +64,10 @@ public:
     string settingsFile;
 
     // if file is passed, take it
-    if (xmlConfigFile != "") {
+    if (xmlConfigFile != "")
       settingsFile = xmlConfigFile;
-    }
-    else {
-      // first possible location is current directory
-      if (exists(getcwd ~ xmlSettings)) {
-        settingsFile = getcwd ~ xmlSettings;
-      }
-      else {
-        // YAML settings file location is OS-dependent
-        string _rbfhome;
-        version(linux) {
-          _rbfhome = environment["HOME"] ~ "/.rbf/";
-          settingsFile = _rbfhome ~ "rbf.xml";
-        }
-        version(win64) {
-          _rbfhome = environment["APPDATA"];
-           settingsFile = _rbfhome ~ `\local\rbf\rbf.xml`;
-        }
-      }
-    }
+    else
+      settingsFile = _getConfigFileName();
 
 		// ensure file exists
 		std.exception.enforce(exists(settingsFile), "Settings file %s not found".format(settingsFile));
@@ -95,12 +82,10 @@ public:
 		xml.onStartTag["layout"] = (ElementParser xml)
 		{
 			// save layout metadata
-      this ~= LayoutMeta(
+      this ~= SettingCore(
         xml.tag.attr["name"],
         xml.tag.attr["description"],
         xml.tag.attr["file"],
-        0,
-        ""
       );
 		};
 
@@ -109,8 +94,7 @@ public:
 		{
 			// save layout metadata
       version(linux) {
-        if (xml.tag.attr["os"] == "linux") this.meta.zipper = xml.tag.attr["path"].dup;
-writefln("<%s>", xml.tag.attr["path"]);
+        if (xml.tag.attr["os"] == "linux") this.meta.zipper = xml.tag.attr["path"];
       }
       version(windows) {
         if (xml.tag.attr["os"] == "windows") this.meta.zipper = xml.tag.attr["path"];
@@ -122,12 +106,38 @@ writefln("<%s>", xml.tag.attr["path"]);
 
   }
 
-}
+private:
+  string _getConfigFileName() {
 
+    // settings file
+    string settingsFile;
+
+    // first possible location is current directory
+    if (exists(getcwd ~ xmlSettings)) {
+      settingsFile = getcwd ~ xmlSettings;
+    }
+    else {
+      // XML settings file location is OS-dependent
+      string _rbfhome;
+      version(linux) {
+        _rbfhome = environment["HOME"] ~ "/.rbf/";
+        settingsFile = _rbfhome ~ "rbf.xml";
+      }
+      version(win64) {
+        _rbfhome = environment["APPDATA"];
+         settingsFile = _rbfhome ~ `\local\rbf\rbf.xml`;
+      }
+    }
+
+    return settingsFile;
+
+  }
+
+}
 ///
 unittest {
+	writeln("========> testing ", __FILE__);  
 	auto c = new Setting("./test/config.xml");
-writefln("<%s>", c.meta.zipper);
   assert(c.meta.zipper == "/usr/bin/zip");
   assert(c["A"].name == "A");
   assert(c["B"].description == "Desc B");

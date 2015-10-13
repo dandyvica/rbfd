@@ -129,7 +129,7 @@ public:
 		}
 
 		// do we keep this record?
-		if (!_layout[recordName].keep) return null;
+		if (!_layout[recordName].meta.keep) return null;
 
 		// now we can safely save our values
 		// set record value (and fields)
@@ -317,15 +317,14 @@ public:
 }
 ///
 unittest {
-
+	writeln("========> testing ", __FILE__);
 	auto layout = new Layout("./test/world_data.xml");
 	auto reader = new Reader("./test/world.data", layout, (line => line[0..4]));
-	reader.ignoreRegexPattern = regex("^#");
+	reader.ignoreRegexPattern = layout.meta.ignoreRecord;
 
-	// range is called by adding []
-	//reader[].take(1).each!(s => writeln(s));
-	//reader[].filter!(e => e.name == "CONT").each!(e => writeln(e["NAME"]));
-	reader[].filter!(e => e.name == "CONT").each!(e => writeln(e["NAME"][0].value));
+	//reader[].filter!(e => e.name == "CONT").each!(e => writeln(e["NAME"][0].value));
+	auto list = array(reader[].filter!(e => e.name == "CONT").map!(e => e["NAME"][0].value));
+	assert(list == ["Asia", "Africa", "North America", "South America", "Antarctica", "Europe", "Oceania"]);
 	//foreach (r; reader) { writeln(r.name, " ", r.NAME); }
 
 	// foreach is as always
@@ -333,6 +332,4 @@ unittest {
 	foreach (rec; reader) {
 		assert("NAME" in rec);
 	}*/
-
-
 }

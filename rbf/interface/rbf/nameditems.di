@@ -15,8 +15,19 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 {
 	protected 
 	{
-		alias TNAME = typeof(T.name);
-		alias TLENGTH = typeof(T.length);
+		static if (!__traits(hasMember, T, "name"))
+		{
+			pragma (msg, "error: %s class has no <%s> member".format(T.stringof, "name"));
+		}
+		else
+		{
+			alias TNAME = typeof(T.name);
+		}
+		static if (__traits(hasMember, T, "length"))
+		{
+			alias TLENGTH = typeof(T.length);
+			TLENGTH _length;
+		}
 		alias TLIST = T[];
 		alias TMAP = T[][TNAME];
 		static if (allowDuplicates)
@@ -37,15 +48,12 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 		}
 		TLIST _list;
 		TMAP _map;
-		TLENGTH _length;
-		string _name;
-		string _description;
-		static if (Meta.length > 0)
-		{
-			Meta[0] _metadata;
-		}
 		public 
 		{
+			static if (Meta.length > 0)
+			{
+				Meta[0] meta;
+			}
 			struct Range
 			{
 				private TLIST items;
@@ -102,31 +110,11 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 			{
 				return _list.length;
 			}
-			@property ulong length()
+			static if (__traits(hasMember, T, "length"))
 			{
-				return _length;
-			}
-			@property string name()
-			{
-				return _name;
-			}
-			@property void name(string name)
-			{
-				_name = name;
-			}
-			@property string description()
-			{
-				return _description;
-			}
-			@property void description(string description)
-			{
-				_description = description;
-			}
-			static if (Meta.length > 0)
-			{
-				@property Meta[0] meta()
+				@property TLENGTH length()
 				{
-					return _metadata;
+					return _length;
 				}
 			}
 			static string getMembersData(string memberName)
@@ -146,7 +134,11 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				}
 
 				_map[element.name] ~= element;
-				_length += element.length;
+				static if (__traits(hasMember, T, "length"))
+				{
+					_length += element.length;
+				}
+
 			}
 			T opIndex(size_t i)
 			{
@@ -176,14 +168,6 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				}
 
 				return _map[name][index];
-			}
-			auto @property opDispatch(TNAME name)()
-			{
-				return _map[name][0].value;
-			}
-			auto opDispatch(TNAME name)(ushort index) if (allowDuplicates)
-			{
-				return _map[name][index].value;
 			}
 			void remove(TNAME name)
 			{

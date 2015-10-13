@@ -8,6 +8,7 @@ import std.xml;
 import std.conv;
 import std.exception;
 import std.algorithm;
+import std.regex;
 
 import rbf.fieldtype;
 import rbf.field;
@@ -19,12 +20,21 @@ version(unittest) {
 	immutable test_file_fieldtype = "./test/world_data_with_types.xml";
 }
 
-struct LayoutMeta {
+/// layout and config classes share core same data. So this mixin is useful
+/// for boilerplate
+mixin template LayoutCore()
+{
 	string name;									/// layout moniker
 	string description;						/// layout description
 	string file;									/// layout XML file with path
-	ulong length;
-	string layoutVersion;					/// layout version
+}
+
+struct LayoutMeta {
+	mixin  LayoutCore;
+	ulong  length;
+	string layoutVersion;					/// layout version found in XML file
+	Regex!char ignoreRecord;      /// in some case, we need to get rid of some lines
+
 }
 
 /***********************************
@@ -34,8 +44,6 @@ class Layout : NamedItemsContainer!(Record, false, LayoutMeta) {
 
 private:
 	FieldType[string] ftype;
-
-	//string _version;					/// layout version
 
 public:
 	/**
@@ -58,16 +66,20 @@ public:
 		auto xml = new DocumentParser(s);
 
 		// save metadata of the structure
-		description = xml.tag.attr["description"];
+		meta.description = xml.tag.attr["description"];
 		//name = std.path.baseName(xmlFile);
 
-		// save length and version if any
+		// save other metadata if any
 		if ("reclength" in xml.tag.attr) {
-			_length = to!ulong(xml.tag.attr["reclength"]);
+			meta.length = to!ulong(xml.tag.attr["reclength"]);
 		}
 		if ("version" in xml.tag.attr) {
 			meta.layoutVersion = xml.tag.attr["version"];
 		}
+		if ("ignoreRecord" in xml.tag.attr) {
+			meta.ignoreRecord = regex(xml.tag.attr["ignoreRecord"]);
+		}
+
 
 		// read <fieldtype> definitions and keep types
 		xml.onStartTag["fieldtype"] = (ElementParser xml)
@@ -184,7 +196,7 @@ public:
 			}
 
 			// for all other records not provided, just get rid of them
-			this[].filter!(e => e.name !in recordMap).each!(e => e.keep = false);
+			this[].filter!(e => e.name !in recordMap).each!(e => e.meta.keep = false);
 	}
 	///
 	unittest {

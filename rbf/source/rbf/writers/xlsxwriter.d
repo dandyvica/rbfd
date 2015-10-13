@@ -153,7 +153,7 @@ public:
 	override void write(Record record)
 	{
 		// don't keep this record?
-		if (!record.keep) return;
+		if (!record.meta.keep) return;
 
 		// worksheet exist?
 		if (record.name !in _createdWorksheet) {

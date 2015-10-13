@@ -12,34 +12,36 @@ import std.container.array;
 import rbf.field;
 import rbf.nameditems;
 import rbf.recordfilter;
-class Record : NamedItemsContainer!(Field, true)
+struct RecordMeta
 {
-	private 
+	string name;
+	string description;
+	bool keep = true;
+}
+class Record : NamedItemsContainer!(Field, true, RecordMeta)
+{
+	public 
 	{
-		bool _keep = true;
-		public 
+		this(in string name, in string description);
+		@property string name();
+		@property string description();
+		@property void value(string s);
+		@property string value();
+		@property string[] fieldNames();
+		@property string[] fieldValues();
+		@property string[] fieldRawValues();
+		@property string[] fieldDescriptions();
+		void opOpAssign(string op)(Field field) if (op == "~")
 		{
-			this(in string name, in string description);
-			@property bool keep();
-			@property void keep(bool keep);
-			@property void value(string s);
-			@property string value();
-			@property string[] fieldNames();
-			@property string[] fieldValues();
-			@property string[] fieldRawValues();
-			@property string[] fieldDescriptions();
-			void opOpAssign(string op)(Field field) if (op == "~")
-			{
-				field.index = this.size;
-				field.offset = this.length;
-				super.opOpAssign!"~"(field);
-				field.lowerBound = field.offset;
-				field.upperBound = field.offset + field.length;
-			}
-			override string toString();
-			string toXML();
-			bool matchRecordFilter(RecordFilter filter);
+			field.index = this.size;
+			field.offset = this.length;
+			super.opOpAssign!"~"(field);
+			field.lowerBound = field.offset;
+			field.upperBound = field.offset + field.length;
 		}
+		override string toString();
+		string toXML();
+		bool matchRecordFilter(RecordFilter filter);
 	}
 }
 import std.exception;
