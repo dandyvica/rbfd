@@ -32,9 +32,55 @@ class HTMLWriter : Writer {
 		_fh.writeln(`<body role="document"><div class="container">`);
 	}
 
+	// write out record depending on orientation
 	override void write(Record rec)
 	{
+		if (orientation == Orientation.Horizontal)
+			_writeH(rec);
+		else
+			_writeV(rec);
+	}
 
+	// end up HTML tags
+	override void close()
+	{
+		_fh.writeln("</table></div></body></html>");
+		Writer.close();
+	}
+
+private:
+	string _buildHTMLDataRow(Record rec) {
+    return array(rec.fieldValues.map!(f => htmlRowBuilder("td",f))).join("");
+	}
+
+	// write out data with values in row
+	void _writeV(Record rec) {
+		// write fields as a HTML table
+		// start a new HTML table
+
+    // write record name & description
+		_fh.writefln(`</table><h2><span class="label label-primary">%s - %s</span></h2>`,
+					rec.name, rec.description);
+
+		// gracefully end previous table and start a new HTML table
+		_fh.write(`<table class="table table-striped">`);
+
+		// write out table header
+		_fh.write(`<tr><th>Index</th><th>Field</th><th>Description</th><th>Length</th><th>Type</th><th>Value</th></tr>`);
+		foreach (f; rec) {
+			_fh.write(
+				`<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>`.
+						format(f.index+1, f.name, f.description, f.length, f.fieldType.type, f.value)
+			);
+		}
+
+		// gracefully ends table
+		_fh.write(`</table>`);
+
+	}
+
+	// write out data with values in columns
+	void _writeH(Record rec) {
 		// write fields as a HTML table
 		// start a new HTML table
 		if (_previousRecordName != rec.name) {
@@ -70,18 +116,6 @@ class HTMLWriter : Writer {
     {
 			_fh.writefln("<tr>%s</tr>", _buildHTMLDataRow(rec));
     }
-	}
-
-	// end up HTML tags
-	override void close()
-	{
-		_fh.writeln("</table></div></body></html>");
-		_fh.close();
-	}
-
-private:
-	string _buildHTMLDataRow(Record rec) {
-    return array(rec.fieldValues.map!(f => htmlRowBuilder("td",f))).join("");
 	}
 
 }

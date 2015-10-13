@@ -17,20 +17,27 @@ version (unittest)
 	immutable test_file = "./test/world_data.xml";
 	immutable test_file_fieldtype = "./test/world_data_with_types.xml";
 }
-class Layout : NamedItemsContainer!(Record, false)
+struct LayoutMeta
+{
+	string name;
+	string description;
+	string file;
+	ulong length;
+	string layoutVersion;
+}
+class Layout : NamedItemsContainer!(Record, false, LayoutMeta)
 {
 	private 
 	{
 		FieldType[string] ftype;
-		string _version;
 		public 
 		{
 			this(string xmlFile);
 			override string toString();
-			@property string layoutVersion();
 			void keepOnly(string[][string] recordMap);
 			void removeFromAllRecords(string[] fieldList);
 			void validate();
+			bool isFieldIn(string fieldName);
 		}
 	}
 }

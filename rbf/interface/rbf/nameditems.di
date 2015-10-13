@@ -11,12 +11,11 @@ import std.range;
 import std.typecons;
 import std.exception;
 immutable uint PRE_ALLOC_SIZE = 30;
-class NamedItemsContainer(T, bool allowDuplicates)
+class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 {
 	protected 
 	{
 		alias TNAME = typeof(T.name);
-		alias TVALUE = typeof(T.value);
 		alias TLENGTH = typeof(T.length);
 		alias TLIST = T[];
 		alias TMAP = T[][TNAME];
@@ -41,6 +40,10 @@ class NamedItemsContainer(T, bool allowDuplicates)
 		TLENGTH _length;
 		string _name;
 		string _description;
+		static if (Meta.length > 0)
+		{
+			Meta[0] _metadata;
+		}
 		public 
 		{
 			struct Range
@@ -119,6 +122,13 @@ class NamedItemsContainer(T, bool allowDuplicates)
 			{
 				_description = description;
 			}
+			static if (Meta.length > 0)
+			{
+				@property Meta[0] meta()
+				{
+					return _metadata;
+				}
+			}
 			static string getMembersData(string memberName)
 			{
 				return "return array(_list.map!(e => e." ~ memberName ~ "));";
@@ -167,11 +177,11 @@ class NamedItemsContainer(T, bool allowDuplicates)
 
 				return _map[name][index];
 			}
-			@property TVALUE opDispatch(TNAME name)()
+			auto @property opDispatch(TNAME name)()
 			{
 				return _map[name][0].value;
 			}
-			TVALUE opDispatch(TNAME name)(ushort index) if (allowDuplicates)
+			auto opDispatch(TNAME name)(ushort index) if (allowDuplicates)
 			{
 				return _map[name][index].value;
 			}

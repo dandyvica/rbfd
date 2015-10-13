@@ -16,11 +16,11 @@ immutable uint PRE_ALLOC_SIZE = 30;
 /***********************************
  * Generic container for field-like objects
  */
-class NamedItemsContainer(T, bool allowDuplicates) {
+class NamedItemsContainer(T, bool allowDuplicates, Meta...) {
 protected:
 
 	alias TNAME   = typeof(T.name);
-	alias TVALUE  = typeof(T.value);
+	//alias TVALUE  = typeof(T.value);
 	alias TLENGTH = typeof(T.length);
 	alias TLIST   = T[];
 	alias TMAP	  = T[][TNAME];
@@ -42,10 +42,12 @@ protected:
 	TLENGTH _length;		/// current length of the container when adding elements
 
 	string _name;				/// container name
-	string _description;/// container descrption
+	string _description;/// container description
 
-
-
+	/// optional metadata
+	static if (Meta.length > 0) {
+		Meta[0] _metadata;
+	}
 
 public:
 
@@ -94,9 +96,6 @@ public:
 		}
 	}
 
-
-
-
 	//----------------------------------------------------------------------------
 	// properties
 	//----------------------------------------------------------------------------
@@ -113,6 +112,11 @@ public:
 	// get/set description of the container
 	@property string description() { return _description; }
 	@property void description(string description) { _description = description; }
+
+	/// optional metadata
+	static if (Meta.length > 0) {
+		@property Meta[0] meta() { return _metadata; }
+	}
 
 	//----------------------------------------------------------------------------
 	// useful mapper generation
@@ -226,7 +230,7 @@ public:
  	 value of the first element found
 
 	 */
-	@property TVALUE opDispatch(TNAME name)()
+	@property auto opDispatch(TNAME name)()
 	{
 		return _map[name][0].value;
 	}
@@ -234,7 +238,7 @@ public:
 	/**
 	 * to match an element more easily
 	 */
-	TVALUE opDispatch(TNAME name)(ushort index) if (allowDuplicates)
+	auto opDispatch(TNAME name)(ushort index) if (allowDuplicates)
 	{
 		//enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
 		return _map[name][index].value;

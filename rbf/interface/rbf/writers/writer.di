@@ -16,6 +16,12 @@ import rbf.writers.txtwriter;
 import rbf.writers.htmlwriter;
 import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
+import rbf.writers.latexwriter;
+enum Orientation 
+{
+	Horizontal,
+	Vertical,
+}
 abstract class Writer
 {
 	private 
@@ -26,11 +32,14 @@ abstract class Writer
 		{
 			File _fh;
 			string _previousRecordName;
+			Orientation _orientation;
 			public 
 			{
 				this(in string outputFileName, in bool create = true);
 				@property string zipper();
 				@property void zipper(string zipperExe);
+				@property Orientation orientation();
+				@property void orientation(Orientation o);
 				abstract void write(Record rec);
 				void open();
 				void close();

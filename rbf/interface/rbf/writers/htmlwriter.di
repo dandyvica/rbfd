@@ -19,5 +19,10 @@ class HTMLWriter : Writer
 	this(in string outputFileName);
 	override void write(Record rec);
 	override void close();
-	private string _buildHTMLDataRow(Record rec);
+	private 
+	{
+		string _buildHTMLDataRow(Record rec);
+		void _writeV(Record rec);
+		void _writeH(Record rec);
+	}
 }

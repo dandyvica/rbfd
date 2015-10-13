@@ -1,0 +1,16 @@
+<rbconfig>
+
+    <global>
+        <zipper os="linux" path="/usr/bin/zip"/>
+        <zipper os="windows" path="zip.exe"/>
+
+        <log path="log/rbf.log" level="0"/>
+    </global>                    
+            
+    <layouts>
+        <layout name="A" description="Desc A" file="layout/a.xml"/>
+        <layout name="B" description="Desc B" file="layout/b.xml"/>
+        <layout name="C" description="Desc C" file="layout/c.xml"/>
+    </layouts>
+
+</rbconfig>

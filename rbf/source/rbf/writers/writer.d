@@ -17,6 +17,14 @@ import rbf.writers.txtwriter;
 import rbf.writers.htmlwriter;
 import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
+import rbf.writers.latexwriter;
+
+/*********************************************
+ * Orientation for printing out data:
+ * 		horizontal: values per row
+ * 		vertical: values per colmun
+ */
+enum Orientation { Horizontal, Vertical }
 
 /*********************************************
  * writer class for writing to various ouput
@@ -30,8 +38,9 @@ private:
 
 package:
 
-	File _fh; // file handle on output file if any
+	File _fh; 										/// file handle on output file if any
 	string _previousRecordName;		/// sometimes, we need to keep track of the previous record written
+	Orientation _orientation; 		/// manage how information is printed
 
 public:
 	/**
@@ -52,20 +61,27 @@ public:
 		}
 		else
 			_fh = stdout;
+
+		// default orientation is horizontal
+		//_orientation = Orientation.Horizontal;
+		_orientation = Orientation.Vertical;
 	}
 
 	// zipper executable
 	@property string zipper() { return _zipperExe; }
 	@property void zipper(string zipperExe) { _zipperExe = zipperExe; }
 
+	@property Orientation orientation() { return _orientation; }
+	@property void orientation(Orientation o) { _orientation = o; }
+
 	// should be implemented by derived classes
 	abstract void write(Record rec);
-	//abstract void close();
 
 	void open() {
 		_fh = File(_outputFileName, "w");
 	}
 	void close() {
+		// close handle if not stdout
 		if (_outputFileName != "") _fh.close();
 	}
 
@@ -85,6 +101,7 @@ Writer writerFactory(in string output, in string mode, Layout layout)
 		case "xlsx": return new XLSXWriter(output, layout);
 		case "sql" : return new TXTWriter(output);
 		case "tag" : return new TAGWriter(output);
+		case "latex" : return new LatexWriter(output);
 		case "ident" : return new IdentWriter(output);
 		default:
 			throw new Exception("error: writer unknown mode <%s>".format(mode));

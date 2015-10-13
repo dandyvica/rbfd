@@ -19,16 +19,23 @@ version(unittest) {
 	immutable test_file_fieldtype = "./test/world_data_with_types.xml";
 }
 
+struct LayoutMeta {
+	string name;									/// layout moniker
+	string description;						/// layout description
+	string file;									/// layout XML file with path
+	ulong length;
+	string layoutVersion;					/// layout version
+}
 
 /***********************************
  * This class build the list of records and fields from an XML definition file
  */
-class Layout : NamedItemsContainer!(Record,false) {
+class Layout : NamedItemsContainer!(Record, false, LayoutMeta) {
 
 private:
 	FieldType[string] ftype;
 
-	string _version;					/// layout version
+	//string _version;					/// layout version
 
 public:
 	/**
@@ -42,9 +49,7 @@ public:
 		// check for XML file existence
 		enforce(exists(xmlFile), "XML definition file %s not found".format(xmlFile));
 
-
 		string recName = "";	/// to save the record name when we find a <record> tag
-
 
 		// open XML file and load it into a string
 		string s = cast(string)std.file.read(xmlFile);
@@ -54,14 +59,14 @@ public:
 
 		// save metadata of the structure
 		description = xml.tag.attr["description"];
-		name = std.path.baseName(xmlFile);
+		//name = std.path.baseName(xmlFile);
 
 		// save length and version if any
 		if ("reclength" in xml.tag.attr) {
 			_length = to!ulong(xml.tag.attr["reclength"]);
 		}
 		if ("version" in xml.tag.attr) {
-			_version = xml.tag.attr["version"];
+			meta.layoutVersion = xml.tag.attr["version"];
 		}
 
 		// read <fieldtype> definitions and keep types
@@ -156,7 +161,7 @@ public:
 	}
 
 	/// read property for name attribute
-	@property string layoutVersion() { return _version; }
+	//@property string layoutVersion() { return _version; }
 
 	/**
 	 * keep only fields specified for each record in the map
@@ -217,10 +222,24 @@ public:
 				stderr.writefln("Warning: record %s is not matching declared length (%d instead of %d)",
 					rec.name, rec.length, _length);
 			}
-
-			//writeln(rec.toXML);
 		}
 	}
 
+	/**
+	 * return true if field is in any record of layout
+	 */
+	bool isFieldIn(string fieldName) {
+		foreach (rec; this) {
+				if (fieldName in rec) return true;
+		}
+		return false;
+	}
+	///
+	unittest {
+		auto l = new Layout(test_file);
 
+		l.removeFromAllRecords(["ID", "NAME", "POPULATION"]);
+		assert(l.isFieldIn("DENSITY"));
+		assert(!l.isFieldIn("FOO"));
+	}
 }
