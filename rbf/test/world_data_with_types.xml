@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- inspired from https://en.wikipedia.org/wiki/List_of_continents_by_GDP_%28nominal%29 -->
 <!-- and http://www.nationsonline.org/oneworld/asia.htm -->
-<rbfile version="1.0" description="Continents, countries, cities">
+<rbfile
+	version="1.0"
+	description="Continents, countries, cities"
+	ignoreRecord="^#"
+	skipField="ID"
+	mapper="type:2 map:0..2,2..8"
+>
 
 	<fieldtype name="CHAR" type="string"/>
 	<fieldtype name="NUM" type="decimal"/>
-	
+
 	<record name="CONT" description="Continent data">
 		<field name="ID" description="Record ID" length="4" type="CHAR"/>
 		<field name="NAME" description="Name of the continent" length="15" type="CHAR"/>

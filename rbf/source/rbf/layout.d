@@ -9,6 +9,7 @@ import std.conv;
 import std.exception;
 import std.algorithm;
 import std.regex;
+import std.array;
 
 import rbf.fieldtype;
 import rbf.field;
@@ -20,6 +21,12 @@ version(unittest) {
 	immutable test_file_fieldtype = "./test/world_data_with_types.xml";
 }
 
+/// useful alias for defining mapper
+alias MapperFunc = string delegate(string);
+
+/// enum used to match Layout constructor: either from file or string
+enum LayoutSource { L_FILE, L_STRING }
+
 /// layout and config classes share core same data. So this mixin is useful
 /// for boilerplate
 mixin template LayoutCore()
@@ -30,11 +37,13 @@ mixin template LayoutCore()
 }
 
 struct LayoutMeta {
-	mixin  LayoutCore;
-	ulong  length;
+	mixin LayoutCore;							/// basic data
+	ulong length;									/// optional layout length
+	string xmlFile;						  	/// xml file describing layout
 	string layoutVersion;					/// layout version found in XML file
 	Regex!char ignoreRecord;      /// in some case, we need to get rid of some lines
-
+	string[] skipField;						/// field names to systematically skip
+	MapperFunc mapper;
 }
 
 /***********************************
@@ -44,6 +53,45 @@ class Layout : NamedItemsContainer!(Record, false, LayoutMeta) {
 
 private:
 	FieldType[string] ftype;
+
+
+	void _extractMapper(string mapper) {
+		// regexes to catch mapper data
+		auto r1 = regex(r"(\d+)\.\.(\d+)");
+		auto r2 = regex(r"(\d+)\.\.(\d+)\s*,\s*(\d+)\.\.(\d+)");
+
+		// extract mapper type & arguments
+		auto mapperReg = regex(r"^type:(\d)\s+map:\s*([\w\.,]+)\s*$");
+		auto m = matchAll(mapper, mapperReg);
+		auto funcType = to!byte(m.captures[1]);
+
+		switch(funcType)
+		{
+			// constant function == 0 order function
+			case 0:
+				meta.mapper = (string x) => m.captures[2];
+				break;
+
+			// 1-order function
+			case 1:
+				auto m1 = matchAll(m.captures[2], r1);
+				meta.mapper = (string x) => x[
+					to!size_t(m1.captures[1]) .. to!size_t(m1.captures[2])
+				];
+				break;
+
+			// 2-order function
+			case 2:
+				auto m2 = matchAll(m.captures[2], r2);
+				meta.mapper = (string x) =>
+					x[to!size_t(m2.captures[1]) .. to!size_t(m2.captures[2])] ~
+					x[to!size_t(m2.captures[3]) .. to!size_t(m2.captures[4])];
+				break;
+
+			default:
+				throw new Exception("error: unknown mapper lambda <%d> in layout <%s>".format(funcType, meta.xmlFile));
+		}
+	}
 
 public:
 	/**
@@ -57,29 +105,47 @@ public:
 		// check for XML file existence
 		enforce(exists(xmlFile), "XML definition file %s not found".format(xmlFile));
 
-		string recName = "";	/// to save the record name when we find a <record> tag
+		// save meta
+		meta.xmlFile = xmlFile;
 
 		// open XML file and load it into a string
 		string s = cast(string)std.file.read(xmlFile);
 
+		// call constructor from string
+		this(s, LayoutSource.L_STRING);
+	}
+
+	/**
+	 * create all records based on the XML file structure as a string
+	 *
+	 * Params:
+	 *	xmlData = XML data
+	 *  ls = layout source to match this particular constructor
+	 */
+	this(string xmlData,  LayoutSource ls) {
+
+		/// to save the record name when we find a <record> tag
+		string recName = "";
+
 		// create a new parser
-		auto xml = new DocumentParser(s);
+		auto xml = new DocumentParser(xmlData);
 
 		// save metadata of the structure
-		meta.description = xml.tag.attr["description"];
-		//name = std.path.baseName(xmlFile);
+		meta.length        = to!ulong(xml.tag.attr.get("reclength", "0"));
+		meta.layoutVersion = xml.tag.attr.get("version", "");
+		meta.ignoreRecord  = regex(xml.tag.attr.get("ignoreRecord", ""));
+		meta.description   = xml.tag.attr.get("description","");
 
-		// save other metadata if any
-		if ("reclength" in xml.tag.attr) {
-			meta.length = to!ulong(xml.tag.attr["reclength"]);
-		}
-		if ("version" in xml.tag.attr) {
-			meta.layoutVersion = xml.tag.attr["version"];
-		}
-		if ("ignoreRecord" in xml.tag.attr) {
-			meta.ignoreRecord = regex(xml.tag.attr["ignoreRecord"]);
+		// build skip list if any
+		auto fields = xml.tag.attr.get("skipField","");
+		if (fields != "") {
+			meta.skipField = array(fields.split(',').map!(e => e.strip));
 		}
 
+		// build mapper if any
+		if ("mapper" in xml.tag.attr) {
+			_extractMapper(xml.tag.attr["mapper"]);
+		}
 
 		// read <fieldtype> definitions and keep types
 		xml.onStartTag["fieldtype"] = (ElementParser xml)
@@ -138,8 +204,13 @@ public:
 			this[recName] ~= field;
 		};
 
-
+		// parse XML here
 		xml.parse();
+
+		// if any, delete skipped fields from layout
+		if (meta.skipField != []) {
+			this.removeFromAllRecords(meta.skipField);
+		}
 	}
 	///
 	unittest {
@@ -246,12 +317,32 @@ public:
 		}
 		return false;
 	}
-	///
-	unittest {
-		auto l = new Layout(test_file);
 
-		l.removeFromAllRecords(["ID", "NAME", "POPULATION"]);
-		assert(l.isFieldIn("DENSITY"));
-		assert(!l.isFieldIn("FOO"));
-	}
+}
+///
+unittest {
+	writeln("========> testing ", __FILE__);
+
+	auto l = new Layout(`<rbfile version="1.0" mapper="type:0 map:FOO"></rbfile>`, LayoutSource.L_STRING);
+	assert(l.meta.mapper("ABCDEF") == "FOO");
+
+	l = new Layout(`<rbfile version="1.0" mapper="type:1 map:0..2"></rbfile>`, LayoutSource.L_STRING);
+	assert(l.meta.mapper("ABCDEF") == "AB");
+
+	l = new Layout(`<rbfile	version="1.0" mapper="type:2 map:0..2,2..4"></rbfile>`, LayoutSource.L_STRING);
+	assert(l.meta.mapper("ABCDEF") == "ABCD");
+
+
+	l = new Layout(test_file);
+
+	assert(l.meta.description == "Continents, countries, cities");
+	assert(l.meta.layoutVersion == "1.0");
+
+	// ID field is not there
+	assert(l.meta.skipField == ["ID"]);
+	assert(!l.isFieldIn("ID"));
+
+	l.removeFromAllRecords(["ID", "NAME", "POPULATION"]);
+	assert(l.isFieldIn("DENSITY"));
+	assert(!l.isFieldIn("FOO"));
 }

@@ -15,15 +15,13 @@ import std.regex;
 import std.range;
 import std.algorithm;
 
-
 import rbf.field;
 import rbf.record;
 import rbf.layout;
 
 // definition of useful aliases
-alias GET_RECORD_FUNCTION = string delegate(string);   /// alias for a function pointer which identifies a record
+//alias GET_RECORD_FUNCTION = string delegate(string);   /// alias for a function pointer which identifies a record
 alias STRING_MAPPER = void function(Record);           /// alias to a delegate used to change field values
-
 
 /***********************************
  * record-base file reader used to loop on each record
@@ -42,7 +40,7 @@ private:
 	Layout _layout;
 
 	/// this function will identify a record name from the line read
-	GET_RECORD_FUNCTION _recordIdentifier;
+	MapperFunc _recordIdentifier;
 
 	/// regex ignore pattern: don't read those lines matching this regex
 	Regex!char _ignoreRegex;
@@ -65,7 +63,7 @@ public:
 	 *  layout = layout object
 	 *  recIndentifier = function used to map each record
 	 */
-	this(string rbFile, Layout layout, GET_RECORD_FUNCTION recIndentifier)
+	this(string rbFile, Layout layout, MapperFunc recIndentifier = null)
 	{
 		// check arguments
 		enforce(exists(rbFile), "error: file %s not found".format(rbFile));
@@ -80,7 +78,8 @@ public:
 		_layout = layout;
 
 		// save record identifier lambda
-		_recordIdentifier = recIndentifier;
+		_recordIdentifier = (recIndentifier) ? recIndentifier : layout.meta.mapper;
+		//_recordIdentifier = layout.meta.mapper;
 
 		// get file size
 		_inputFileSize = getSize(rbFile);
@@ -115,7 +114,7 @@ public:
 		auto line = lineReadFromFile.idup;
 
 		// if line is matching the ignore pattern, just loop
-		if (!_ignoreRegex.empty && matchFirst(line, _ignoreRegex)) {
+		if (!layout.meta.ignoreRecord.empty && matchFirst(line, layout.meta.ignoreRecord)) {
 			return null;
 		}
 
@@ -224,12 +223,6 @@ public:
 			// does nothing because file pointer already move on
 			void popFront() {
 
-			/*
-				do {
-					nbChars = fh.readln(buffer);
-					if (nbChars == 0) return;
-				} while (buffer[0] == '#');*/
-
 				do {
 					// read one line from file
 					_nbChars = _fh.readln(_buffer);
@@ -319,8 +312,8 @@ public:
 unittest {
 	writeln("========> testing ", __FILE__);
 	auto layout = new Layout("./test/world_data.xml");
-	auto reader = new Reader("./test/world.data", layout, (line => line[0..4]));
-	reader.ignoreRegexPattern = layout.meta.ignoreRecord;
+	//auto reader = new Reader("./test/world.data", layout, (line => line[0..4]));
+	auto reader = new Reader("./test/world.data", layout);
 
 	//reader[].filter!(e => e.name == "CONT").each!(e => writeln(e["NAME"][0].value));
 	auto list = array(reader[].filter!(e => e.name == "CONT").map!(e => e["NAME"][0].value));

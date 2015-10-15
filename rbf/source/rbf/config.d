@@ -38,6 +38,8 @@ struct LayoutConfig {
   RECORD_MAPPER mapper;
 }*/
 
+
+
 struct SettingCore {
 	mixin  LayoutCore;
 }
@@ -46,19 +48,28 @@ struct SettingMeta {
   string zipper;      /// name and path of the zipper excutable
 }
 
+alias LayoutDir = NamedItemsContainer!(SettingCore, false, SettingMeta);
+
 /***********************************
 	* class for reading XML definition file
  */
-class Setting : NamedItemsContainer!(SettingCore, false, SettingMeta) {
+//class Setting : NamedItemsContainer!(SettingCore, false, SettingMeta) {
+class Setting {
+
+private:
+	LayoutDir _layoutDirectory;
 
 public:
 	/**
-	 * read the YAML configuration file
+	 * read the XML configuration file
 	 *
    * Params:
 	 * 	xmlConfigFile = optional file configuration file
 	 */
 	this(string xmlConfigFile = "") {
+
+		// define new container for layouts
+		_layoutDirectory = new LayoutDir;
 
     // settings file
     string settingsFile;
@@ -82,7 +93,7 @@ public:
 		xml.onStartTag["layout"] = (ElementParser xml)
 		{
 			// save layout metadata
-      this ~= SettingCore(
+      this._layoutDirectory ~= SettingCore(
         xml.tag.attr["name"],
         xml.tag.attr["description"],
         xml.tag.attr["file"],
@@ -94,10 +105,10 @@ public:
 		{
 			// save layout metadata
       version(linux) {
-        if (xml.tag.attr["os"] == "linux") this.meta.zipper = xml.tag.attr["path"];
+        if (xml.tag.attr["os"] == "linux") this._layoutDirectory.meta.zipper = xml.tag.attr["path"];
       }
       version(windows) {
-        if (xml.tag.attr["os"] == "windows") this.meta.zipper = xml.tag.attr["path"];
+        if (xml.tag.attr["os"] == "windows") this._layoutDirectory.meta.zipper = xml.tag.attr["path"];
       }
 		};
 
@@ -105,6 +116,8 @@ public:
 		xml.parse();
 
   }
+
+	@property LayoutDir layoutDir() { return _layoutDirectory; }
 
 private:
   string _getConfigFileName() {
@@ -136,10 +149,10 @@ private:
 }
 ///
 unittest {
-	writeln("========> testing ", __FILE__);  
+	writeln("========> testing ", __FILE__);
 	auto c = new Setting("./test/config.xml");
-  assert(c.meta.zipper == "/usr/bin/zip");
-  assert(c["A"].name == "A");
-  assert(c["B"].description == "Desc B");
-  assert(c["C"].file == "layout/c.xml");
+  assert(c.layoutDir.meta.zipper == "/usr/bin/zip");
+  assert(c.layoutDir["A"].name == "A");
+  assert(c.layoutDir["B"].description == "Desc B");
+  assert(c.layoutDir["C"].file == "layout/c.xml");
 }

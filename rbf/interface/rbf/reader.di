@@ -12,7 +12,6 @@ import std.algorithm;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
-alias GET_RECORD_FUNCTION = string delegate(string);
 alias STRING_MAPPER = void function(Record);
 class Reader
 {
@@ -20,14 +19,14 @@ class Reader
 	{
 		immutable string _rbFile;
 		Layout _layout;
-		GET_RECORD_FUNCTION _recordIdentifier;
+		MapperFunc _recordIdentifier;
 		Regex!char _ignoreRegex;
 		STRING_MAPPER _mapper;
 		ulong _currentReadSize;
 		ulong _inputFileSize;
 		public 
 		{
-			this(string rbFile, Layout layout, GET_RECORD_FUNCTION recIndentifier);
+			this(string rbFile, Layout layout, MapperFunc recIndentifier = null);
 			@property void ignoreRegexPattern(Regex!char pattern);
 			@property void recordTransformer(STRING_MAPPER func);
 			@property Layout layout();

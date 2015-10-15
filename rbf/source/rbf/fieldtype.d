@@ -34,7 +34,7 @@ class FieldType {
 private:
 
 	string _name;
-	BaseType _baseType;								    /// the field type as read from the layout file
+	BaseType _baseType;								  /// the field type as read from the layout file
 	AtomicType _type;										/// the corresponding "real" type
 	Regex!char _re;				  						/// the pattern the field should stick to
 	MATCH_FILTER _filterTestCallback;  	/// method to test whether a value matches a filter
