@@ -1,4 +1,4 @@
-// D import file generated from 'source/rbf/record.d'
+// D import file generated from 'source\rbf\record.d'
 module rbf.record;
 pragma (msg, "========> Compiling module ", "rbf.record");
 import std.stdio;

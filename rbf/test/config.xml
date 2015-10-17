@@ -2,7 +2,7 @@
 
     <global>
         <zipper os="linux" path="/usr/bin/zip"/>
-        <zipper os="windows" path="zip.exe"/>
+        <zipper os="Win64" path="C:\Program Files (x86)\Gow\bin\zip.exe"/>
 
         <log path="log/rbf.log" level="0"/>
     </global>                    
@@ -12,5 +12,15 @@
         <layout name="B" description="Desc B" file="layout/b.xml"/>
         <layout name="C" description="Desc C" file="layout/c.xml"/>
     </layouts>
+    
+    <outputs>
+		<output name="txt" outputDir="." separator="*"  fdesc="no" orientation="horizontal"/>
+		<output name="html" outputDir="." fdesc="no" orientation="horizontal"/>
+		<output name="csv" outputDir="." separator=";"/>
+		<output name="xlsx" outputDir="." zipper="C:\Program Files (x86)\Gow\bin\zip.exe"/>
+		<output name="tag" outputDir="." separator=";"/>
+		<output name="ident" outputDir="."/>
+    </outputs>
+    
 
 </rbconfig>

@@ -20,7 +20,14 @@ import rbf.layout;
 //alias RECORD_MAPPER = string delegate(string);
 
 /// configuration file name
-immutable xmlSettings = "rbf.xml";
+version(linux) {
+immutable xmlSettings = ".rbf/rbf.xml";
+}
+version(Win64) {
+immutable xmlSettings = `\local\rbf\rbf.xml`;
+}
+
+
 
 /***********************************
 	* struct for describing layout metadata
@@ -39,7 +46,6 @@ struct LayoutConfig {
 }*/
 
 
-
 struct SettingCore {
 	mixin  LayoutCore;
 }
@@ -50,6 +56,14 @@ struct SettingMeta {
 
 alias LayoutDir = NamedItemsContainer!(SettingCore, false, SettingMeta);
 
+struct Output {
+	string name;			/// name of the outpout format (e.g.: "txt")
+	string outputDir;		/// location of output file
+	string separator;		/// separator char for text outpout format
+	string orientation;		/// whether print by row or colums
+}
+alias OutputDir = NamedItemsContainer!(Output, false);
+
 /***********************************
 	* class for reading XML definition file
  */
@@ -57,7 +71,8 @@ alias LayoutDir = NamedItemsContainer!(SettingCore, false, SettingMeta);
 class Setting {
 
 private:
-	LayoutDir _layoutDirectory;
+	LayoutDir _layoutDirectory;		/// list of all settings
+	OutputDir _outputDirectory;		/// list of all output formats
 
 public:
 	/**
@@ -68,8 +83,9 @@ public:
 	 */
 	this(string xmlConfigFile = "") {
 
-		// define new container for layouts
+		// define new container for layouts and formats
 		_layoutDirectory = new LayoutDir;
+		_outputDirectory = new OutputDir;
 
     // settings file
     string settingsFile;
@@ -104,13 +120,30 @@ public:
 		xml.onStartTag["zipper"] = (ElementParser xml)
 		{
 			// save layout metadata
+		writefln("attr=%s %s", xml.tag.attr["os"], xml.tag.attr["path"]);
       version(linux) {
         if (xml.tag.attr["os"] == "linux") this._layoutDirectory.meta.zipper = xml.tag.attr["path"];
       }
-      version(windows) {
-        if (xml.tag.attr["os"] == "windows") this._layoutDirectory.meta.zipper = xml.tag.attr["path"];
+      version(Win64) {
+        if (xml.tag.attr["os"] == "Win64") this._layoutDirectory.meta.zipper = xml.tag.attr["path"];
       }
+      writefln("layout zipper = %s", this._layoutDirectory.meta.zipper);
 		};
+		
+    // read <layout> definition tag
+		xml.onStartTag["output"] = (ElementParser xml)
+		{
+			// save layout metadata
+      this._outputDirectory ~= Output(
+        xml.tag.attr["name"],
+        xml.tag.attr.get("outputDir", "."),
+        xml.tag.attr.get("separator", "|"),
+        xml.tag.attr.get("orientation", "horizontal")      
+      );
+		};	
+		
+		
+		
 
     // real parsing
 		xml.parse();
@@ -118,14 +151,18 @@ public:
   }
 
 	@property LayoutDir layoutDir() { return _layoutDirectory; }
+	@property OutputDir outputDir() { return _outputDirectory; }
 
 private:
   string _getConfigFileName() {
 
     // settings file
     string settingsFile;
+    
+    // test if env variable is set
+    if (environment["RBFCONF"] != "") return environment["RBFCONF"];
 
-    // first possible location is current directory
+    // otherwise, first possible location is current directory
     if (exists(getcwd ~ xmlSettings)) {
       settingsFile = getcwd ~ xmlSettings;
     }
@@ -133,12 +170,12 @@ private:
       // XML settings file location is OS-dependent
       string _rbfhome;
       version(linux) {
-        _rbfhome = environment["HOME"] ~ "/.rbf/";
-        settingsFile = _rbfhome ~ "rbf.xml";
+        _rbfhome = environment["HOME"];
+        settingsFile = _rbfhome ~ xmlSettings;
       }
-      version(win64) {
+      version(Win64) {
         _rbfhome = environment["APPDATA"];
-         settingsFile = _rbfhome ~ `\local\rbf\rbf.xml`;
+         settingsFile = _rbfhome ~ xmlSettings;
       }
     }
 
@@ -151,8 +188,19 @@ private:
 unittest {
 	writeln("========> testing ", __FILE__);
 	auto c = new Setting("./test/config.xml");
+  version(linux) {
   assert(c.layoutDir.meta.zipper == "/usr/bin/zip");
+}
+  version(Win64) {
+	  writefln("zipper=%s", c.layoutDir.meta.zipper);
+  assert(c.layoutDir.meta.zipper == `C:\Program Files (x86)\Gow\bin\zip.exe`);
+}
+
   assert(c.layoutDir["A"].name == "A");
   assert(c.layoutDir["B"].description == "Desc B");
   assert(c.layoutDir["C"].file == "layout/c.xml");
+  
+  assert(c.outputDir["txt"].name == "txt");
+  assert(c.outputDir["txt"].outputDir == ".");
+  assert(c.outputDir["txt"].separator == "*");
 }

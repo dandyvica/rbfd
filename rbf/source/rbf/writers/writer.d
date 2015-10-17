@@ -131,6 +131,7 @@ unittest {
 
 	auto writer4 = writerFactory("test.xlsx", "xlsx", reader.layout);
 	version(linux) { writer4.zipper = "/usr/bin/zip"; }
+	version(Win64) { writer4.zipper = `C:\Program Files (x86)\Gow\bin\zip.exe`; }
 	foreach (rec; reader) { writer4.write(rec); }
 
 	writer4.close();

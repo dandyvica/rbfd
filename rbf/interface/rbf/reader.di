@@ -1,4 +1,4 @@
-// D import file generated from 'source/rbf/reader.d'
+// D import file generated from 'source\rbf\reader.d'
 module rbf.reader;
 pragma (msg, "========> Compiling module ", "rbf.reader");
 import std.stdio;

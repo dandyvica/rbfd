@@ -38,6 +38,7 @@ private:
 		chdir(_xlsxDir);
 
 		// create zip
+		writefln("zip is %s", Writer.zipper);
 		auto result = std.process.execute([Writer.zipper, "-r", "../" ~ _xlsxFilename, "."]);
 		if (result.status != 0)
 			throw new Exception("zip command failed:\n", result.output);
