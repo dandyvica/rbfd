@@ -11,6 +11,7 @@ import std.variant;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
+import rbf.config;
 import rbf.writers.xlsxwriter;
 import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
@@ -34,13 +35,14 @@ abstract class Writer {
 private:
 
 	string _outputFileName; 			// name of the file we want to create
-	string _zipperExe;						// name & path of the executable used to create zip
+	//string _zipperExe;						// name & path of the executable used to create zip
 
 package:
 
 	File _fh; 										/// file handle on output file if any
 	string _previousRecordName;		/// sometimes, we need to keep track of the previous record written
 	Orientation _orientation; 		/// manage how information is printed
+	OutputFeature outputFeature; /// specifics data for chosen output format
 
 public:
 	/**
@@ -67,10 +69,6 @@ public:
 		_orientation = Orientation.Vertical;
 	}
 
-	// zipper executable
-	@property string zipper() { return _zipperExe; }
-	@property void zipper(string zipperExe) { _zipperExe = zipperExe; }
-
 	@property Orientation orientation() { return _orientation; }
 	@property void orientation(Orientation o) { _orientation = o; }
 
@@ -95,44 +93,15 @@ Writer writerFactory(in string output, in string mode, Layout layout)
 {
 	switch(mode)
 	{
-		case "html": return new HTMLWriter(output);
-		case "csv" : return new CSVWriter(output);
-		case "txt" : return new TXTWriter(output);
-		case "xlsx": return new XLSXWriter(output, layout);
-		case "sql" : return new TXTWriter(output);
-		case "tag" : return new TAGWriter(output);
+		case "html"  : return new HTMLWriter(output);
+		case "csv"   : return new CSVWriter(output);
+		case "txt"   : return new TXTWriter(output);
+		case "xlsx"  : return new XLSXWriter(output, layout);
+		case "sql"   : return new TXTWriter(output);
+		case "tag"   : return new TAGWriter(output);
 		case "latex" : return new LatexWriter(output);
 		case "ident" : return new IdentWriter(output);
 		default:
 			throw new Exception("error: writer unknown mode <%s>".format(mode));
 	}
-}
-///
-unittest {
-
-	writeln("========> testing ", __FILE__);	
-
-	import rbf.reader;
-	import std.regex;
-
-	auto layout = new Layout("./test/world_data.xml");
-
-	auto reader = new Reader("./test/world.data", layout, (line => line[0..4]));
-	reader.ignoreRegexPattern = regex("^#");
-
-	auto writer1 = writerFactory("test.html", "html", reader.layout);
-	foreach (rec; reader) { writer1.write(rec); }
-
-	auto writer2 = writerFactory("test.txt", "txt", reader.layout);
-	foreach (rec; reader) { writer2.write(rec); }
-
-	auto writer3 = writerFactory("test.csv", "csv", reader.layout);
-	foreach (rec; reader) { writer3.write(rec); }
-
-	auto writer4 = writerFactory("test.xlsx", "xlsx", reader.layout);
-	version(linux) { writer4.zipper = "/usr/bin/zip"; }
-	version(Win64) { writer4.zipper = `C:\Program Files (x86)\Gow\bin\zip.exe`; }
-	foreach (rec; reader) { writer4.write(rec); }
-
-	writer4.close();
 }

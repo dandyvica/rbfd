@@ -38,8 +38,7 @@ private:
 		chdir(_xlsxDir);
 
 		// create zip
-		writefln("zip is %s", Writer.zipper);
-		auto result = std.process.execute([Writer.zipper, "-r", "../" ~ _xlsxFilename, "."]);
+		auto result = std.process.execute([outputFeature.zipper, "-r", "../" ~ _xlsxFilename, "."]);
 		if (result.status != 0)
 			throw new Exception("zip command failed:\n", result.output);
 
@@ -219,5 +218,21 @@ public:
 
 	}
 
+}
+unittest {
 
+	writeln("========> testing ", __FILE__);
+
+	import rbf.reader;
+	import std.regex;
+
+	auto layout = new Layout("./test/world_data.xml");
+	auto reader = new Reader("./test/world.data", layout);
+
+	auto writer = writerFactory("world_data.xlsx", "xlsx", layout);
+	writer.outputFeature.zipper = "/usr/bin/zip";
+
+	foreach (rec; reader) { writer.write(rec); }
+
+	writer.close();
 }

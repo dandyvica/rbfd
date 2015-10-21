@@ -119,3 +119,19 @@ private:
 	}
 
 }
+///
+unittest {
+
+	writeln("========> testing ", __FILE__);
+
+	import rbf.layout;
+	import rbf.reader;
+
+	auto layout = new Layout("./test/world_data.xml");
+	auto reader = new Reader("./test/world.data", layout);
+
+	auto writer = writerFactory("world_data.html", "html", layout);
+	foreach (rec; reader) { writer.write(rec); }
+
+	writer.close();
+}

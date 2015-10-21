@@ -49,20 +49,18 @@ struct LayoutConfig {
 struct SettingCore {
 	mixin  LayoutCore;
 }
+alias LayoutDir = NamedItemsContainer!(SettingCore, false);
 
-struct SettingMeta {
-  string zipper;      /// name and path of the zipper excutable
-}
-
-alias LayoutDir = NamedItemsContainer!(SettingCore, false, SettingMeta);
-
-struct Output {
-	string name;			/// name of the outpout format (e.g.: "txt")
+struct OutputFeature {
+	string name;		  	/// name of the outpout format (e.g.: "txt")
 	string outputDir;		/// location of output file
-	string separator;		/// separator char for text outpout format
-	string orientation;		/// whether print by row or colums
+	string fsep;		    /// field separator char for text output format
+	string lsep;		    /// line separator char for text output format
+	string orientation;	/// whether print by row or colums
+  string zipper;      /// name and path of the zipper executable
+	bool fielddesc;		  /// print field description if true
 }
-alias OutputDir = NamedItemsContainer!(Output, false);
+alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 
 /***********************************
 	* class for reading XML definition file
@@ -116,34 +114,23 @@ public:
       );
 		};
 
-    // read <zipper> definition tag
-		xml.onStartTag["zipper"] = (ElementParser xml)
-		{
-			// save layout metadata
-		writefln("attr=%s %s", xml.tag.attr["os"], xml.tag.attr["path"]);
-      version(linux) {
-        if (xml.tag.attr["os"] == "linux") this._layoutDirectory.meta.zipper = xml.tag.attr["path"];
-      }
-      version(Win64) {
-        if (xml.tag.attr["os"] == "Win64") this._layoutDirectory.meta.zipper = xml.tag.attr["path"];
-      }
-      writefln("layout zipper = %s", this._layoutDirectory.meta.zipper);
-		};
-		
-    // read <layout> definition tag
+    // read <output> definition tag
 		xml.onStartTag["output"] = (ElementParser xml)
 		{
+			// manage attributes
+			auto fdesc = xml.tag.attr.get("fielddesc", "false");
+
 			// save layout metadata
-      this._outputDirectory ~= Output(
+      this._outputDirectory ~= OutputFeature(
         xml.tag.attr["name"],
         xml.tag.attr.get("outputDir", "."),
-        xml.tag.attr.get("separator", "|"),
-        xml.tag.attr.get("orientation", "horizontal")      
+        xml.tag.attr.get("fsep", "|"),
+        xml.tag.attr.get("lsep", ""),
+        xml.tag.attr.get("orientation", "horizontal"),
+        xml.tag.attr.get("zipper", ""),
+        (fdesc == "true") ? true : false,
       );
-		};	
-		
-		
-		
+		};
 
     // real parsing
 		xml.parse();
@@ -158,7 +145,7 @@ private:
 
     // settings file
     string settingsFile;
-    
+
     // test if env variable is set
     if (environment["RBFCONF"] != "") return environment["RBFCONF"];
 
@@ -188,19 +175,16 @@ private:
 unittest {
 	writeln("========> testing ", __FILE__);
 	auto c = new Setting("./test/config.xml");
-  version(linux) {
-  assert(c.layoutDir.meta.zipper == "/usr/bin/zip");
-}
-  version(Win64) {
-	  writefln("zipper=%s", c.layoutDir.meta.zipper);
-  assert(c.layoutDir.meta.zipper == `C:\Program Files (x86)\Gow\bin\zip.exe`);
-}
 
   assert(c.layoutDir["A"].name == "A");
   assert(c.layoutDir["B"].description == "Desc B");
   assert(c.layoutDir["C"].file == "layout/c.xml");
-  
+	assert(c.layoutDir["world"].file == "test/world_data.xml");
+
   assert(c.outputDir["txt"].name == "txt");
-  assert(c.outputDir["txt"].outputDir == ".");
-  assert(c.outputDir["txt"].separator == "*");
+  assert(c.outputDir["txt"].outputDir == "/tmp/");
+  assert(c.outputDir["txt"].fsep == "*");
+  assert(!c.outputDir["txt"].fielddesc);
+
+  assert(c.outputDir["xlsx"].zipper == "/usr/bin/zip");
 }

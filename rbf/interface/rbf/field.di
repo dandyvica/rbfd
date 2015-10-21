@@ -1,4 +1,4 @@
-// D import file generated from 'source\rbf\field.d'
+// D import file generated from 'source/rbf/field.d'
 module rbf.field;
 pragma (msg, "========> Compiling module ", "rbf.field");
 import std.stdio;
@@ -27,7 +27,8 @@ class Field
 		ulong _lowerBound;
 		ulong _upperBound;
 		byte _valueSign = 1;
-		immutable ulong _cellLength;
+		immutable ulong _cellLength1;
+		immutable ulong _cellLength2;
 		public 
 		{
 			this(in string name, in string description, FieldType ftype, in ulong length);
@@ -36,7 +37,8 @@ class Field
 			@property string description();
 			@property FieldType fieldType();
 			@property ulong length();
-			@property ulong cellLength();
+			@property ulong cellLength1();
+			@property ulong cellLength2();
 			@property string value();
 			@property T value(T)()
 			{

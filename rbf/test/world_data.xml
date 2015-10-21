@@ -6,7 +6,7 @@
 	description="Continents, countries, cities"
 	ignoreRecord="^#"
 	skipField="ID"
-	mapper="type:2 map:0..2,2..4"
+	mapper="type:1 map:0..4"
 >
 
 	<record name="CONT" description="Continent data">
@@ -14,7 +14,7 @@
 		<field name="NAME" description="Name of the continent" length="15" type="A"/>
 		<field name="AREA" description="Area of the continent" length="20" type="N"/>
 		<field name="POPULATION" description="Population of the continent" length="20" type="N"/>
-		<field name="DENSITY" description="Density per km2" length="10" type="A"/>
+		<field name="DENSITY" description="Density per km2" length="9" type="A"/>
 		<field name="CITY" description="Most populus city" length="20" type="A"/>
 	</record>
 

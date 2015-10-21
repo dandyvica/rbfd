@@ -49,7 +49,8 @@ private:
 
 	byte _valueSign = 1;			        /// sign of the scalar value if any
 
-	immutable ulong _cellLength; 			/// used ot correctly print ascii tables
+	immutable ulong _cellLength1; 		/// used ot correctly print ascii tables
+	immutable ulong _cellLength2; 		/// used ot correctly print ascii tables
 
 public:
 	/**
@@ -75,7 +76,8 @@ public:
 		_length      = length;
 
 		// used to print out text data
-		_cellLength = max(_length, _name.length);
+		_cellLength1 = max(_length, _name.length);
+		_cellLength2 = max(_length, _description.length, _name.length);
 
 		// save field type
 		_fieldType = ftype;
@@ -162,12 +164,14 @@ public:
 	}
 
 	/// read property for cell length when creating ascii tables
-	@property ulong cellLength() { return _cellLength; }
+	@property ulong cellLength1() { return _cellLength1; }
+	@property ulong cellLength2() { return _cellLength2; }
 	///
 	unittest {
 		auto field1 = new Field("IDENTITY", "Name", "A/N", 30);
 		field1.value = "John";
-		assert(field1.cellLength == 30);
+		assert(field1.cellLength1 == 30);
+		assert(field1.cellLength2 == 30);
 	}
 
 	/// read/write property for field value

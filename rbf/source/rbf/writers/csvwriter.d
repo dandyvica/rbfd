@@ -25,7 +25,24 @@ class CSVWriter : Writer {
 
 	override void write(Record rec)
 	{
-		_fh.write(join(rec.fieldValues, ";"), "\n");
+		_fh.write(join(rec.fieldValues, outputFeature.fsep), "\n");
 	}
+
+}
+///
+unittest {
+
+	writeln("========> testing ", __FILE__);
+
+	import rbf.reader;
+	import rbf.layout;
+
+	auto layout = new Layout("./test/world_data.xml");
+	auto reader = new Reader("./test/world.data", layout);
+
+	auto writer = writerFactory("world_data.csv", "csv", layout);
+	writer.outputFeature.fsep = "-";
+
+	foreach (rec; reader) { writer.write(rec); }
 
 }

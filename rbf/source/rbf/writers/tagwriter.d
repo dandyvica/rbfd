@@ -27,9 +27,26 @@ class TAGWriter : Writer {
 	{
 		_fh.writef("%s:", rec.name);
 		foreach (field; rec) {
-			_fh.write(`%s="%s" `.format(field.name, field.value));
+			_fh.writef(`%s="%s" `,field.name, field.value);
 		}
 		_fh.writeln();
 	}
+
+}
+///
+unittest {
+
+	writeln("========> testing ", __FILE__);
+
+	import rbf.reader;
+	import rbf.layout;
+
+	auto layout = new Layout("./test/world_data.xml");
+	auto reader = new Reader("./test/world.data", layout);
+
+	auto writer = writerFactory("world_data.tag", "tag", layout);
+	writer.outputFeature.fsep = " ";
+
+	foreach (rec; reader) { writer.write(rec); }
 
 }
