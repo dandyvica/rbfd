@@ -39,11 +39,10 @@ mixin template LayoutCore()
 struct LayoutMeta {
 	mixin LayoutCore;							/// basic data
 	ulong length;									/// optional layout length
-	string xmlFile;						  	/// xml file describing layout
 	string layoutVersion;					/// layout version found in XML file
 	Regex!char ignoreRecord;      /// in some case, we need to get rid of some lines
 	string[] skipField;						/// field names to systematically skip
-	MapperFunc mapper;
+	MapperFunc mapper;						/// function which identifies a record name from a string
 }
 
 /***********************************
@@ -89,7 +88,7 @@ private:
 				break;
 
 			default:
-				throw new Exception("error: unknown mapper lambda <%d> in layout <%s>".format(funcType, meta.xmlFile));
+				throw new Exception("error: unknown mapper lambda <%d> in layout <%s>".format(funcType, meta.file));
 		}
 	}
 
@@ -106,7 +105,7 @@ public:
 		enforce(exists(xmlFile), "XML definition file %s not found".format(xmlFile));
 
 		// save meta
-		meta.xmlFile = xmlFile;
+		meta.file = xmlFile;
 
 		// open XML file and load it into a string
 		string s = cast(string)std.file.read(xmlFile);
@@ -252,11 +251,6 @@ public:
 	 * Params:
 	 *	recordMap = associate array (key=record name, value=array of field names)
 	 *
-	 * Examples:
-	 * --------------
-	 * recList["RECORD1"] = ["FIELD1", "FIELD2"];
-	 * layout.prunePerRecords(recList);
-	 * --------------
 	 */
 	void keepOnly(string[][string] recordMap) {
 			// recordMap contains a list of fields to keep in each record
@@ -275,24 +269,82 @@ public:
 		l.keepOnly(["CONT": ["NAME", "POPULATION"], "COUN": ["CAPITAL"]]);
 		assert(l["CONT"] == ["NAME", "POPULATION"]);
 		assert(l["COUN"] == ["CAPITAL"]);
+
+		l = new Layout(test_file);
+		assertThrown(l.keepOnly(["CONT": ["FOO", "POPULATION"], "COUN": ["CAPITAL"]]));
+		assertThrown(l.keepOnly(["FOO": ["NAME", "POPULATION"], "COUN": ["CAPITAL"]]));
 	}
 
 	/**
-	 * for each record, remove each field not in the list. If field
-	 * is not in the record, just loop
+	 * keep only fields specified for each record:field in the string
 	 *
 	 * Params:
-	 *	fieldList = list of fields to get rid of
+	 *
 	 */
-	void removeFromAllRecords(string[] fieldList) {
-		this[].each!(r => r.remove(fieldList));
+	void keepOnly(string list, string separator) {
+			// list contains a list of records:fields to keep in each record
+			// each record:field list is separator by separator variable
+			string[][string] recordMap;
+
+			// build a map from this list. Ex list: "CONT:ID,NAME;COUN:POPULATION"
+			// possibly remove empty data
+			auto recAndFields = list.split(separator).remove!(e => e == "");
+
+			foreach (e; recAndFields) {
+				auto data = e.split(":");
+				auto recName = data[0].strip;
+
+				// build field list
+				auto fieldList = array(data[1].split(",").map!(e => e.strip));
+
+				recordMap[recName] = fieldList;
+			}
+
+			// call overloaded func
+			keepOnly(recordMap);
+
 	}
 	///
 	unittest {
 		auto l = new Layout(test_file);
-		l.removeFromAllRecords(["ID", "NAME", "POPULATION"]);
-		assert(l["CONT"] == ["AREA", "DENSITY", "CITY"]);
+		l.keepOnly("CONT: NAME , POPULATION;  COUN: CAPITAL", ";");
+		assert(l["CONT"] == ["NAME", "POPULATION"]);
 		assert(l["COUN"] == ["CAPITAL"]);
+
+		l = new Layout(test_file);
+		l.keepOnly(cast(string)std.file.read("./test/test_fields.lst"), "\n");
+		assert(l["CONT"] == ["NAME", "POPULATION"]);
+		assert(l["COUN"] == ["CAPITAL"]);
+	}
+
+	/**
+	 * for each record, remove each field in the list.
+	 *
+	 * Params:
+	 *	fieldList = list of fields to get rid of in each record
+	 */
+	void removeFromAllRecords(string[] fieldList) {
+		// check first if all fields are in layout
+		fieldList.each!(
+			name => enforce(isFieldInLayout(name), "error: field %s in not in layout %s".format(name, meta.file))
+		);
+
+		// a field might not belong to a record. As the remove() method from container
+		// is checking field existence, need to check if each field is in the considered
+		// record.
+		foreach (rec; this) {
+			foreach (name; fieldList) {
+				if (name in rec) rec.remove(name);
+			}
+		}
+	}
+	///
+	unittest {
+		auto l = new Layout(test_file);
+		l.removeFromAllRecords(["NAME", "CAPITAL", "POPULATION"]);
+		assertThrown(l.removeFromAllRecords(["FOO"]));
+		assert(l["CONT"] == ["AREA", "DENSITY", "CITY"]);
+		assert(l["COUN"] == []);
 	}
 
 	/**
@@ -311,7 +363,7 @@ public:
 	/**
 	 * return true if field is in any record of layout
 	 */
-	bool isFieldIn(string fieldName) {
+	bool isFieldInLayout(string fieldName) {
 		foreach (rec; this) {
 				if (fieldName in rec) return true;
 		}
@@ -340,9 +392,10 @@ unittest {
 
 	// ID field is not there
 	assert(l.meta.skipField == ["ID"]);
-	assert(!l.isFieldIn("ID"));
+	assert(!l.isFieldInLayout("ID"));
+	assert(!l.isFieldInLayout("ID2"));
 
-	l.removeFromAllRecords(["ID", "NAME", "POPULATION"]);
-	assert(l.isFieldIn("DENSITY"));
-	assert(!l.isFieldIn("FOO"));
+	l.removeFromAllRecords(["NAME", "POPULATION"]);
+	assert(l.isFieldInLayout("DENSITY"));
+	assert(!l.isFieldInLayout("FOO"));
 }

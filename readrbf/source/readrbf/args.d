@@ -26,20 +26,21 @@ public:
 	string inputLayout;							/// input file layout
 	string outputFormat = "txt";		/// output format HTML, TXT, ...
 	string outputFileName;					/// name of the final converted file
+
 	string fieldFilterFile;					/// if any, name of the field fitler file
 	string recordFilterFile;				/// if any, name of the record filter file
 
 	bool bPgmMetadata;						  /// whether to print out metadat
-	bool bVerbose;
+	bool bVerbose;									/// if true, print out lots of data
 	bool bJustRead;									/// if true, don't write data
 	bool bProgressBar;
-	bool bCheckLayout;
-	bool stdOutput;									/// if true, print to standard output
+	bool bCheckLayout;							/// if true, try to validate layouy by checking length
+	bool stdOutput;									/// if true, print to standard output instead of file
 
 	RecordFilter filteredRecords;
 	string[][string] filteredFields;
 
-	ulong samples;						/// limit to n first lines
+	ulong samples;									/// limit to n first lines (n == samples)
 
 
 
@@ -49,61 +50,56 @@ public:
  */
  	this(string[] argv) {
 
-	// print-out help
-	if (argv.length == 1)
-	{
-		writeln(helpString);
-		core.stdc.stdlib.exit(1);
+		// print-out help
+		if (argv.length == 1)
+		{
+			writeln(helpString);
+			core.stdc.stdlib.exit(1);
+		}
+
+		try {
+			// get command line arguments
+			getopt(argv,
+				std.getopt.config.caseSensitive,
+				std.getopt.config.required,
+				"i", &inputFileName,
+				std.getopt.config.required,
+				"l", &inputLayout,
+				"o", &outputFormat,
+				"O", &stdOutput,
+				"f", &fieldFilterFile,
+				"r", &recordFilterFile,
+				"m", &bPgmMetadata,
+				"v", &bVerbose,
+				"s", &samples,
+				"b", &bJustRead,
+				"p", &bProgressBar,
+				"c", &bCheckLayout
+			);
+		}
+		catch (Exception e) {
+			writefln("Argument error: %s", e.msg);
+			core.stdc.stdlib.exit(2);
+		}
+
+		// check output format
+		enforce (["tag","txt","html","csv","xlsx","sqlite3","ident"].
+					canFind(outputFormat), "error: unknown input format %s".format(outputFormat));
+
+		// if no output file name specified, then use input file name and
+		// append the suffix
+		if (fieldFilterFile != "") {
+			filteredFields = _readFieldFilterFile(fieldFilterFile);
+		}
+
+		// if filter file is specified, load conditions
+		if (recordFilterFile != "") {
+			filteredRecords = new RecordFilter(recordFilterFile);
+		}
+
+		// build output file name
+		outputFileName = baseName(inputFileName) ~ "." ~ outputFormat;
 	}
-
-	try {
-		// get command line arguments
-		getopt(argv,
-			std.getopt.config.caseSensitive,
-			std.getopt.config.required,
-			"i", &inputFileName,
-			std.getopt.config.required,
-			"l", &inputLayout,
-			"o", &outputFormat,
-			"O", &stdOutput,
-			"f", &fieldFilterFile,
-			"r", &recordFilterFile,
-			"m", &bPgmMetadata,
-			"v", &bVerbose,
-			"s", &samples,
-			"b", &bJustRead,
-			"p", &bProgressBar,
-			"c", &bCheckLayout
-		);
-	}
-	catch (Exception e) {
-		writefln("Argument error: %s", e.msg);
-		core.stdc.stdlib.exit(2);
-	}
-
-	// check output format
-	enforce (["tag","txt","html","csv","xlsx","sqlite3","ident"].
-				canFind(outputFormat), "error: unknown input format %s".format(outputFormat));
-
-/*
-	if (!["tag","txt","html","csv","xlsx","sqlite3","ident"].canFind(outputFormat)) {
-		throw new Exception("error: unknown input format %s".format(outputFormat));
-	}*/
-
-	// if no output file name specified, then use input file name and
-	// append the suffix
-	if (fieldFilterFile != "") {
-		filteredFields = _readFieldFilterFile(fieldFilterFile);
-	}
-
-	// if filter file is specified, load conditions
-	if (recordFilterFile != "") {
-		filteredRecords = new RecordFilter(recordFilterFile);
-	}
-
-	// build output file name
-	outputFileName = baseName(inputFileName) ~ "." ~ outputFormat;
-}
 
 	@property bool isFieldFilterSet() { return fieldFilterFile != ""; }
 	@property bool isRecordFilterSet() { return recordFilterFile != ""; }
@@ -114,22 +110,6 @@ public:
      {
 				mixin("writeln(\"" ~ member ~ ": \"," ~ member ~ ");");
      }
-
-/*
-		writefln("input file: %s", inputFileName);
-		writefln("file layout: %s", inputLayout);
-		writefln("output format: %s", outputFormat);
-		writefln("output file name: %s", outputFileName);
-		writefln("samples: %u", samples);
-		if (isFieldFilterSet) {
-			writefln("field filter file: %s", fieldFilterFile);
-			writefln("\tfields to filter: %s", filteredFields);
-		}
-		if (isRecordFilterSet) {
-			writefln("record filter file: %s", recordFilterFile);
-			writefln("\trecords to filter: %s", filteredRecords);
-		}
-*/
 	}
 
 private:

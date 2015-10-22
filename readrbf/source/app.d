@@ -31,12 +31,9 @@ int main(string[] argv)
 	// need to known how much time spent
 	auto starttime = Clock.currTime();
 
-	//
 	try {
 
-		// read JSON properties from rbf.json file located in:
-		// ~/.rbf for Linux
-		// %APPDATA%/local/rbf for Windows
+		// read XML properties from rbf.xml file
 		auto settings = new Setting();
 
 		// manage arguments passed from the command line

@@ -143,15 +143,14 @@ static if (Meta.length > 0) {
 	//----------------------------------------------------------------------------
 	/// append a new element
 	void opOpAssign(string op)(T element) if (op == "~") {
-		_list ~= element;
-
 		// if no duplicates is allowed, need to test it
 		static if (!allowDuplicates) {
-			assert(element.name !in _map,
+			enforce(element.name !in _map,
 				"error: element name %s already in container".format(element.name));
 		}
 
 		// add element
+		_list ~= element;
 		_map[element.name] ~= element;
 
 		// added one element, so length is greater
@@ -173,7 +172,7 @@ static if (Meta.length > 0) {
 
 	 */
 	T opIndex(size_t i) {
-		assert(0 <= i && i < _list.length, "index %d is out of bounds for _list[]".format(i));
+		enforce(0 <= i && i < _list.length, "index %d is out of bounds for _list[]".format(i));
 		return _list[i];
 	}
 
@@ -187,7 +186,7 @@ static if (Meta.length > 0) {
 	 An array of elements of type T
 	 */
 	ref TRETURN opIndex(TNAME name) {
-		assert(name in this, "element %s is not found in container".format(name));
+		enforce(name in this, "element %s is not found in container".format(name));
 		return _contextMap(_map, name);
 	}
 
@@ -220,11 +219,11 @@ static if (Meta.length > 0) {
 	*/
 	T get(TNAME name, ushort index = 0)
   {
-		assert(name in this, "element %s is not found in record %s".format(name));
-		assert(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name,index));
+		enforce(name in this, "element %s is not found in record %s".format(name));
+		enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name,index));
 
 		static if (!allowDuplicates) {
-			assert(index == 0, "error: cannot call get method with index %d without allowing duplcated");
+			enforce(index == 0, "error: cannot call get method with index %d without allowing duplcated");
 		}
 
 		return _map[name][index];
@@ -269,17 +268,28 @@ static if (Meta.length > 0) {
 
 	*/
 	void remove(TNAME name) {
+		// check if name if really in container
+		enforce(name in this, "error: element name %s in not in container".format(name));
+
 		_list = _list.remove!(f => f.name == name);
 		// remove corresponding key
 		_map.remove(name);
 	}
 
-	/// remove all elements in the _list
+	/// remove all elements in the list
 	void remove(TNAME[] name) { name.each!(e => this.remove(e)); }
 
-	/// remove all elements not in the _list
+	/// remove all elements not in the list i.e. keep only those fields in the list
 	void keepOnly(TNAME[] name) {
+		// check that all element names are in container
+		name.each!(
+			e => enforce(e in this, "error: element name %s in not container".format(e))
+		);
+
+		// rebuild list
 		_list = array(_list.filter!(e => name.canFind(e.name)));
+
+		// and map
 		auto keys = _map.keys.filter!(e => !name.canFind(e));
 		keys.each!(e => _map.remove(e));
 	}
@@ -349,7 +359,7 @@ static if (Meta.length > 0) {
 ///
 unittest {
 
-	writeln("========> testing ", __FILE__);	
+	writeln("========> testing ", __FILE__);
 
 	import rbf.field;
 
@@ -377,6 +387,7 @@ unittest {
 
 	// opindex
 	assert(c[0] == tuple("FIELD1","value1","A/N",10UL));
+	Field f7; assertThrown(f7 = c[7]);
 	assert(c["FIELD3"].length == 3);
 	assert(c["FIELD3"][1].value!int == 50);
 	assert(c[2..4][1] == tuple("FIELD3", "value3", "N", 20UL));
@@ -411,12 +422,19 @@ unittest {
 	auto e = new NamedItemsContainer!(Field,true)(a);
 	assert(e.size == 3);
 
+	// remove
+	c.remove("FIELD3");
+	assert(c == ["FIELD1","FIELD2","FIELD2","FIELD4"]);
+	assertThrown(c.remove("FOO"));
+
+	c.remove(["FIELD2","FIELD4"]);
+	assert(c == ["FIELD1"]);
 
 	// do not accept duplicates
 	auto d = new NamedItemsContainer!(Field,false)();
 	d ~= new Field("FIELD2", "value2", "A/N", 10);
 	d ~= new Field("FIELD1", "value1", "A/N", 30);
-	//assertThrown(d ~= new Field("FIELD2", "value2", "A/N", 30));
+	assertThrown(d ~= new Field("FIELD2", "value2", "A/N", 30));
 	d ~= new Field("FIELD4", "value4", "N", 20);
 	d ~= new Field("FIELD3", "value3", "A/N", 20);
 

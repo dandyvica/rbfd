@@ -35,7 +35,6 @@ struct LayoutMeta
 {
 	mixin LayoutCore!();
 	ulong length;
-	string xmlFile;
 	string layoutVersion;
 	Regex!char ignoreRecord;
 	string[] skipField;
@@ -53,9 +52,10 @@ class Layout : NamedItemsContainer!(Record, false, LayoutMeta)
 			this(string xmlData, LayoutSource ls);
 			override string toString();
 			void keepOnly(string[][string] recordMap);
+			void keepOnly(string list, string separator);
 			void removeFromAllRecords(string[] fieldList);
 			void validate();
-			bool isFieldIn(string fieldName);
+			bool isFieldInLayout(string fieldName);
 		}
 	}
 }

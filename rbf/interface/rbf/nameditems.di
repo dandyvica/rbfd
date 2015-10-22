@@ -127,12 +127,12 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 			}
 			void opOpAssign(string op)(T element) if (op == "~")
 			{
-				_list ~= element;
 				static if (!allowDuplicates)
 				{
-					assert(!(element.name in _map), "error: element name %s already in container".format(element.name));
+					enforce(!(element.name in _map), "error: element name %s already in container".format(element.name));
 				}
 
+				_list ~= element;
 				_map[element.name] ~= element;
 				static if (__traits(hasMember, T, "length"))
 				{
@@ -142,12 +142,12 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 			}
 			T opIndex(size_t i)
 			{
-				assert(0 <= i && i < _list.length, "index %d is out of bounds for _list[]".format(i));
+				enforce(0 <= i && i < _list.length, "index %d is out of bounds for _list[]".format(i));
 				return _list[i];
 			}
 			ref TRETURN opIndex(TNAME name)
 			{
-				assert(name in this, "element %s is not found in container".format(name));
+				enforce(name in this, "element %s is not found in container".format(name));
 				return _contextMap(_map, name);
 			}
 			T[] opSlice(size_t i, size_t j)
@@ -160,17 +160,18 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 			}
 			T get(TNAME name, ushort index = 0)
 			{
-				assert(name in this, "element %s is not found in record %s".format(name));
-				assert(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name, index));
+				enforce(name in this, "element %s is not found in record %s".format(name));
+				enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name, index));
 				static if (!allowDuplicates)
 				{
-					assert(index == 0, "error: cannot call get method with index %d without allowing duplcated");
+					enforce(index == 0, "error: cannot call get method with index %d without allowing duplcated");
 				}
 
 				return _map[name][index];
 			}
 			void remove(TNAME name)
 			{
+				enforce(name in this, "error: element name %s in not in container".format(name));
 				_list = _list.remove!((f) => f.name == name);
 				_map.remove(name);
 			}
@@ -180,6 +181,7 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 			}
 			void keepOnly(TNAME[] name)
 			{
+				name.each!((e) => enforce(e in this, "error: element name %s in not container".format(e)));
 				_list = array(_list.filter!((e) => name.canFind(e.name)));
 				auto keys = _map.keys.filter!((e) => !name.canFind(e));
 				keys.each!((e) => _map.remove(e));

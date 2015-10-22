@@ -88,9 +88,10 @@ public:
     // settings file
     string settingsFile;
 
-    // if file is passed, take it
+    // if file name is passed, take it
     if (xmlConfigFile != "")
       settingsFile = xmlConfigFile;
+		// otherwise try possible locations
     else
       settingsFile = _getConfigFileName();
 
