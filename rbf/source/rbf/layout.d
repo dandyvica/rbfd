@@ -40,7 +40,7 @@ struct LayoutMeta {
 	mixin LayoutCore;							/// basic data
 	ulong length;									/// optional layout length
 	string layoutVersion;					/// layout version found in XML file
-	Regex!char ignoreRecord;      /// in some case, we need to get rid of some lines
+	string ignoreLinePattern;     /// in some case, we need to get rid of some lines
 	string[] skipField;						/// field names to systematically skip
 	MapperFunc mapper;						/// function which identifies a record name from a string
 }
@@ -130,10 +130,10 @@ public:
 		auto xml = new DocumentParser(xmlData);
 
 		// save metadata of the structure
-		meta.length        = to!ulong(xml.tag.attr.get("reclength", "0"));
-		meta.layoutVersion = xml.tag.attr.get("version", "");
-		meta.ignoreRecord  = regex(xml.tag.attr.get("ignoreRecord", ""));
-		meta.description   = xml.tag.attr.get("description","");
+		meta.length            = to!ulong(xml.tag.attr.get("reclength", "0"));
+		meta.layoutVersion     = xml.tag.attr.get("version", "");
+		meta.ignoreLinePattern = xml.tag.attr.get("ignoreLine", "");
+		meta.description       = xml.tag.attr.get("description","");
 
 		// build skip list if any
 		auto fields = xml.tag.attr.get("skipField","");
@@ -151,7 +151,7 @@ public:
 		{
 			// save record name
 			auto ftName = xml.tag.attr["name"];
-			auto type = xml.tag.attr["type"];
+			auto type   = xml.tag.attr["type"];
 
 			// save field type base on its name
 			ftype[ftName] = new FieldType(ftName, toLower(type));
@@ -257,11 +257,17 @@ public:
 			// the key of recordMap is a record name
 			// for all those records, keep only those fields provided
 			foreach (e; recordMap.byKeyValue) {
+				//writefln("key=%s, value=%s", e.key, e.value);
+
+				// "*" means keep all fields for this record
+				if (e.value[0] == "*") continue;
+
+				// otherwise, keep only those records provided
 				this[e.key].keepOnly(e.value);
 			}
 
 			// for all other records not provided, just get rid of them
-			this[].filter!(e => e.name !in recordMap).each!(e => e.meta.keep = false);
+			this[].filter!(e => e.name !in recordMap).each!(e => e.meta.skip = true);
 	}
 	///
 	unittest {
@@ -269,6 +275,16 @@ public:
 		l.keepOnly(["CONT": ["NAME", "POPULATION"], "COUN": ["CAPITAL"]]);
 		assert(l["CONT"] == ["NAME", "POPULATION"]);
 		assert(l["COUN"] == ["CAPITAL"]);
+
+		l = new Layout(test_file);
+		l.keepOnly(["CONT": ["NAME", "POPULATION"]]);
+		assert(l["CONT"] == ["NAME", "POPULATION"]);
+		assert(l["COUN"].meta.skip);
+
+		l = new Layout(test_file);
+		l.keepOnly(["CONT": ["*"]]);
+		assert(l["CONT"] == ["NAME", "AREA", "POPULATION", "DENSITY", "CITY"]);
+		assert(l["COUN"].meta.skip);
 
 		l = new Layout(test_file);
 		assertThrown(l.keepOnly(["CONT": ["FOO", "POPULATION"], "COUN": ["CAPITAL"]]));
@@ -352,12 +368,15 @@ public:
 	 * is not in the record, just loop
 	 */
 	void validate() {
+		bool validates = true;
 		foreach (rec; this) {
-			if (rec.length != _length) {
+			if (rec.length != meta.length) {
+				validates = false;
 				stderr.writefln("Warning: record %s is not matching declared length (%d instead of %d)",
 					rec.name, rec.length, _length);
 			}
 		}
+		if (validates) stderr.writefln("Info: layout %s validates!!", meta.file);
 	}
 
 	/**

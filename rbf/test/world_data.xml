@@ -4,7 +4,7 @@
 <rbfile
 	version="1.0"
 	description="Continents, countries, cities"
-	ignoreRecord="^#"
+	ignoreLine="^#"
 	skipField="ID"
 	mapper="type:1 map:0..4"
 >

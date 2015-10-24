@@ -36,7 +36,7 @@ struct LayoutMeta
 	mixin LayoutCore!();
 	ulong length;
 	string layoutVersion;
-	Regex!char ignoreRecord;
+	string ignoreLinePattern;
 	string[] skipField;
 	MapperFunc mapper;
 }

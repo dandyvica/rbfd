@@ -16,7 +16,7 @@ struct RecordMeta
 {
 	string name;
 	string description;
-	bool keep = true;
+	bool skip;
 }
 class Record : NamedItemsContainer!(Field, true, RecordMeta)
 {

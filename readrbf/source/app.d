@@ -6,6 +6,7 @@ import std.algorithm;
 import std.datetime;
 import std.range;
 import std.conv;
+import std.path;
 
 import rbf.field;
 import rbf.record;
@@ -13,10 +14,11 @@ import rbf.recordfilter;
 import rbf.layout;
 import rbf.reader;
 import rbf.writers.writer;
+import rbf.config;
 
 import overpunch;
 import args;
-import config;
+
 
 
 int main(string[] argv)
@@ -40,13 +42,15 @@ int main(string[] argv)
 		//writeln(argv);
 		auto opts = new CommandLineOption(argv);
 
-		// pgm meta?
-		if (opts.bPgmMetadata) {
-			stderr.writefln("Compiled on %s with %s version %d", __DATE__, __VENDOR__, __VERSION__);
+		// check output formats
+		if (opts.outputFormat !in settings.outputDir) {
+			throw new Exception(
+				"error: output format should be in the following list: %s".
+						format(settings.outputDir.names));
 		}
 
 		// define new layout corresponding to the requested layout
-		auto layout = new Layout(settings[opts.inputLayout].xmlFile);
+		auto layout = new Layout(settings.layoutDir[opts.inputLayout].file);
 
 		// syntax validation requested
 		if (opts.bCheckLayout) {
@@ -54,9 +58,13 @@ int main(string[] argv)
 		}
 
 		// need to get rid of some records?
+		if (opts.isFieldFilterFileSet) {
+			// only keep specified fields
+			layout.keepOnly(opts.filteredFields, "\n");
+		}
 		if (opts.isFieldFilterSet) {
 			// only keep specified fields
-			layout.keepOnly(opts.filteredFields);
+			layout.keepOnly(opts.filteredFields, ";");
 		}
 
 		// if a record filter is set, check if field names belong to layout
@@ -71,67 +79,44 @@ int main(string[] argv)
 */
 		// create new reader according to what is passed in the command
 		// line and the configuration found in JSON properties file
-		auto reader = new Reader(opts.inputFileName, layout,	settings[opts.inputLayout].mapper);
+		auto reader = new Reader(opts.inputFileName, layout);
 
-		// in case of HOT files, specifiy our modifier
-		// HOT files used the overpunch characters (some alphabetical chars matching
-		// digits (?!))
-		if (settings[opts.inputLayout].layoutType == "HOT") {
-			reader.recordTransformer = &overpunch.overpunch;
-		}
 
-		// do we want to ignore some lines based on regex?
-		if (!settings[opts.inputLayout].ignoreRecord.empty) {
-			reader.ignoreRegexPattern = settings[opts.inputLayout].ignoreRecord;
+		// grep lines?
+		if (opts.lineFilter != "") {
+			reader.lineRegexPattern = opts.lineFilter;
 		}
 
 		// do we want to always get rid of some fields for all records?
-		if (settings[opts.inputLayout].skipField != "") {
-			auto fieldList = settings[opts.inputLayout].skipField.split(",");
-			fieldList = array(fieldList.map!(s => s.strip));
-			layout.removeFromAllRecords(fieldList);
-			stderr.writefln("info: skipping fields %s", fieldList);
+		if (layout.meta.skipField != []) {
+			stderr.writefln("info: skipping fields %s", layout.meta.skipField);
+		}
+		if (layout.meta.ignoreLinePattern != "") {
+			stderr.writefln("info: skipping line pattern = %s", layout.meta.ignoreLinePattern);
 		}
 
 		// create new writer to generate outputFileName matching the outputFormat
 		Writer writer;
-		if (opts.stdOutput)
-			writer = writerFactory("", opts.outputFormat, reader.layout);
-		else
-			writer = writerFactory(opts.outputFileName, opts.outputFormat, reader.layout);
+		auto outputFileName = buildNormalizedPath(
+				settings.outputDir[opts.outputFormat].outputDir,
+				opts.outputFileName
+		);
 
-		// in case of Excel output format, set zipper
-		if (opts.outputFormat == "xlsx") {
-			writer.zipper = settings.zipper;
-		}
+		auto output = (opts.stdOutput) ? "" :outputFileName;
+		writer = writerFactory(output, opts.outputFormat, layout);
+
+		// set writer features read in config
+		writer.outputFeature = settings.outputDir[opts.outputFormat];
 
 		// if verbose option is requested, print out what's possible
 		if (opts.bVerbose) {
 			opts.printOptions;
 		}
 
-/*
-		// stuff to correctly display a progress bar
-		immutable termWidth = 78;
-		//auto inputFileSize = getSize(opts.inputFileName);
-		char[termWidth] progressBar = ' ';
-		//auto chunkSize = to!ulong(inputFileSize / termWidth);
-
-		//writef("\n%s", progressBar);
-		writeln();
-*/
 		// now loop for each record in the file
 		foreach (rec; reader)
 		{
-/*
-			// if progress bar, print out moving cursor
-			if (opts.bProgressBar && nbReadRecords % 4096 == 0) {
-				writef("read %.0f %% of %u bytes\r",
-							reader.currentReadSize/to!float(reader.inputFileSize)*100.0, reader.inputFileSize);
-			}
-*/
-
-				// if samples is set, break if record count is reached
+			// if samples is set, break if record count is reached
 			if (opts.samples != 0 && nbReadRecords >= opts.samples) break;
 
 			// record read is increasing
@@ -156,8 +141,8 @@ int main(string[] argv)
 
 		// print out some stats
 		auto elapsedtime = Clock.currTime() - starttime;
-		stderr.writefln("\nRecords: %d read, %d written\nElapsed time = %s",
-			nbReadRecords, nbWrittenRecords, elapsedtime);
+		stderr.writefln("\nLines: %d read, records: %d read, %d written\nElapsed time = %s",
+			reader.nbLinesRead, nbReadRecords, nbWrittenRecords, elapsedtime);
 		if (!opts.bJustRead)
 				stderr.writefln("Created file %s, size = %d bytes",
 								opts.outputFileName, getSize(opts.outputFileName));

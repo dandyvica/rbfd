@@ -142,12 +142,12 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 			}
 			T opIndex(size_t i)
 			{
-				enforce(0 <= i && i < _list.length, "index %d is out of bounds for _list[]".format(i));
+				enforce(0 <= i && i < _list.length, "error: index %d is out of bounds for _list[]".format(i));
 				return _list[i];
 			}
 			ref TRETURN opIndex(TNAME name)
 			{
-				enforce(name in this, "element %s is not found in container".format(name));
+				enforce(name in this, "error: element %s is not found in container".format(name));
 				return _contextMap(_map, name);
 			}
 			T[] opSlice(size_t i, size_t j)

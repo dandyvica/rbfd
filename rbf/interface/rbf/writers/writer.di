@@ -33,9 +33,9 @@ abstract class Writer
 			File _fh;
 			string _previousRecordName;
 			Orientation _orientation;
-			OutputFeature outputFeature;
 			public 
 			{
+				OutputFeature outputFeature;
 				this(in string outputFileName, in bool create = true);
 				@property Orientation orientation();
 				@property void orientation(Orientation o);

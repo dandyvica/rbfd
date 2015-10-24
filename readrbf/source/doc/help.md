@@ -23,12 +23,19 @@ the %APPDATA%\\local\\rbf directory (Windows).
 -f file
 : Full path and name of a file to filter fields.
 
+--gf records/fields list
+: Grep fields: only write selected records/fields.
+
+--gl pattern
+: Grep lines: only select lines matching the regex pattern. NB if
+--gf is also specific, this --gl comes first.
+
 -i file
 : Full path and name of the file to be read and converted.
 
 -l layout
 : Name of the input file layout. This name is found is the
-configuration file rbf.yaml.
+configuration file rbf.xml.
 
 -o format
 : Name of the output file format. Possible values are:

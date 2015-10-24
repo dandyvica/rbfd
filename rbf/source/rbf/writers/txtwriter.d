@@ -78,11 +78,10 @@ unittest {
 	auto layout = new Layout("./test/world_data.xml");
 	auto reader = new Reader("./test/world.data", layout);
 
-	auto writer = writerFactory("world_data.txt", "txt", layout);
+	auto writer = writerFactory("./test/world_data.txt", "txt", layout);
 	writer.outputFeature.fsep = "!";
 	writer.outputFeature.fielddesc = true;
 	writer.outputFeature.lsep = "-";
-	writer.outputFeature.outputDir = "/tmp/";
 
 	foreach (rec; reader) { writer.write(rec); }
 

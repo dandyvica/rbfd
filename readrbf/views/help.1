@@ -21,10 +21,17 @@ the current directory or ~/.rbf directory (linux) or the
 .PP
 \-f file : Full path and name of a file to filter fields.
 .PP
+\-\-gf records/fields list : Grep fields: only write selected
+records/fields.
+.PP
+\-\-gl pattern : Grep lines: only select lines matching the regex
+pattern.
+NB if \-\-gf is also specific, this \-\-gl comes first.
+.PP
 \-i file : Full path and name of the file to be read and converted.
 .PP
 \-l layout : Name of the input file layout.
-This name is found is the configuration file rbf.yaml.
+This name is found is the configuration file rbf.xml.
 .PP
 \-o format : Name of the output file format.
 Possible values are: html, tag, csv, txt, xlsx, sqlite3, ident.

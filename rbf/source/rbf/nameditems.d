@@ -172,7 +172,7 @@ static if (Meta.length > 0) {
 
 	 */
 	T opIndex(size_t i) {
-		enforce(0 <= i && i < _list.length, "index %d is out of bounds for _list[]".format(i));
+		enforce(0 <= i && i < _list.length, "error: index %d is out of bounds for _list[]".format(i));
 		return _list[i];
 	}
 
@@ -186,7 +186,7 @@ static if (Meta.length > 0) {
 	 An array of elements of type T
 	 */
 	ref TRETURN opIndex(TNAME name) {
-		enforce(name in this, "element %s is not found in container".format(name));
+		enforce(name in this, "error: element %s is not found in container".format(name));
 		return _contextMap(_map, name);
 	}
 
@@ -429,6 +429,18 @@ unittest {
 
 	c.remove(["FIELD2","FIELD4"]);
 	assert(c == ["FIELD1"]);
+
+	// keepOnly
+	c = new NamedItemsContainer!(Field,true)();
+	c ~= new Field("FIELD1", "value1", "A/N", 10);
+	c ~= new Field("FIELD2", "value2", "A/N", 30);
+	c ~= new Field("FIELD2", "value2", "A/N", 30);
+	c ~= new Field("FIELD3", "value3", "N", 20);
+	c ~= new Field("FIELD3", "value3", "N", 20);
+	c ~= new Field("FIELD3", "value3", "N", 20);
+	c ~= new Field("FIELD4", "value4", "A/N", 20);
+	c.keepOnly(["FIELD2"]);
+	assert(c == ["FIELD2","FIELD2"]);
 
 	// do not accept duplicates
 	auto d = new NamedItemsContainer!(Field,false)();

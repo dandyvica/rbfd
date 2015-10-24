@@ -20,9 +20,9 @@ import rbf.nameditems;
 import rbf.recordfilter;
 
 struct RecordMeta {
-	string name;
-	string description;
-	bool   keep = true;
+	string name;							/// record name
+	string description;				/// record description
+	bool   skip;							/// do we skip this record?
 }
 
 /***********************************
@@ -167,7 +167,7 @@ public:
 	 */
 	override string toString()
 	{
-		auto s = "\nname=<%s>, description=<%s>, length=<%u>, keep=<%s>\n".format(name, description, length, meta.keep);
+		auto s = "\nname=<%s>, description=<%s>, length=<%u>, skip=<%s>\n".format(name, description, length, meta.skip);
 		foreach (field; this)
 		{
 			s ~= field.toString();
@@ -226,7 +226,7 @@ public:
 import std.exception;
 ///
 unittest {
-	
+
 	writeln("========> testing ", __FILE__);
 
 	// check wrong arguments

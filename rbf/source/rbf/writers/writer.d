@@ -42,9 +42,12 @@ package:
 	File _fh; 										/// file handle on output file if any
 	string _previousRecordName;		/// sometimes, we need to keep track of the previous record written
 	Orientation _orientation; 		/// manage how information is printed
-	OutputFeature outputFeature; /// specifics data for chosen output format
 
 public:
+
+	OutputFeature outputFeature;  /// specifics data for chosen output format
+
+
 	/**
 	 * creates a new Writer object for converting record-based files
 	 *

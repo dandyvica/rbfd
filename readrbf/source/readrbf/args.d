@@ -27,10 +27,12 @@ public:
 	string outputFormat = "txt";		/// output format HTML, TXT, ...
 	string outputFileName;					/// name of the final converted file
 
-	string fieldFilterFile;					/// if any, name of the field fitler file
+	string fieldFilterFile;					/// if any, name of the field filter file
+	string fieldFilter;							/// if any, list of records/fields to filter out
 	string recordFilterFile;				/// if any, name of the record filter file
 
-	bool bPgmMetadata;						  /// whether to print out metadat
+	string lineFilter;							/// if any, define a regex to match lines
+
 	bool bVerbose;									/// if true, print out lots of data
 	bool bJustRead;									/// if true, don't write data
 	bool bProgressBar;
@@ -38,7 +40,7 @@ public:
 	bool stdOutput;									/// if true, print to standard output instead of file
 
 	RecordFilter filteredRecords;
-	string[][string] filteredFields;
+	string filteredFields;
 
 	ulong samples;									/// limit to n first lines (n == samples)
 
@@ -54,6 +56,7 @@ public:
 		if (argv.length == 1)
 		{
 			writeln(helpString);
+			writefln("\nCompiled on %s with %s version %d\n", __DATE__, __VENDOR__, __VERSION__);
 			core.stdc.stdlib.exit(1);
 		}
 
@@ -68,8 +71,9 @@ public:
 				"o", &outputFormat,
 				"O", &stdOutput,
 				"f", &fieldFilterFile,
+				"gf", &fieldFilter,
+				"gl", &lineFilter,
 				"r", &recordFilterFile,
-				"m", &bPgmMetadata,
 				"v", &bVerbose,
 				"s", &samples,
 				"b", &bJustRead,
@@ -78,18 +82,17 @@ public:
 			);
 		}
 		catch (Exception e) {
-			writefln("Argument error: %s", e.msg);
+			stderr.writefln("error: %s", e.msg);
 			core.stdc.stdlib.exit(2);
 		}
-
-		// check output format
-		enforce (["tag","txt","html","csv","xlsx","sqlite3","ident"].
-					canFind(outputFormat), "error: unknown input format %s".format(outputFormat));
 
 		// if no output file name specified, then use input file name and
 		// append the suffix
 		if (fieldFilterFile != "") {
-			filteredFields = _readFieldFilterFile(fieldFilterFile);
+			filteredFields = cast(string)std.file.read(fieldFilterFile);
+		}
+		if (fieldFilter != "") {
+			filteredFields = fieldFilter;
 		}
 
 		// if filter file is specified, load conditions
@@ -101,8 +104,9 @@ public:
 		outputFileName = baseName(inputFileName) ~ "." ~ outputFormat;
 	}
 
-	@property bool isFieldFilterSet() { return fieldFilterFile != ""; }
-	@property bool isRecordFilterSet() { return recordFilterFile != ""; }
+	@property bool isFieldFilterFileSet() { return fieldFilterFile != ""; }
+	@property bool isFieldFilterSet()     { return fieldFilter != ""; }
+	@property bool isRecordFilterSet()    { return recordFilterFile != ""; }
 
 	/// useful helper
 	void printOptions() {
@@ -112,61 +116,21 @@ public:
      }
 	}
 
-private:
-
-/***********************************
-	* function to read the list of fields for restricting fields
- */
- string[][string] _readFieldFilterFile(in string filename) {
-	  string[][string] fieldNames;
-
-		foreach (string line_read; lines(File(filename, "r"))) {
-			// each line is like: RECORD1:FIEDL1,FIELD2,FIELD6,...
-			auto line = chomp(line_read);
-
-			// first, ignore comments and blank lines
-			if (line == "" || line.startsWith("#")) continue;
-
-			// ok, now split line and extract record name for the key
-			// and field names for the values
-			// e.g: RECORD1: FIELD1,FIELD2, FIELD3
-			auto data = line.split(":");
-
-			// record name is found before the : char
-			auto recordName = data[0].strip;
-
-			// and all fields on the right
-			auto fieldList =  data[1].strip;
-
-			// no list specified or '*' found: we want all fields of this record
-			if (fieldList == "" || fieldList == "*") {
-				fieldNames[recordName] = [];
-				continue;
-			}
-
-			// otherwise build list of field names
-			foreach (fieldName; fieldList.split(",")) {
-				fieldNames[recordName] ~= fieldName.strip;
-			}
-		}
-
-		// ok we've got our list indexed by record name
-		return fieldNames;
- }
 }
-
-
+///
 unittest {
-	writefln("-------------------------------------------------------------");
-	writeln(__FILE__);
-	writefln("-------------------------------------------------------------");
+	writeln("========> testing ", __FILE__);
 
-/*
-	auto c = new Config();
+	auto argv = ["", "-i", "foo.input"];
+	assertThrown(new CommandLineOption(argv));
 
-	writeln(c["hot220"]);
+	argv = ["", "-l", "xml"];
+	assertThrown(new CommandLineOption(argv));
 
-	auto x = "BKS1111111124 4444";
-	writeln(c["hot220"].record_identifier(x));*/
+	argv = ["", "-i", "foo.input", "-l", "xml"];
+	auto c = new CommandLineOption(argv);
+	assert(c.inputFileName == "foo.input");
+	assert(c.inputLayout == "xml");
 
+	core.stdc.stdlib.exit(2);
 }

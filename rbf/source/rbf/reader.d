@@ -45,11 +45,16 @@ private:
 	/// regex ignore pattern: don't read those lines matching this regex
 	Regex!char _ignoreRegex;
 
+	/// regex include pattern: read only those lines matching this regex
+	/// but previous one comes first
+	Regex!char _lineRegex;
+
+
 	/// mapper function
 	STRING_MAPPER _mapper;
 
 	/// size read
-	ulong _currentReadSize;
+	ulong _nbLinesRead;
 
 	/// input file size
 	ulong _inputFileSize;
@@ -71,18 +76,18 @@ public:
 		// save file name and opens file for reading
 		_rbFile = rbFile;
 
-		// open file for reading
-		//_fh = File(rbFile, "r");
-
 		// build all records but defining a new format
 		_layout = layout;
 
 		// save record identifier lambda
 		_recordIdentifier = (recIndentifier) ? recIndentifier : layout.meta.mapper;
-		//_recordIdentifier = layout.meta.mapper;
 
 		// get file size
 		_inputFileSize = getSize(rbFile);
+
+		// set regex if any
+		if (layout.meta.ignoreLinePattern != "")
+			_ignoreRegex = regex(layout.meta.ignoreLinePattern);
 	}
 
 	/**
@@ -93,7 +98,8 @@ public:
 	 * reader.ignoreRegexPattern("^#")		// ignore lines starting with #
 	 * -----------------------------
 	 */
-	@property void ignoreRegexPattern(Regex!char pattern) { _ignoreRegex = pattern; }
+	@property void ignoreRegexPattern(string pattern) { _ignoreRegex = regex(pattern); }
+	@property void lineRegexPattern(string pattern)   { _lineRegex   = regex(pattern); }
 
 	/**
 	 * register a callback function which will be called for each fetched record
@@ -102,7 +108,7 @@ public:
 
 	@property Layout layout() { return _layout; }
 
-	@property ulong currentReadSize() { return _currentReadSize; }
+	@property ulong nbLinesRead() { return _nbLinesRead; }
 
 	/// return the file size of the input file in bytes
 	@property ulong inputFileSize() { return _inputFileSize; }
@@ -114,7 +120,12 @@ public:
 		auto line = lineReadFromFile.idup;
 
 		// if line is matching the ignore pattern, just loop
-		if (!layout.meta.ignoreRecord.empty && matchFirst(line, layout.meta.ignoreRecord)) {
+		if (layout.meta.ignoreLinePattern != "" && matchFirst(line, _ignoreRegex)) {
+			return null;
+		}
+
+		// if line is not matching the line pattern, just loop
+		if (!_lineRegex.empty && !matchFirst(line, _lineRegex)) {
 			return null;
 		}
 
@@ -128,7 +139,7 @@ public:
 		}
 
 		// do we keep this record?
-		if (!_layout[recordName].meta.keep) return null;
+		if (_layout[recordName].meta.skip) return null;
 
 		// now we can safely save our values
 		// set record value (and fields)
@@ -142,53 +153,6 @@ public:
 		return _layout[recordName];
 
 	}
-
-/*
-	// inner structure for defining a range for our container
-	struct Range {
-		private:
-			File _fh;
-			ulong _nbChars = ulong.max;
-			char[] _buffer;
-			Reader _outerThis;
-			Record rec;
-
-		public:
-				// this constructor will be called from helper function []
-				// need to get access to the outer class this
-			this(string fileName, Reader outer) {
-				_fh = File(fileName);
-				_outerThis = outer;
-			}
-
-			// because file pointer moves ahead, all logic is in this method
-			@property bool empty() {
-				do {
-					// read one line from file
-					_nbChars = _fh.readln(_buffer);
-
-					// if eof, just return
-					if (_nbChars == 0) { return true; }
-
-					// get rid of \n
-					_buffer = _buffer.stripRight('\n');
-
-					// try to get a record from that line
-					// call outer class this
-					rec = _outerThis._getRecordFromLine(_buffer);
-				} while (rec is null);
-
-				return false;
-			}
-			@property ref Record front() {
-				//writefln("rec=%s", rec.name);
-				return rec;
-			}
-			// does nothing because file pointer already move on
-			void popFront() {	}
-
-	}
-	*/
 
 	// inner structure for defining a range for our container
 	struct Range {
@@ -209,6 +173,9 @@ public:
 				do {
 					_nbChars = _fh.readln(_buffer);
 					if (_nbChars == 0) return;
+
+					_outerThis._nbLinesRead++;
+
 					rec = _outerThis._getRecordFromLine(_buffer);
 				} while (rec is null);
 
@@ -230,6 +197,8 @@ public:
 					// if eof, just return
 					if (_nbChars == 0) return;
 
+					_outerThis._nbLinesRead++;
+
 					// get rid of \n
 					_buffer = _buffer.stripRight('\n');
 
@@ -247,65 +216,6 @@ public:
 	Range opSlice() {
 		return Range(_rbFile, this);
 	}
-
-
-	/**
-	 * used to loop on foreach on all records of the file
-	 *
-	 * Examples:
-	 * -----------------------------
-	 * foreach (Record rec; rbfile)
-	 * 	{ writeln(rec); }
-	 * -----------------------------
-	 */
-	/*
-	int opApply(int delegate(ref Record) dg)
-	{
-		int result = 0;
-		string recordName;
-
-		// read each line of the ascii file
-		//foreach (string line_read; lines(File(_rbFile, "r")))
-		foreach (string line_read; lines(File(_rbFile)))
-		{
-			// one more line read
-			_currentReadSize += line_read.length;
-
-			// get rid of \n
-			auto line = chomp(line_read);
-
-			// if line is matching the ignore pattern, just loop
-			if (!_ignoreRegex.empty && matchFirst(line, _ignoreRegex)) {
-				continue;
-			}
-
-			// try to fetch corresponding record name for line we've read
-			recordName = _recordIdentifier(line);
-
-			// record not found ? So loop
-			if (recordName !in _layout) {
-				writefln("error: record name <%s> not found!!", recordName);
-				continue;
-			}
-
-			// do we keep this record?
-			if (!_layout[recordName].keep) continue;
-
-			// now we can safely save our values
-			// set record value (and fields)
-			_layout[recordName].value = line;
-
-			// is a mapper registered? so we need to call it
-			if (_mapper)
-				_mapper(_layout[recordName]);
-
-			// this is conventional way of opApply()
-			result = dg(_layout[recordName]);
-			if (result)
-				break;
-		}
-		return result;
-	}*/
 
 }
 ///

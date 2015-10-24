@@ -58,7 +58,7 @@ struct OutputFeature {
 	string lsep;		    /// line separator char for text output format
 	string orientation;	/// whether print by row or colums
   string zipper;      /// name and path of the zipper executable
-	bool fielddesc;		  /// print field description if true
+	bool   fielddesc;		/// print field description if true
 }
 alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 
@@ -74,10 +74,7 @@ private:
 
 public:
 	/**
-	 * read the XML configuration file
-	 *
-   * Params:
-	 * 	xmlConfigFile = optional file configuration file
+	 * read the XML configuraimport rbf.config;nal file configuration file
 	 */
 	this(string xmlConfigFile = "") {
 
@@ -88,12 +85,11 @@ public:
     // settings file
     string settingsFile;
 
-    // if file name is passed, take it
-    if (xmlConfigFile != "")
-      settingsFile = xmlConfigFile;
-		// otherwise try possible locations
-    else
-      settingsFile = _getConfigFileName();
+    // if file name is passed, take it or otherwise try possible locations
+		settingsFile = (xmlConfigFile != "") ? xmlConfigFile : _getConfigFileName();
+
+		// get settings path
+		auto settingsFilePath = dirName(settingsFile) ~ "/";
 
 		// ensure file exists
 		std.exception.enforce(exists(settingsFile), "Settings file %s not found".format(settingsFile));
@@ -111,7 +107,7 @@ public:
       this._layoutDirectory ~= SettingCore(
         xml.tag.attr["name"],
         xml.tag.attr["description"],
-        xml.tag.attr["file"],
+        settingsFilePath ~ xml.tag.attr["file"],
       );
 		};
 
@@ -119,12 +115,12 @@ public:
 		xml.onStartTag["output"] = (ElementParser xml)
 		{
 			// manage attributes
-			auto fdesc = xml.tag.attr.get("fielddesc", "false");
+			auto fdesc = xml.tag.attr.get("fdesc", "false");
 
 			// save layout metadata
       this._outputDirectory ~= OutputFeature(
         xml.tag.attr["name"],
-        xml.tag.attr.get("outputDir", "."),
+        xml.tag.attr.get("outputDir", ""),
         xml.tag.attr.get("fsep", "|"),
         xml.tag.attr.get("lsep", ""),
         xml.tag.attr.get("orientation", "horizontal"),
@@ -148,7 +144,8 @@ private:
     string settingsFile;
 
     // test if env variable is set
-    if (environment["RBFCONF"] != "") return environment["RBFCONF"];
+		auto rbfconf = environment.get("RBFCONF", "");
+    if (rbfconf != "") return rbfconf;
 
     // otherwise, first possible location is current directory
     if (exists(getcwd ~ xmlSettings)) {
@@ -159,7 +156,7 @@ private:
       string _rbfhome;
       version(linux) {
         _rbfhome = environment["HOME"];
-        settingsFile = _rbfhome ~ xmlSettings;
+        settingsFile = _rbfhome ~ "/" ~ xmlSettings;
       }
       version(Win64) {
         _rbfhome = environment["APPDATA"];
@@ -179,8 +176,8 @@ unittest {
 
   assert(c.layoutDir["A"].name == "A");
   assert(c.layoutDir["B"].description == "Desc B");
-  assert(c.layoutDir["C"].file == "layout/c.xml");
-	assert(c.layoutDir["world"].file == "test/world_data.xml");
+  assert(c.layoutDir["C"].file.canFind("layout/c.xml"));
+	assert(c.layoutDir["world"].file.canFind("test/world_data.xml"));
 
   assert(c.outputDir["txt"].name == "txt");
   assert(c.outputDir["txt"].outputDir == "/tmp/");

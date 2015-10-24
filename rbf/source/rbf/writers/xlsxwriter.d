@@ -153,7 +153,7 @@ public:
 	override void write(Record record)
 	{
 		// don't keep this record?
-		if (!record.meta.keep) return;
+		if (record.meta.skip) return;
 
 		// worksheet exist?
 		if (record.name !in _createdWorksheet) {
@@ -229,7 +229,7 @@ unittest {
 	auto layout = new Layout("./test/world_data.xml");
 	auto reader = new Reader("./test/world.data", layout);
 
-	auto writer = writerFactory("world_data.xlsx", "xlsx", layout);
+	auto writer = writerFactory("./test/world_data.xlsx", "xlsx", layout);
 	writer.outputFeature.zipper = "/usr/bin/zip";
 
 	foreach (rec; reader) { writer.write(rec); }

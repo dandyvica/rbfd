@@ -1,0 +1,254 @@
+
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
+Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
+-------------------------------------------------------------------------------------------------------------
+Asia                 !43,820,000           !16,920,000                 !29.5           !Shanghai            !
+
+NAME                          !POPULATION           !CAPITAL               !
+Name of the country           !Number of inhabitants!Capital of the country!
+----------------------------------------------------------------------------
+China                         !1,338,100,000        !Beijing               !
+China, Hong Kong SAR          !7,000,000            !Hong KongR            !
+China, Macau SAR              !500,000              !Macau City            !
+China Tibet                   !2 620 000            !Lhasa                 !
+Japan                         !127,400,000          !Tokyo                 !
+Korea (North)                 !22,800,000           !P'yongyang            !
+Korea (South)                 !48,900,000           !Seoul                 !
+Mongolia                      !2,800,000            !Ulaanbaatar           !
+Taiwan                        !23,200,000           !Taipei                !
+Russian Federation            !141,900,000          !Moscow                !
+Afghanistan                   !29,100,000           !Kabul                 !
+Bangladesh                    !164,400,000          !Dhaka                 !
+Bhutan                        !700,000              !Thimphu               !
+India                         !1,188,800,000        !New Delhi             !
+Iran                          !75,100,000           !Tehran                !
+Kazakhstan                    !16,300,000           !Astana                !
+Kyrgyzstan                    !5,300,000            !Bishkek               !
+Maldives                      !300,000              !Male                  !
+Nepal                         !28,000,000           !Kathmandu             !
+Pakistan                      !184,800,000          !Islamabad             !
+Sri Lanka                     !20,700,000           !Colombo               !
+Tajikistan                    !7,600,000            !Dushanbe              !
+Turkmenistan                  !5,200,000            !Ashgabat              !
+Uzbekistan                    !28,100,000           !Tashkent              !
+Brunei Darussalam             !400,000              !Bandar Seri Begawan   !
+Cambodia                      !15,100,000           !Phnom Penh            !
+Indonesia                     !235,500,000          !Jakarta               !
+Lao PDR                       !6,400,000            !Vientiane             !
+Malaysia                      !29,000,000           !Kuala Lumpur          !
+Myanmar (Burma)               !53,400,000           !Yangon (Rangoon)      !
+Philippines                   !94,000,000           !Manila                !
+Singapore                     !5,100,000            !Singapore             !
+Thailand                      !68,100,000           !Bangkok               !
+Timor-Leste (East Timor)      !1,200,000            !Dili                  !
+Vietnam                       !89,000,000           !Hanoi                 !
+Armenia                       !3,100,000            !Yerevan               !
+Azerbaijan                    !9,500,000            !Baku                  !
+Bahrain                       !1,300,000            !Manama                !
+Cyprus                        !1,100,000            !Nicosia (Lefkosia)    !
+Georgia                       !4,600,000            !T'bilisi              !
+Iraq                          !31,500,000           !Baghdad               !
+Israel                        !7,600,000            !Jerusalem (claimed)   !
+Jordan                        !6,500,000            !Amman                 !
+Kuwait                        !3,100,000            !Kuwait (City)         !
+Lebanon                       !4,300,000            !Beirut                !
+Oman                          !3,100,000            !Muscat                !
+Palestinian territories       !4,000,000            !Jerusalem (claimed)   !
+Qatar                         !1,700,000            !Doha (Al-Dawhah)      !
+Saudi Arabia                  !29,200,000           !Riyadh                !
+Syria                         !22,500,000           !Damascus              !
+Turkey                        !73,600,000           !Ankara                !
+United Arab Emirates          !5,400,000            !Abu Dhabi             !
+Yemen                         !23,600,000           !Sanaa                 !
+
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
+Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
+-------------------------------------------------------------------------------------------------------------
+Africa               !30,370,000           !11,730,000                 !20.4           !Lagos               !
+
+NAME                          !POPULATION           !CAPITAL               !
+Name of the country           !Number of inhabitants!Capital of the country!
+----------------------------------------------------------------------------
+Burundi                       !8,500,000            !Bujumbura             !
+Comoros                       !727,000              !Moroni                !
+Djibouti                      !900,000              !Djibouti              !
+Eritrea                       !5,200,000            !Asmara                !
+Ethiopia                      !85,000,000           !Addis Ababa           !
+Kenya                         !40,000,000           !Nairobi               !
+Madagascar                    !20,100,000           !Antananarivo          !
+Malawi                        !15,400,000           !Lilongwe              !
+Mauritius                     !1,300,000            !Port Louis            !
+Mozambique                    !23,400,000           !Maputo                !
+Réunion                      !800,000              !Saint-Denis           !
+Rwanda                        !10,400,000           !Kigali                !
+Seychelles                    !100,000              !Victoria              !
+Somalia                       !9,400,000            !Mogadishu             !
+Tanzania                      !45,000,000           !Dodoma, Dar es Salaa  !
+Uganda                        !33,800,000           !Kampala               !
+Zambia                        !13,300,000           !Lusaka                !
+Zimbabwe                      !12,600,000           !Harare                !
+Angola                        !19,000,000           !Luanda                !
+Cameroon                      !20,000,000           !Yaoundé              !
+Central African Republic      !4,800,000            !Bangui                !
+Chad                          !11,500,000           !N'Djamena             !
+Congo, Rep. (Brazzaville)     !3,900,000            !Brazzaville           !
+Congo, Dem. Rep. (Kinshasa)   !67,800,000           !Kinshasa              !
+Equatorial Guinea             !700,000              !Malabo                !
+Gabon                         !1,500,000            !Libreville            !
+São Tomé and Príncipe      !200,000              !São Tomé            !
+Algeria                       !36,000,000           !Algiers               !
+Egypt                         !80,400,000           !Cairo                 !
+Libya                         !6,500,000            !Tripoli               !
+Morocco                       !31,900,000           !Rabat                 !
+South Sudan                   !9,000,000            !Juba                  !
+Sudan                         !36,000,000           !Khartoum              !
+Tunisia                       !10,500,000           !Tunis                 !
+Western Sahara                !500,000              !(El Aaiún)           !
+Botswana                      !1,800,000            !Gaborone              !
+Lesotho                       !1,900,000            !Maseru                !
+Namibia                       !2,200,000            !Windhoek              !
+South Africa                  !49,900,000           !Pretoria, Bloemfonte  !
+Swaziland                     !1,200,000            !Mbabane, Lobamba      !
+Benin                         !9,800,000            !Porto-Novo, Cotonou   !
+Burkina Faso                  !16,200,000           !Ouagadougou           !
+Cape Verde                    !500,000              !Praia                 !
+Côte d'Ivoire (Ivory Coast)  !22,000,000           !Yamoussoukro, Abidj   !
+Gambia, The                   !1,800,000            !Banjul                !
+Ghana                         !24,000,000           !Accra                 !
+Guinea                        !10,800,000           !Conakry               !
+Guinea-Bissau                 !1,600,000            !Bissau                !
+Liberia                       !4,100,000            !Monrovia              !
+Mali                          !15,200,000           !Bamako                !
+Mauritania                    !3,400,000            !Nouakchott            !
+Niger                         !15,900,000           !Niamey                !
+Nigeria                       !158,300,000          !Abuja                 !
+Saint Helena                  !6,000                !Jamestown             !
+Senegal                       !12,500,000           !Dakar                 !
+Sierra Leone                  !5,800,000            !Freetown              !
+Togo                          !6,800,000            !Lomé                 !
+
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
+Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
+-------------------------------------------------------------------------------------------------------------
+North America        !24,709,000           !9,540,000                  !16.5           !Mexico City         !
+
+NAME                          !POPULATION           !CAPITAL               !
+Name of the country           !Number of inhabitants!Capital of the country!
+----------------------------------------------------------------------------
+Canada                        !34,00,000            !Ottawa - Toronto      !
+Mexico                        !112,000,000          !Mexico (City)         !
+United States                 !313,000,000          !Washington - New Yor  !
+
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
+Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
+-------------------------------------------------------------------------------------------------------------
+South America        !17,840,000           !6,890,000                  !12.0           !São Paulo          !
+
+NAME                          !POPULATION           !CAPITAL               !
+Name of the country           !Number of inhabitants!Capital of the country!
+----------------------------------------------------------------------------
+Argentina                     !40,500,000           !Buenos Aires          !
+Bolivia                       !10,400,000           !La Paz, Sucre         !
+Brazil                        !193,300,000          !Brasilia - São Paul  !
+Chile                         !17,100,000           !Santiago              !
+Colombia                      !45,500,000           !Bogotá D.C.          !
+Ecuador                       !14,200,000           !Quito                 !
+French Guiana                 !200,000              !Cayenne               !
+Guyana                        !800,000              !Georgetown            !
+Paraguay                      !6,500,000            !Asunción             !
+Peru                          !29,500,000           !Lima                  !
+Suriname                      !500,000              !Paramaribo            !
+Uruguay                       !3,400,000            !Montevideo            !
+Venezuela                     !28,800,000           !Caracas               !
+
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
+Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
+-------------------------------------------------------------------------------------------------------------
+Antarctica           !13,720,000           !5,300,000                  !9.2            !Villa Las Estrellas !
+Europe               !10,180,000           !3,930,000                  !6.8            !Moscow              !
+
+NAME                          !POPULATION           !CAPITAL               !
+Name of the country           !Number of inhabitants!Capital of the country!
+----------------------------------------------------------------------------
+Belarus                       !9,500,000            !Minsk                 !
+Bulgaria                      !7,500,000            !Sofia                 !
+Czech Republic                !10,500,000           !Prague                !
+Hungary                       !10,000,000           !Budapest              !
+Moldova                       !4,100,000            !Chisinau              !
+Poland                        !38,200,000           !Warsaw                !
+Romania                       !21,500,000           !Bucharest             !
+Russian Federation            !141,900,000          !Moscow                !
+Slovakia                      !5,400,000            !Bratislava            !
+Ukraine                       !46,000,000           !Hryvnia               !
+Denmark                       !5,500,000            !Copenhagen            !
+Estonia                       !1,300,000            !Tallinn               !
+Faroe Islands (DK)            !43 000               !Tórshavn             !
+Finland                       !5,400,000            !Helsinki              !
+Greenland (DK)                !56 854               !Nuuk (Godthab)        !
++ Iceland                     !300,000              !Reykjavik             !
+Ireland                       !4,500,000            !Dublin (City)         !
+Latvia                        !2,200,000            !Riga                  !
+Lithuania                     !3,300,000            !Vilnius               !
+Northern Ireland (UK)         !1 690 000            !Belfast               !
++ Norway                      !4,900,000            !Oslo                  !
+Scotland (UK)                 !5 200,000            !EdinburghGlasgow      !
+Sweden                        !9,400,000            !Stockholm             !
+United Kingdom                !62,200,000           !London                !
+Wales (UK)                    !2 750 000            !Cardiff               !
+Albania                       !3,200,000            !Tirana                !
+Andorra                       !100,000              !Andorra la Vella      !
+Bosnia & Herzegovina          !3,800,000            !Sarajevo              !
+Croatia (Hrvatska)            !4,400,000            !Zagreb                !
+Cyprus                        !1,100,000            !Nicosia (Lefkosia)    !
+Gibraltar (UK)                !25 000               !Gibraltar             !
+Greece                        !11,300,000           !Athens                !
+Vatican City State            !1 000                !Vatican City          !
+Italy                         !60,500,000           !Rome - Milan          !
+Macedonia, Rep. of            !2,100,000            !Skopje                !
+Malta                         !400,000              !Valletta              !
+Montenegro                    !600,000              !Podgorica             !
+Portugal                      !10,700,000           !Lisbon                !
+San Marino                    !30,000               !San Marino            !
+Serbia                        !7,300,000            !Belgrade              !
+Slovenia                      !2,100,000            !Ljubljana             !
+Spain                         !47,100,000           !Madrid                !
+Austria                       !8,400,000            !Vienna (Wien)         !
+Belgium                       !10,800,000           !Brussels              !
+France                        !63,000,000           !Paris                 !
+Germany                       !81,600,000           !Berlin                !
+Liechtenstein                 !40,000               !Vaduz                 !
+Luxembourg                    !500,000              !Luxembourg            !
+Monaco                        !40,000               !Monaco                !
+Netherlands                   !16,600,000           !The Hague, Amsterdam  !
+Switzerland                   !7,800,000            !Bern - Zürich        !
+
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
+Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
+-------------------------------------------------------------------------------------------------------------
+Oceania              !9,008,500            !3,478,200                  !5.9            !Sydney              !
+
+NAME                          !POPULATION           !CAPITAL               !
+Name of the country           !Number of inhabitants!Capital of the country!
+----------------------------------------------------------------------------
+Australia                     !22,400,000           !Canberra - Sydney     !
+New Zealand                   !4,400,000            !Wellington - Aucklan  !
+Fiji                          !900,000              !Suva                  !
+New Caledonia                 !300,000              !Nouméa               !
+Papua New Guinea              !6,800,000            !Port Moresby          !
+Solomon Islands               !500,000              !Honiara               !
+Vanuatu                       !200,000              !Port-Vila             !
+Guam                          !200,000              !Hagåtña (Agana)     !
+Hawaii flag                   !Hawaii               !Map of Hawaii         !
+Kiribati                      !100,000              !Tarawa                !
+Marshall Islands              !100,000              !Majuro                !
+Micronesia                    !100,000              !Palikir               !
+Nauru                         !12,000               !---                   !
+Northern Mariana Islands      !78 000               !Saipan                !
+Palau                         !20 000               !Ngerulmud, Melekeok   !
+American Samoa                !68 000               !Pago Pago             !
+Cook Islands                  !20 000               !Avarua                !
+French Polynesia (Tahiti)     !300,000              !Papeete               !
+Niue                          !2 000                !Alofi                 !
+Samoa                         !200,000              !Apia                  !
+Tonga                         !100,000              !Nuku'alofa            !
+Tuvalu                        !10,000               !Funafuti              !

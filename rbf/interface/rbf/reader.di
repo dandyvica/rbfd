@@ -21,16 +21,18 @@ class Reader
 		Layout _layout;
 		MapperFunc _recordIdentifier;
 		Regex!char _ignoreRegex;
+		Regex!char _lineRegex;
 		STRING_MAPPER _mapper;
-		ulong _currentReadSize;
+		ulong _nbLinesRead;
 		ulong _inputFileSize;
 		public 
 		{
 			this(string rbFile, Layout layout, MapperFunc recIndentifier = null);
-			@property void ignoreRegexPattern(Regex!char pattern);
+			@property void ignoreRegexPattern(string pattern);
+			@property void lineRegexPattern(string pattern);
 			@property void recordTransformer(STRING_MAPPER func);
 			@property Layout layout();
-			@property ulong currentReadSize();
+			@property ulong nbLinesRead();
 			@property ulong inputFileSize();
 			Record _getRecordFromLine(char[] lineReadFromFile);
 			struct Range
