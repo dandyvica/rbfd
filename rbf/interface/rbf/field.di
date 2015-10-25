@@ -9,17 +9,13 @@ import std.algorithm;
 import std.typecons;
 import std.exception;
 import std.typecons;
+import rbf.element;
 import rbf.fieldtype;
-string[string] defaultTypes;
-static this();
-class Field
+class Field : Element!(string, ulong)
 {
 	private 
 	{
 		FieldType _fieldType;
-		string _name;
-		immutable string _description;
-		immutable ulong _length;
 		string _rawValue;
 		string _strValue;
 		ulong _index;
@@ -27,25 +23,19 @@ class Field
 		ulong _lowerBound;
 		ulong _upperBound;
 		byte _valueSign = 1;
-		immutable ulong _cellLength1;
-		immutable ulong _cellLength2;
+		Regex!char _fieldPattern;
 		public 
 		{
-			this(in string name, in string description, FieldType ftype, in ulong length);
-			this(in string name, in string description, in string stringType, in ulong length);
-			@property string name();
-			@property string description();
-			@property FieldType fieldType();
-			@property ulong length();
-			@property ulong cellLength1();
-			@property ulong cellLength2();
+			this(in string name, in string description, FieldType type, in ulong length);
+			@property FieldType type();
+			@property void pattern(string s);
+			bool matchPattern();
 			@property string value();
 			@property T value(T)()
 			{
 				return to!T(_strValue) * sign;
 			}
 			@property void value(string s);
-			@property void setValue(string s);
 			@property string rawValue();
 			@property ulong index();
 			@property void index(ulong new_index);
@@ -58,9 +48,11 @@ class Field
 			@property void lowerBound(ulong new_bound);
 			@property void upperBound(ulong new_bound);
 			override string toString();
-			string toXML();
-			bool isFieldFilterMatched(in string op, in string rvalue);
 			bool opEquals(Tuple!(string, string, string, ulong) t);
+			T opCast(T)()
+			{
+				return to!T(_strValue);
+			}
 		}
 	}
 }

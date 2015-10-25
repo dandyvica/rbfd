@@ -75,7 +75,7 @@ private:
 
 		// create field type, length row
 		_worksheetFile[rec.name].startRow();
-		rec.each!(f => _worksheetFile[rec.name].strCell(format("%s-%d", f.fieldType.name, f.length)));
+		rec.each!(f => _worksheetFile[rec.name].strCell(format("%s-%d", f.type.name, f.length)));
 		_worksheetFile[rec.name].endRow();
 
 		// create field name
@@ -111,43 +111,6 @@ public:
 		// not this one
 		_relsFile = new Rels(_xlsxDir);
 
-
-		// for each record in the layout, fill data for file depending on worksheets
-		// only for records we want to keep
-/*
-		foreach (rec; &layout.sorted) {
-			if (rec.keep) {
-				_contentTypesFile.fill(rec.name);
-				_workbookFile.fill(rec.name);
-				_workbookRelsFile.fill(rec.name);
-
-				// and also create sheets. We need an assoc. array to keep track
-				// of link between records and sheets
-				_worksheetFile[rec.name] = new Worksheet(_xlsxDir, rec.name);
-
-				// then create header (record name & record description)
-				_worksheetFile[rec.name].startRow();
-				_worksheetFile[rec.name].strCell(format("%s: %s", rec.name, rec.description));
-				_worksheetFile[rec.name].endRow();
-
-				// create field description row
-				_worksheetFile[rec.name].startRow();
-				rec.each!(f => _worksheetFile[rec.name].strCell(f.description));
-				_worksheetFile[rec.name].endRow();
-
-				// create field index row
-				_worksheetFile[rec.name].startRow();
-				rec.each!(f => _worksheetFile[rec.name].numCell(to!string(f.index+1)));
-				_worksheetFile[rec.name].endRow();
-
-				// create field name, type, length row
-				_worksheetFile[rec.name].startRow();
-				rec.each!(f => _worksheetFile[rec.name].strCell(format(`%s - %s,%d`,
-					f.name, f.fieldType.name, f.length)));
-				_worksheetFile[rec.name].endRow();
-			}
-		}
-*/
 	}
 
 	override void write(Record record)
@@ -167,7 +130,7 @@ public:
 		// for each record, just write data to worksheet
 		// depending on its type, an Excel cell doesn't contain the same XML
 		foreach (field; record) {
-			if (field.fieldType.baseType == BaseType.string)
+			if (field.type.stringType == "string")
 			{
 				_worksheetFile[record.name].strCell(field.value);
 			}

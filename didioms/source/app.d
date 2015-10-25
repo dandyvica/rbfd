@@ -149,25 +149,6 @@ pragma(msg, "__traits(isScalar, string): ", __traits(isArithmetic, string));
 void main(string[] argv)
 {
 
-// auto f1 = new Field!(FieldType!string)("FIELD1", 10);
-// auto f2 = new Field!(FieldType!int)("FIELD2", 10);
-// auto f3 = new Field!(FieldType!OverpunchedInt)("FIELD3", 10);
-//auto f4 = new Field!(FieldType!Date);
-
-// Element!(string,ulong)[] tab;
-//
-// 		tab ~= new Field!(FieldType!string)("FIELD1", 10);
-// 		tab ~= new Field!(FieldType!int)("FIELD2", 10);
-// 		tab ~= new Field!(FieldType!OverpunchedInt)("FIELD3", 10);
-//
-// 		tab[0].value = "ggg ";
-// 		tab[1].value = "  123 ";
-// 		tab[2].value = "   6{}  ";
-//
-// 		foreach (f; tab) {
-// 			write("field name = ", f.name);
-// 			writeln("value = ", f.value);
-// 		}
 
 CoreFieldType[string] map;
 

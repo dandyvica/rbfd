@@ -28,7 +28,10 @@ the %APPDATA%\\local\\rbf directory (Windows).
 
 --gl pattern
 : Grep lines: only select lines matching the regex pattern. NB if
---gf is also specific, this --gl comes first.
+"--gf" is also specified, this --gl comes first.
+
+--gr condition
+: Grep records: include records matching condition
 
 -i file
 : Full path and name of the file to be read and converted.

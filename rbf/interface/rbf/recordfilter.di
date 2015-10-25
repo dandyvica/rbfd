@@ -19,7 +19,7 @@ class RecordFilter
 		RecordClause[] _recordFitlerClause;
 		public 
 		{
-			this(string recordFilterFile);
+			this(string recordFilter, string separator);
 			int opApply(int delegate(ref RecordClause) dg);
 			override string toString();
 		}

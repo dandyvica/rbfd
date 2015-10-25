@@ -177,18 +177,6 @@ public:
 	}
 
 	/**
-	 * return a string of the XML representation of Record
-	 */
-	string toXML() {
-		auto xml = `<record name="%s" description=""%s">`.format(meta.name, meta.description);
-		xml ~= join(array(this[].map!(e => "\t" ~ e.toXML)), "\n");
-		xml ~= "</record>";
-
-		return xml;
-	}
-
-
-	/**
 	 * match a record against a set of boolean conditions to filter data
 	 * returns True is all conditions are met
 	 */
@@ -210,7 +198,7 @@ public:
 			foreach (Field field; this[c.fieldName]) {
 				// if one condition is false, then get out
 				//writefln("looking at field %s:%s", name, field.name);
-				condition |= field.isFieldFilterMatched(c.operator, c.scalar);
+				condition |= field.type.isFieldFilterMatched(field.value, c.operator, c.scalar);
 			}
 
 			if (!condition) return false;
@@ -227,6 +215,8 @@ import std.exception;
 ///
 unittest {
 
+	import rbf.fieldtype;
+
 	writeln("========> testing ", __FILE__);
 
 	// check wrong arguments
@@ -235,11 +225,13 @@ unittest {
 	// main test
 	auto rec = new Record("RECORD_A", "This is my main and top record");
 
-	rec ~= new Field("FIELD1", "Desc1", "A/N", 10);
-	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
-	rec ~= new Field("FIELD3", "Desc3", "A/N", 10);
-	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
-	rec ~= new Field("FIELD2", "Desc2", "A/N", 10);
+	auto ft = new FieldType("A/N", "string");
+
+	rec ~= new Field("FIELD1", "Desc1", ft, 10);
+	rec ~= new Field("FIELD2", "Desc2", ft, 10);
+	rec ~= new Field("FIELD3", "Desc3", ft, 10);
+	rec ~= new Field("FIELD2", "Desc2", ft, 10);
+	rec ~= new Field("FIELD2", "Desc2", ft, 10);
 
 	// test properties
 	assert(rec.name == "RECORD_A");

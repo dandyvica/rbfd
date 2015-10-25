@@ -7,47 +7,39 @@ import std.string;
 import std.regex;
 import std.algorithm;
 import std.exception;
+static string overpunch(string s);
+alias CmpFunc = bool delegate(string, string, string);
+alias Conv = string function(string);
 enum AtomicType 
 {
 	decimal,
 	integer,
 	date,
 	string,
+	overpunchedInteger,
 }
-enum BaseType 
-{
-	string,
-	numeric,
-}
-alias MATCH_FILTER = bool delegate(string, string, string);
 class FieldType
 {
 	private 
 	{
-		string _name;
-		BaseType _baseType;
 		AtomicType _type;
-		Regex!char _re;
-		MATCH_FILTER _filterTestCallback;
+		CmpFunc _filterTestCallback;
+		string _pattern;
+		string _stringType;
+		string _name;
 		public 
 		{
-			this(string name, string type);
-			@property AtomicType type();
-			@property BaseType baseType();
+			Conv preConv;
+			this(string name, string type, string pattern = "", string format = "");
+			@property AtomicType fieldType();
+			@property string pattern();
 			@property void pattern(string p);
+			@property string stringType();
 			@property string name();
-			override string toString();
-			bool testFieldFilter(string lvalue, string op, string rvalue);
+			bool isFieldFilterMatched(string lvalue, string op, string rvalue);
 			static string testFilter(T)(string op)
 			{
-				static if (is(T == string))
-				{
-					return "condition = (lvalue" ~ op ~ "rvalue);";
-				}
-				else
-				{
-					return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
-				}
+				return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
 			}
 			bool matchFilter(T)(string lvalue, string operator, string rvalue)
 			{

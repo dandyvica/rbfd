@@ -222,7 +222,6 @@ public:
 unittest {
 	writeln("========> testing ", __FILE__);
 	auto layout = new Layout("./test/world_data.xml");
-	//auto reader = new Reader("./test/world.data", layout, (line => line[0..4]));
 	auto reader = new Reader("./test/world.data", layout);
 
 	//reader[].filter!(e => e.name == "CONT").each!(e => writeln(e["NAME"][0].value));

@@ -30,6 +30,10 @@ public:
 	string fieldFilterFile;					/// if any, name of the field filter file
 	string fieldFilter;							/// if any, list of records/fields to filter out
 	string recordFilterFile;				/// if any, name of the record filter file
+	string recordFilter;						/// if any, name of the record filter file
+	RecordFilter filteredRecords;   /// if any, list of clauses to filter records
+	string filteredFields;					/// if nay list of fields to filter out
+
 
 	string lineFilter;							/// if any, define a regex to match lines
 
@@ -39,8 +43,6 @@ public:
 	bool bCheckLayout;							/// if true, try to validate layouy by checking length
 	bool stdOutput;									/// if true, print to standard output instead of file
 
-	RecordFilter filteredRecords;
-	string filteredFields;
 
 	ulong samples;									/// limit to n first lines (n == samples)
 
@@ -74,6 +76,7 @@ public:
 				"gf", &fieldFilter,
 				"gl", &lineFilter,
 				"r", &recordFilterFile,
+				"gr", &recordFilter,
 				"v", &bVerbose,
 				"s", &samples,
 				"b", &bJustRead,
@@ -89,24 +92,29 @@ public:
 		// if no output file name specified, then use input file name and
 		// append the suffix
 		if (fieldFilterFile != "") {
+			enforce(exists(fieldFilterFile), "error: field filter file %s not found".format(fieldFilterFile));
 			filteredFields = cast(string)std.file.read(fieldFilterFile);
-		}
-		if (fieldFilter != "") {
+		} else if (fieldFilter != "") {
 			filteredFields = fieldFilter;
 		}
 
 		// if filter file is specified, load conditions
 		if (recordFilterFile != "") {
-			filteredRecords = new RecordFilter(recordFilterFile);
+			enforce(exists(recordFilterFile), "error: field filter file %s not found".format(recordFilterFile));
+			filteredRecords = new RecordFilter(cast(string)std.file.read(recordFilterFile), "\n");
+		} else if (recordFilter != "") {
+			filteredRecords = new RecordFilter(recordFilter, ";");
 		}
 
 		// build output file name
 		outputFileName = baseName(inputFileName) ~ "." ~ outputFormat;
 	}
 
-	@property bool isFieldFilterFileSet() { return fieldFilterFile != ""; }
-	@property bool isFieldFilterSet()     { return fieldFilter != ""; }
-	@property bool isRecordFilterSet()    { return recordFilterFile != ""; }
+	@property bool isFieldFilterFileSet()  { return fieldFilterFile != ""; }
+	@property bool isFieldFilterSet()      { return fieldFilter != ""; }
+	@property bool isRecordFilterFileSet() { return recordFilterFile != ""; }
+	@property bool isRecordFilterSet()     { return recordFilter != ""; }
+
 
 	/// useful helper
 	void printOptions() {

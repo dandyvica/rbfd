@@ -40,7 +40,6 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 			field.upperBound = field.offset + field.length;
 		}
 		override string toString();
-		string toXML();
 		bool matchRecordFilter(RecordFilter filter);
 	}
 }

@@ -18,7 +18,6 @@ import rbf.nameditems;
 
 version(unittest) {
 	immutable test_file = "./test/world_data.xml";
-	immutable test_file_fieldtype = "./test/world_data_with_types.xml";
 }
 
 /// useful alias for defining mapper
@@ -142,26 +141,23 @@ public:
 		}
 
 		// build mapper if any
-		if ("mapper" in xml.tag.attr) {
-			_extractMapper(xml.tag.attr["mapper"]);
+		if ("mapper" !in xml.tag.attr || xml.tag.attr["mapper"] == "") {
+			throw new Exception("error: mapper function is not defined in layout");
 		}
+		_extractMapper(xml.tag.attr["mapper"]);
 
 		// read <fieldtype> definitions and keep types
 		xml.onStartTag["fieldtype"] = (ElementParser xml)
 		{
-			// save record name
-			auto ftName = xml.tag.attr["name"];
-			auto type   = xml.tag.attr["type"];
-
 			// save field type base on its name
-			ftype[ftName] = new FieldType(ftName, toLower(type));
+			auto ftName = xml.tag.attr["name"];
 
-			// pattern is optional
-			string pattern;
-			if ("pattern" in xml.tag.attr) {
-				pattern = xml.tag.attr["pattern"];
-				ftype[ftName].pattern = pattern;
-			}
+			ftype[ftName] = new FieldType(
+				xml.tag.attr["name"],
+				xml.tag.attr["type"],
+				xml.tag.attr.get("pattern", ""),
+				xml.tag.attr.get("format", "")
+			);
 		};
 
 		// read <record> definitions and create a new record object
@@ -180,24 +176,18 @@ public:
 			// fetch field type
 			auto type = xml.tag.attr["type"];
 
-			// already existing type from <fieldtype> ?
-			Field field;
-			if (type in ftype) {
-					field = new Field(
-						xml.tag.attr["name"],
-						xml.tag.attr["description"],
-						ftype[type],
-						to!uint(xml.tag.attr["length"])
-					);
+			// check whether type is defined
+			if (type !in ftype) {
+				throw new Exception("error: type %s is not defined!!".format(type));
 			}
+
 			// otherwise just create with fetched type
-			else
-				field = new Field(
+			auto field = new Field(
 					xml.tag.attr["name"],
 					xml.tag.attr["description"],
-					xml.tag.attr["type"],
+					ftype[xml.tag.attr["type"]],
 					to!uint(xml.tag.attr["length"])
-				);
+			);
 
 			// add field to our record
 			this[recName] ~= field;
@@ -223,11 +213,6 @@ public:
 		assert("COUN" in l);
 		assert("CONT" in l);
 		assert("FOO" !in l);
-
-		l = new Layout(test_file_fieldtype);
-		assert("COUN" in l);
-		assert("CONT" in l);
-		assert("FOO" !in l);
 	}
 
 	/**
@@ -241,9 +226,6 @@ public:
 		}
 		return s;
 	}
-
-	/// read property for name attribute
-	//@property string layoutVersion() { return _version; }
 
 	/**
 	 * keep only fields specified for each record in the map

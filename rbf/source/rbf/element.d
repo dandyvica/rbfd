@@ -3,6 +3,8 @@ pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.string;
+import std.exception;
+import std.algorithm;
 
 
 /***********************************
@@ -47,14 +49,13 @@ public:
 	///
 	unittest {
 		assertThrown(new Element!(string, ulong)("","First field", 5));
-		assertThrown(new Element!(string, ulong)("FIELD1","First field", 5));
 		assertThrown(new Element!(string, ulong)("FIELD1","First field", 0));
 		auto e1 = new Element!(string, ulong)("FIELD1", "Field description", 15);
 	}
 
 	// copy an element with all its data
 	Element dup() {
-		auto copied = new Element(T,U)(_name, _description, _length);
+		auto copied = new Element!(T,U)(_name, _description, _length);
 		return copied;
 	}
 
@@ -71,7 +72,7 @@ public:
 	///
 	unittest {
 		auto element1 = new Element!(string, ulong)("FIELD1", "This is element #1", 15);
-		assert(element1.description == "This is field #1");
+		assert(element1.description == "This is element #1");
 	}
 
 	/// read property for field length
@@ -88,7 +89,6 @@ public:
 	///
 	unittest {
 		auto element1 = new Element!(string, ulong)("IDENTITY", "Name", 30);
-		element1.value = "John";
 		assert(element1.cellLength1 == 30);
 		assert(element1.cellLength2 == 30);
 	}
@@ -99,25 +99,5 @@ public:
 	override string toString() {
 		return("name=<%s>, description=<%s>, length=<%u>".format(name, description, length));
 	}
-
-}
-
-
-
-
-
-/////////////////////////////
-
-class FType(T) {
-	this(string pattern, string format)
-	{
-
-	}
-}
-
-class F(T): Element!(string,ulong) {
-
-		string _strValue;
-		T _typedValue;
 
 }

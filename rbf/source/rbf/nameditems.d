@@ -361,16 +361,17 @@ unittest {
 
 	writeln("========> testing ", __FILE__);
 
+	import rbf.fieldtype;
 	import rbf.field;
 
 	auto c = new NamedItemsContainer!(Field,true)();
-	c ~= new Field("FIELD1", "value1", "A/N", 10);
-	c ~= new Field("FIELD2", "value2", "A/N", 30);
-	c ~= new Field("FIELD2", "value2", "A/N", 30);
-	c ~= new Field("FIELD3", "value3", "N", 20);
-	c ~= new Field("FIELD3", "value3", "N", 20);
-	c ~= new Field("FIELD3", "value3", "N", 20);
-	c ~= new Field("FIELD4", "value4", "A/N", 20);
+	c ~= new Field("FIELD1", "value1", new FieldType("A/N", "string"), 10);
+	c ~= new Field("FIELD2", "value2", new FieldType("A/N", "string"), 30);
+	c ~= new Field("FIELD2", "value2", new FieldType("A/N", "string"), 30);
+	c ~= new Field("FIELD3", "value3", new FieldType("N", "decimal"), 20);
+	c ~= new Field("FIELD3", "value3", new FieldType("N", "decimal"), 20);
+	c ~= new Field("FIELD3", "value3", new FieldType("N", "decimal"), 20);
+	c ~= new Field("FIELD4", "value4", new FieldType("A/N", "string"), 20);
 
 	auto i=1;
 	foreach (f; c) {
@@ -432,23 +433,23 @@ unittest {
 
 	// keepOnly
 	c = new NamedItemsContainer!(Field,true)();
-	c ~= new Field("FIELD1", "value1", "A/N", 10);
-	c ~= new Field("FIELD2", "value2", "A/N", 30);
-	c ~= new Field("FIELD2", "value2", "A/N", 30);
-	c ~= new Field("FIELD3", "value3", "N", 20);
-	c ~= new Field("FIELD3", "value3", "N", 20);
-	c ~= new Field("FIELD3", "value3", "N", 20);
-	c ~= new Field("FIELD4", "value4", "A/N", 20);
+	c ~= new Field("FIELD1", "value1", new FieldType("A/N", "string"), 10);
+	c ~= new Field("FIELD2", "value2", new FieldType("A/N", "string"), 30);
+	c ~= new Field("FIELD2", "value2", new FieldType("A/N", "string"), 30);
+	c ~= new Field("FIELD3", "value3", new FieldType("N", "decimal"), 20);
+	c ~= new Field("FIELD3", "value3", new FieldType("N", "decimal"), 20);
+	c ~= new Field("FIELD3", "value3", new FieldType("N", "decimal"), 20);
+	c ~= new Field("FIELD4", "value4", new FieldType("A/N", "string"), 20);
 	c.keepOnly(["FIELD2"]);
 	assert(c == ["FIELD2","FIELD2"]);
 
 	// do not accept duplicates
 	auto d = new NamedItemsContainer!(Field,false)();
-	d ~= new Field("FIELD2", "value2", "A/N", 10);
-	d ~= new Field("FIELD1", "value1", "A/N", 30);
-	assertThrown(d ~= new Field("FIELD2", "value2", "A/N", 30));
-	d ~= new Field("FIELD4", "value4", "N", 20);
-	d ~= new Field("FIELD3", "value3", "A/N", 20);
+	d ~= new Field("FIELD2", "value2", new FieldType("A/N", "string"), 10);
+	d ~= new Field("FIELD1", "value1", new FieldType("A/N", "string"), 30);
+	assertThrown(d ~= new Field("FIELD2", "value2", new FieldType("A/N", "string"), 30));
+	d ~= new Field("FIELD4", "value4", new FieldType("N", "decimal"), 20);
+	d ~= new Field("FIELD3", "value3", new FieldType("A/N", "string"), 20);
 
 	i=1;
 	foreach (f; d) {

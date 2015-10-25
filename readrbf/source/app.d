@@ -16,10 +16,7 @@ import rbf.reader;
 import rbf.writers.writer;
 import rbf.config;
 
-import overpunch;
 import args;
-
-
 
 int main(string[] argv)
 {
@@ -67,20 +64,9 @@ int main(string[] argv)
 			layout.keepOnly(opts.filteredFields, ";");
 		}
 
-		// if a record filter is set, check if field names belong to layout
-/*
-		if (opts.isRecordFilterSet) {
-			foreach (RecordClause c; opts.filteredRecords) {
-				if (c.fieldName !in layout) {
-					throw new Exception("error: field name %s not in layout".format(c.fieldName));
-				}
-			}
-		}
-*/
 		// create new reader according to what is passed in the command
 		// line and the configuration found in JSON properties file
 		auto reader = new Reader(opts.inputFileName, layout);
-
 
 		// grep lines?
 		if (opts.lineFilter != "") {
@@ -123,7 +109,7 @@ int main(string[] argv)
 			nbReadRecords++;
 
 			// do we filter out records?
-			if (opts.isRecordFilterSet) {
+			if (opts.isRecordFilterFileSet || opts.isRecordFilterSet) {
 				if (!rec.matchRecordFilter(opts.filteredRecords))
 					continue;
 			}

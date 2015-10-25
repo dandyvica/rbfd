@@ -102,3 +102,13 @@ int main(string[] argv)
 	return 0;
 
 }
+/**
+ * return a string of the XML representation of Record
+ */
+// string toXML() {
+// 	auto xml = `<record name="%s" description=""%s">`.format(meta.name, meta.description);
+// 	xml ~= join(array(this[].map!(e => "\t" ~ e.toXML)), "\n");
+// 	xml ~= "</record>";
+//
+// 	return xml;
+// }

@@ -17,7 +17,6 @@ import rbf.nameditems;
 version (unittest)
 {
 	immutable test_file = "./test/world_data.xml";
-	immutable test_file_fieldtype = "./test/world_data_with_types.xml";
 }
 alias MapperFunc = string delegate(string);
 enum LayoutSource 

@@ -24,35 +24,36 @@ public:
   /**
 	 * read the filter file and store the array of clauses
 	 */
-	this(string recordFilterFile)
+	this(string recordFilter, string separator)
 	{
-		string[] cond;
-
-    // file should exist
-		enforce(exists(recordFilterFile), "record filter file %s not found".format(recordFilterFile));
-
     // this is the regex to use to split the condition
 		static auto reg = regex(r"(\w+)(\s*)(=|!=|>|<|~|!~|==)(\s*)(.+)$");
 
     // read filter file
-		foreach (string line_read; File(recordFilterFile, "r").lines)
+		foreach (cond; recordFilter.split(separator))
 		{
-      auto line = line_read.strip();
+      // split filter clause into individual data
+      auto m = match(cond, reg);
 
-      // comments ignored
-			if (!line.startsWith("#")) {
-        // split filter clause into individual data
-        auto m = match(line, reg);
-
-        // build list of clauses
-        _recordFitlerClause ~= RecordClause(
-            m.captures[1].strip(),
-            m.captures[3].strip(),
-            m.captures[5].strip()
-        );
-      }
+      // build list of clauses
+      _recordFitlerClause ~= RecordClause(
+          m.captures[1].strip(),
+          m.captures[3].strip(),
+          m.captures[5].strip()
+      );
 		}
 	}
+  ///
+  unittest {
+    auto test = "a=1; c<3";
+    auto cond = new RecordFilter(test, ";");
+    assert(cond._recordFitlerClause[0].fieldName == "a");
+    assert(cond._recordFitlerClause[0].operator == "=");
+    assert(cond._recordFitlerClause[0].scalar == "1");
+    assert(cond._recordFitlerClause[1].fieldName == "c");
+    assert(cond._recordFitlerClause[1].operator == "<");
+    assert(cond._recordFitlerClause[1].scalar == "3");   
+  }
 
   /**
 	 * to loop with foreach loop on all clases
