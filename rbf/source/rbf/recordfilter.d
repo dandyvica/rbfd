@@ -33,7 +33,7 @@ public:
 		foreach (cond; recordFilter.split(separator))
 		{
       // split filter clause into individual data
-      auto m = match(cond, reg);
+      auto m = matchAll(cond, reg);
 
       // build list of clauses
       _recordFitlerClause ~= RecordClause(
@@ -52,7 +52,7 @@ public:
     assert(cond._recordFitlerClause[0].scalar == "1");
     assert(cond._recordFitlerClause[1].fieldName == "c");
     assert(cond._recordFitlerClause[1].operator == "<");
-    assert(cond._recordFitlerClause[1].scalar == "3");   
+    assert(cond._recordFitlerClause[1].scalar == "3");
   }
 
   /**

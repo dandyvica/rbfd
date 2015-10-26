@@ -284,6 +284,9 @@ public:
 			// each record:field list is separator by separator variable
 			string[][string] recordMap;
 
+			// this is a regex to capture calculated fields
+			static auto reg = regex(r"^(\w+)\((\w+)\)$");
+
 			// build a map from this list. Ex list: "CONT:ID,NAME;COUN:POPULATION"
 			// possibly remove empty data
 			auto recAndFields = list.split(separator).remove!(e => e == "");
@@ -294,6 +297,21 @@ public:
 
 				// build field list
 				auto fieldList = array(data[1].split(",").map!(e => e.strip));
+
+				// look up each field
+				foreach (f; fieldList) {
+					// calculated field?
+					auto m = matchAll(f, reg);
+
+					// match? then field is a "fake" field
+					if (!m.empty) {
+						//writeln(m);
+						auto underlyingFieldName = m.captures[2];
+						auto underlyingFieldType = this[recName][underlyingFieldName][0].type;
+						this[recName] ~= new Field(f, f, underlyingFieldType, f.length);
+					}
+
+				}
 
 				recordMap[recName] = fieldList;
 			}
@@ -313,6 +331,11 @@ public:
 		l.keepOnly(cast(string)std.file.read("./test/test_fields.lst"), "\n");
 		assert(l["CONT"] == ["NAME", "POPULATION"]);
 		assert(l["COUN"] == ["CAPITAL"]);
+
+		l = new Layout(test_file);
+		l.keepOnly("CONT: NAME , POPULATION;  COUN: CAPITAL, SUM(NAME)", ";");
+		assert(l["CONT"] == ["NAME", "POPULATION"]);
+		assert(l["COUN"] == ["CAPITAL", "SUM(NAME)"]);
 	}
 
 	/**
