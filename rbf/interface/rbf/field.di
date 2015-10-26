@@ -35,7 +35,7 @@ class Field : Element!(string, ulong)
 			{
 				return to!T(_strValue) * sign;
 			}
-			@property void value(string s);
+			@property void value(in string s);
 			@property string rawValue();
 			@property ulong index();
 			@property void index(ulong new_index);

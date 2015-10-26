@@ -103,7 +103,7 @@ public:
 	// 	assert(field1.value == "50");
 	// }
 
-	@property void value(string s)
+	@property void value(in string s)
 	{
 		_rawValue = s;
 

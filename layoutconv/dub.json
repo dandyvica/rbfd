@@ -1,6 +1,6 @@
 {
-	"name": "layout2html",
-	"description": "Convert XML structure definition to a plain HTML file",
+	"name": "layoutconv",
+	"description": "Convert XML structure definition to other formats",
 	"authors": ["Alain Viguier"],
 	"homepage": "https://github.com/dandyvica/rbfd",
 	"license": "GPL-2.0",

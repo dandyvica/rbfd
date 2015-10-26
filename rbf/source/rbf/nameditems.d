@@ -219,11 +219,11 @@ static if (Meta.length > 0) {
 	*/
 	T get(TNAME name, ushort index = 0)
   {
-		enforce(name in this, "element %s is not found in record %s".format(name));
+		enforce(name in this, "error: element %s not found in container".format(name));
 		enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name,index));
 
 		static if (!allowDuplicates) {
-			enforce(index == 0, "error: cannot call get method with index %d without allowing duplcated");
+			enforce(index == 0, "error: cannot call get method with index %d without allowing duplicated".format(index));
 		}
 
 		return _map[name][index];
@@ -274,6 +274,24 @@ static if (Meta.length > 0) {
 		_list = _list.remove!(f => f.name == name);
 		// remove corresponding key
 		_map.remove(name);
+	}
+
+	/// remove a single occurence of an element
+	void remove(TNAME name, size_t index) {
+		enforce(name in this, "error: element %s not found in container".format(name));
+		enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name,index));
+
+		static if (!allowDuplicates) {
+			enforce(index == 0, "error: cannot call get method with index %d without allowing duplicated".format(index));
+		}
+
+		// remove from main list. Find its real index in the list array
+		size_t i,j;
+		foreach (e; this) { if (e.name == name && j++ == index) break; i++; }
+		_list = _list.remove(i);
+
+		// remove corresponding element in map
+		_map[name] = _map[name].remove(index);
 	}
 
 	/// remove all elements in the list
@@ -442,6 +460,21 @@ unittest {
 	c ~= new Field("FIELD4", "value4", new FieldType("A/N", "string"), 20);
 	c.keepOnly(["FIELD2"]);
 	assert(c == ["FIELD2","FIELD2"]);
+
+	// remove by index
+	c = new NamedItemsContainer!(Field,true)();
+	c ~= new Field("FIELD1", "value1", new FieldType("A/N", "string"), 10);
+	c ~= new Field("FIELD2", "value2", new FieldType("A/N", "string"), 30);
+	c ~= new Field("FIELD2", "value2", new FieldType("A/N", "string"), 30);
+	c ~= new Field("FIELD3", "value3", new FieldType("N", "decimal"), 20);
+	c ~= new Field("FIELD3", "value3", new FieldType("N", "decimal"), 20);
+	c ~= new Field("FIELD3", "value3", new FieldType("N", "decimal"), 20);
+	c ~= new Field("FIELD4", "value4", new FieldType("A/N", "string"), 20);
+	c.remove("FIELD2",0);
+	assert(c == ["FIELD1","FIELD2","FIELD3","FIELD3","FIELD3","FIELD4"]);
+	assertThrown(c.remove("FIELD2",1));
+	c.remove("FIELD3",2);
+	assert(c == ["FIELD1","FIELD2","FIELD3","FIELD3","FIELD4"]);
 
 	// do not accept duplicates
 	auto d = new NamedItemsContainer!(Field,false)();

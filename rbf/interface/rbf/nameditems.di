@@ -160,11 +160,11 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 			}
 			T get(TNAME name, ushort index = 0)
 			{
-				enforce(name in this, "element %s is not found in record %s".format(name));
+				enforce(name in this, "error: element %s not found in container".format(name));
 				enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name, index));
 				static if (!allowDuplicates)
 				{
-					enforce(index == 0, "error: cannot call get method with index %d without allowing duplcated");
+					enforce(index == 0, "error: cannot call get method with index %d without allowing duplicated".format(index));
 				}
 
 				return _map[name][index];
@@ -174,6 +174,25 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				enforce(name in this, "error: element name %s in not in container".format(name));
 				_list = _list.remove!((f) => f.name == name);
 				_map.remove(name);
+			}
+			void remove(TNAME name, size_t index)
+			{
+				enforce(name in this, "error: element %s not found in container".format(name));
+				enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name, index));
+				static if (!allowDuplicates)
+				{
+					enforce(index == 0, "error: cannot call get method with index %d without allowing duplicated".format(index));
+				}
+
+				size_t i, j;
+				foreach (e; this)
+				{
+					if (e.name == name && j++ == index)
+						break;
+					i++;
+				}
+				_list = _list.remove(i);
+				_map[name] = _map[name].remove(index);
 			}
 			void remove(TNAME[] name)
 			{
