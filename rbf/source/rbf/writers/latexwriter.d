@@ -28,6 +28,8 @@ public:
 		_fh.writeln(`\begindocument`);
 	}
 
+	override void prepare() {}
+
 	override void write(Record rec)
 	{
 		// // write fields as a Latex table

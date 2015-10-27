@@ -53,7 +53,7 @@ public:
 			enforce(name != "", "record name should not be empty!");
 
 			// pre-allocate array of fields
-			super();
+			super(name);
 
 			// fill container name/desc
 			this.meta.name = name;
@@ -64,7 +64,7 @@ public:
 	//@property bool keep() { return _keep; }
 	//@property void keep(bool keep) { _keep = keep; }
 
-	@property string name() { return meta.name; }
+	//@property string name() { return meta.name; }
 	@property string description() { return meta.description; }
 
 
@@ -90,7 +90,7 @@ public:
 		}
 
 		// assign each field to a slice of s
-		this.each!(f => f.value = s[f.lowerBound..f.upperBound]);
+		this.each!(f => f.value = s[f.context.lowerBound..f.context.upperBound]);
 	}
 
 	/**
@@ -150,15 +150,18 @@ public:
 	void opOpAssign(string op)(Field field) if (op == "~")
 	{
 		// set index & offset
-		field.index  = this.size;
-		field.offset = this.length;
+		field.context.index      = this.size;
+		field.context.offset     = this.length;
 
 		// add element
 		super.opOpAssign!"~"(field);
 
+		// at this point, occurence is the length of map containing fiedls by name
+		field.context.occurence  = this.size(field.name)-1;
+
 		// lower/upper bounds calculation inside the record
-		field.lowerBound = field.offset;
-		field.upperBound = field.offset + field.length;
+		field.context.lowerBound = field.context.offset;
+		field.context.upperBound = field.context.offset + field.length;
 	}
 
 

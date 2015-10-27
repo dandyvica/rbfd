@@ -11,12 +11,18 @@ import std.range;
 import std.typecons;
 import std.exception;
 
+import rbf.errormsg;
+
 immutable uint PRE_ALLOC_SIZE = 30;
 
 /***********************************
  * Generic container for field-like objects
  */
 class NamedItemsContainer(T, bool allowDuplicates, Meta...) {
+private:
+
+	string _containerName;
+
 protected:
 
 	// first verify essential properties existence
@@ -93,7 +99,10 @@ static if (Meta.length > 0) {
 	preAllocSize = preallocation of the inner array
 
 	*/
-	this(ushort preAllocSize=PRE_ALLOC_SIZE) { _list.reserve(preAllocSize); }
+	this(string name = "") {
+		_containerName = name;
+		_list.reserve(PRE_ALLOC_SIZE);
+	}
 
 	/**	Constructor taking an input range
 
@@ -111,8 +120,14 @@ static if (Meta.length > 0) {
 	//----------------------------------------------------------------------------
 	// properties
 	//----------------------------------------------------------------------------
+	/// Get container name
+	@property string name() { return _containerName; }
+
 	/// Get container number of elements
 	@property ulong size() { return _list.length; }
+
+	/// Get container number of elements for name
+	@property ulong size(string name) { return _map[name].length; }
 
 	/// get length of all elements
 	static if (__traits(hasMember, T, "length")) {
@@ -269,7 +284,7 @@ static if (Meta.length > 0) {
 	*/
 	void remove(TNAME name) {
 		// check if name if really in container
-		enforce(name in this, "error: element name %s in not in container".format(name));
+		enforce(name in this, MSG001.format(name, this.name));
 
 		_list = _list.remove!(f => f.name == name);
 		// remove corresponding key
@@ -301,7 +316,7 @@ static if (Meta.length > 0) {
 	void keepOnly(TNAME[] name) {
 		// check that all element names are in container
 		name.each!(
-			e => enforce(e in this, "error: element name %s in not container".format(e))
+			e => enforce(e in this, MSG001.format(e, this.name))
 		);
 
 		// rebuild list

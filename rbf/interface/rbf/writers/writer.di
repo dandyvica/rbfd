@@ -39,6 +39,7 @@ abstract class Writer
 				this(in string outputFileName, in bool create = true);
 				@property Orientation orientation();
 				@property void orientation(Orientation o);
+				abstract void prepare();
 				abstract void write(Record rec);
 				void open();
 				void close();

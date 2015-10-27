@@ -10,6 +10,7 @@ import std.exception;
 import std.algorithm;
 import std.regex;
 import std.array;
+import std.path;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
@@ -43,12 +44,11 @@ class Layout : NamedItemsContainer!(Record, false, LayoutMeta)
 {
 	private 
 	{
-		FieldType[string] ftype;
 		void _extractMapper(string mapper);
 		public 
 		{
+			FieldType[string] ftype;
 			this(string xmlFile);
-			this(string xmlData, LayoutSource ls);
 			override string toString();
 			void keepOnly(string[][string] recordMap);
 			void keepOnly(string list, string separator);

@@ -52,6 +52,16 @@ enum AtomicType {
 }
 
 /***********************************
+ * extra information for a field type
+* in a record-based file
+ */
+struct ExtraFieldTypeInfo {
+	string pattern;
+	string format;
+	bool   checkPattern;
+}
+
+/***********************************
  * This field type class represents possible field types
  */
 class FieldType {
@@ -67,18 +77,19 @@ public:
 
 	Conv preConv;										/// conversion occruing before setting a field value
 
+	ExtraFieldTypeInfo extra;
+
 	/**
  	 * creates a new type from a string type
 	 *
 	 * Params:
 	 *  type = whether the field holds numerical, alphanumerical... data
 	 */
-	this(string name, string type, string pattern = "", string format = "")
+	this(string name, string type)
 	{
 		// set type according to what is passed
 		_stringType = type;
 		_type       = to!AtomicType(type);
-		_pattern    = pattern;
 		_name				= name;
 
 		final switch (_type)
@@ -111,16 +122,13 @@ public:
 	}
 
 	/// type pattern
-	@property string pattern() { return _pattern; }
-	@property void pattern(string p) { _pattern = p; }
 	@property string stringType() { return _stringType; }
 	@property string name() { return _name; }
 
-	/// toString
-	// override string toString()
-	// {
-	// 	return format("type=%s, pattern=%s", _type, _pattern);
-	// }
+	override string toString()
+	{
+		return format("name=%s, type=%s, extra=%s", _name, _type, extra);
+	}
 
 	/// test a filter
 	bool isFieldFilterMatched(string lvalue, string op, string rvalue) {
@@ -149,31 +157,37 @@ public:
 	bool matchFilter(T)(string lvalue, string operator, string rvalue) {
 		bool condition;
 
-		switch (operator) {
-			case "=":
-			case "==":
-				mixin(testFilter!T("=="));
-				break;
-			case "!=":
-				mixin(testFilter!T("!="));
-				break;
-			case "<":
-				mixin(testFilter!T("<"));
-				break;
-			case ">":
-				mixin(testFilter!T(">"));
-				break;
-			static if (is(T == string)) {
-				case "~":
-					condition = !match(lvalue, regex(rvalue)).empty;
+		try {
+			switch (operator) {
+				case "=":
+				case "==":
+					mixin(testFilter!T("=="));
 					break;
-				case "!~":
-					condition = match(lvalue, regex(rvalue)).empty;
+				case "!=":
+					mixin(testFilter!T("!="));
 					break;
+				case "<":
+					mixin(testFilter!T("<"));
+					break;
+				case ">":
+					mixin(testFilter!T(">"));
+					break;
+				static if (is(T == string)) {
+					case "~":
+						condition = !matchAll(lvalue, regex(rvalue)).empty;
+						break;
+					case "!~":
+						condition = matchAll(lvalue, regex(rvalue)).empty;
+						break;
+				}
+				default:
+					throw new Exception("error: operator %s not supported".format(operator));
 			}
-			default:
-				throw new Exception("error: operator %s not supported".format(operator));
 		}
+		catch (ConvException e) {
+			stderr.writeln("error: converting value %s %s %s to type %s".format(lvalue, operator, rvalue, T.stringof));
+		}
+
 		return condition;
 	}
 
@@ -183,10 +197,13 @@ unittest {
 
 	FieldType[string] map;
 
-	map["I"]   = new FieldType("I","decimal", r"\d+");
-	map["A/N"] = new FieldType("A/N","string", r"\w+");
+	map["I"]   = new FieldType("I","decimal");
+	map["I"].extra.pattern = r"\d+";
+	map["A/N"] = new FieldType("A/N","string");
+	map["A/N"].extra.pattern = r"\w+";
 
-	map["N"]   = new FieldType("N","overpunchedInteger", r"[\dA-R{}]+");
+	map["N"]   = new FieldType("N","overpunchedInteger");
+	map["N"].extra.pattern = r"[\dA-R{}]+";
 	assert(map["N"].preConv("6{}") == "600");
 	assert(map["N"].preConv("6J1") == "-611");
 

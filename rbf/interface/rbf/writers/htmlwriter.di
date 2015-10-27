@@ -17,6 +17,7 @@ alias htmlRowBuilder = binaryFun!formatter;
 class HTMLWriter : Writer
 {
 	this(in string outputFileName);
+	override void prepare();
 	override void write(Record rec);
 	override void close();
 	private 

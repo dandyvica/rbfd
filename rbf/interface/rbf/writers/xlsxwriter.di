@@ -33,6 +33,7 @@ class XLSXWriter : Writer
 		public 
 		{
 			this(string outputFileName, Layout layout);
+			override void prepare();
 			override void write(Record record);
 			override void close();
 		}

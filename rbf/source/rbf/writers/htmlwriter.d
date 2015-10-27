@@ -32,6 +32,8 @@ class HTMLWriter : Writer {
 		_fh.writeln(`<body role="document"><div class="container">`);
 	}
 
+	override void prepare() {}
+
 	// write out record depending on orientation
 	override void write(Record rec)
 	{
@@ -70,7 +72,7 @@ private:
 		foreach (f; rec) {
 			_fh.write(
 				`<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>`.
-						format(f.index+1, f.name, f.description, f.length, f.type.name, f.value)
+						format(f.context.index+1, f.name, f.description, f.length, f.type.name, f.value)
 			);
 		}
 

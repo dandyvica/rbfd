@@ -76,7 +76,9 @@ public:
 	@property void orientation(Orientation o) { _orientation = o; }
 
 	// should be implemented by derived classes
+	abstract void prepare();
 	abstract void write(Record rec);
+	//abstract void write(Field rec);
 
 	void open() {
 		_fh = File(_outputFileName, "w");

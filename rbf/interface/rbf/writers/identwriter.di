@@ -13,5 +13,6 @@ import rbf.writers.writer;
 class IdentWriter : Writer
 {
 	this(in string outputFileName);
+	override void prepare();
 	override void write(Record rec);
 }

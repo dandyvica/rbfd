@@ -23,6 +23,8 @@ class CSVWriter : Writer {
 		super(outputFileName);
 	}
 
+	override void prepare() {}
+
 	override void write(Record rec)
 	{
 		_fh.write(join(rec.fieldValues, outputFeature.fsep), "\n");

@@ -18,6 +18,12 @@ enum AtomicType
 	string,
 	overpunchedInteger,
 }
+struct ExtraFieldTypeInfo
+{
+	string pattern;
+	string format;
+	bool checkPattern;
+}
 class FieldType
 {
 	private 
@@ -30,12 +36,12 @@ class FieldType
 		public 
 		{
 			Conv preConv;
-			this(string name, string type, string pattern = "", string format = "");
+			ExtraFieldTypeInfo extra;
+			this(string name, string type);
 			@property AtomicType fieldType();
-			@property string pattern();
-			@property void pattern(string p);
 			@property string stringType();
 			@property string name();
+			override string toString();
 			bool isFieldFilterMatched(string lvalue, string op, string rvalue);
 			static string testFilter(T)(string op)
 			{
@@ -44,49 +50,56 @@ class FieldType
 			bool matchFilter(T)(string lvalue, string operator, string rvalue)
 			{
 				bool condition;
-				switch (operator)
+				try
 				{
-					case "=":
+					switch (operator)
 					{
-					}
-					case "==":
-					{
-						mixin(testFilter!T("=="));
-						break;
-					}
-					case "!=":
-					{
-						mixin(testFilter!T("!="));
-						break;
-					}
-					case "<":
-					{
-						mixin(testFilter!T("<"));
-						break;
-					}
-					case ">":
-					{
-						mixin(testFilter!T(">"));
-						break;
-						static if (is(T == string))
+						case "=":
 						{
-							case "~":
-							{
-								condition = !match(lvalue, regex(rvalue)).empty;
-								break;
-							}
-							case "!~":
-							{
-								condition = match(lvalue, regex(rvalue)).empty;
-								break;
-							}
 						}
+						case "==":
+						{
+							mixin(testFilter!T("=="));
+							break;
+						}
+						case "!=":
+						{
+							mixin(testFilter!T("!="));
+							break;
+						}
+						case "<":
+						{
+							mixin(testFilter!T("<"));
+							break;
+						}
+						case ">":
+						{
+							mixin(testFilter!T(">"));
+							break;
+							static if (is(T == string))
+							{
+								case "~":
+								{
+									condition = !matchAll(lvalue, regex(rvalue)).empty;
+									break;
+								}
+								case "!~":
+								{
+									condition = matchAll(lvalue, regex(rvalue)).empty;
+									break;
+								}
+							}
 
+						}
+						default:
+						{
+							throw new Exception("error: operator %s not supported".format(operator));
+						}
 					}
-					default:
-					{
-						throw new Exception("error: operator %s not supported".format(operator));
-					}
+				}
+				catch(ConvException e)
+				{
+					stderr.writeln("error: converting value %s %s %s to type %s".format(lvalue, operator, rvalue, T.stringof));
 				}
 				return condition;
 			}

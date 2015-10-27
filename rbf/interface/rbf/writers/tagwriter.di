@@ -13,5 +13,6 @@ import rbf.writers.writer;
 class TAGWriter : Writer
 {
 	this(in string outputFileName);
+	override void prepare();
 	override void write(Record rec);
 }

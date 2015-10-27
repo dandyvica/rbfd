@@ -70,7 +70,7 @@ private:
 
 		// create field index row
 		_worksheetFile[rec.name].startRow();
-		rec.each!(f => _worksheetFile[rec.name].numCell(to!string(f.index+1)));
+		rec.each!(f => _worksheetFile[rec.name].numCell(to!string(f.context.index+1)));
 		_worksheetFile[rec.name].endRow();
 
 		// create field type, length row
@@ -112,6 +112,8 @@ public:
 		_relsFile = new Rels(_xlsxDir);
 
 	}
+
+	override void prepare() {}
 
 	override void write(Record record)
 	{

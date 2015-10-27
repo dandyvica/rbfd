@@ -23,6 +23,8 @@ class TAGWriter : Writer {
 		super(outputFileName);
 	}
 
+	override void prepare() {}
+
 	override void write(Record rec)
 	{
 		_fh.writef("%s:", rec.name);

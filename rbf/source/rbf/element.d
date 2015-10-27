@@ -10,16 +10,22 @@ import std.algorithm;
 /***********************************
  * This is the core data for representing field data in record-based files
  */
-class Element(T,U) {
+class Element(T,U,Context...) {
 private:
 
 	T _name;					            		/// name of the element
 	immutable T _description;	  			/// description of the element
-	immutable U _length;		      		/// length (in bytes) of the field
-	immutable U _cellLength1; 				/// used ot correctly print ascii tables
-	immutable U _cellLength2; 				/// used ot correctly print ascii tables
+	immutable U _length;		      		/// length (in bytes) of the element
+	immutable U _cellLength1; 				/// max(name,length)
+	immutable U _cellLength2; 				/// max(name,length,description)
 
 public:
+
+	// any additional contextual information
+	static if (Context.length > 0) {
+		Context[0] context;
+	}
+
 	/**
  	 * create a new field object
 	 *
@@ -55,7 +61,7 @@ public:
 
 	// copy an element with all its data
 	Element dup() {
-		auto copied = new Element!(T,U)(_name, _description, _length);
+		auto copied = new Element!(T,U,Context)(_name, _description, _length);
 		return copied;
 	}
 

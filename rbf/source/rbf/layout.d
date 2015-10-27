@@ -10,6 +10,7 @@ import std.exception;
 import std.algorithm;
 import std.regex;
 import std.array;
+import std.path;
 
 import rbf.fieldtype;
 import rbf.field;
@@ -50,8 +51,6 @@ struct LayoutMeta {
 class Layout : NamedItemsContainer!(Record, false, LayoutMeta) {
 
 private:
-	FieldType[string] ftype;
-
 
 	void _extractMapper(string mapper) {
 		// regexes to catch mapper data
@@ -92,6 +91,9 @@ private:
 	}
 
 public:
+
+	FieldType[string] ftype;
+
 	/**
 	 * create all records based on the XML file structure
 	 *
@@ -107,20 +109,10 @@ public:
 		meta.file = xmlFile;
 
 		// open XML file and load it into a string
-		string s = cast(string)std.file.read(xmlFile);
+		string xmlData = cast(string)std.file.read(xmlFile);
 
 		// call constructor from string
-		this(s, LayoutSource.L_STRING);
-	}
-
-	/**
-	 * create all records based on the XML file structure as a string
-	 *
-	 * Params:
-	 *	xmlData = XML data
-	 *  ls = layout source to match this particular constructor
-	 */
-	this(string xmlData,  LayoutSource ls) {
+		super(baseName(xmlFile));
 
 		/// to save the record name when we find a <record> tag
 		string recName = "";
@@ -150,14 +142,17 @@ public:
 		xml.onStartTag["fieldtype"] = (ElementParser xml)
 		{
 			// save field type base on its name
-			auto ftName = xml.tag.attr["name"];
+			with(xml.tag) {
+				auto ftName = attr["name"];
 
-			ftype[ftName] = new FieldType(
-				xml.tag.attr["name"],
-				xml.tag.attr["type"],
-				xml.tag.attr.get("pattern", ""),
-				xml.tag.attr.get("format", "")
-			);
+				// store new type
+				ftype[ftName] = new FieldType(attr["name"], attr["type"]);
+
+				// set extra features in any
+				ftype[ftName].extra.pattern      = attr.get("pattern", "");
+				ftype[ftName].extra.format       = attr.get("format", "");
+				ftype[ftName].extra.checkPattern = to!bool(attr.get("checkPattern", "false"));
+			}
 		};
 
 		// read <record> definitions and create a new record object
@@ -399,17 +394,17 @@ public:
 unittest {
 	writeln("========> testing ", __FILE__);
 
-	auto l = new Layout(`<rbfile version="1.0" mapper="type:0 map:FOO"></rbfile>`, LayoutSource.L_STRING);
-	assert(l.meta.mapper("ABCDEF") == "FOO");
+	// auto l = new Layout(`<rbfile version="1.0" mapper="type:0 map:FOO"></rbfile>`, LayoutSource.L_STRING);
+	// assert(l.meta.mapper("ABCDEF") == "FOO");
+	//
+	// l = new Layout(`<rbfile version="1.0" mapper="type:1 map:0..2"></rbfile>`, LayoutSource.L_STRING);
+	// assert(l.meta.mapper("ABCDEF") == "AB");
+	//
+	// l = new Layout(`<rbfile	version="1.0" mapper="type:2 map:0..2,2..4"></rbfile>`, LayoutSource.L_STRING);
+	// assert(l.meta.mapper("ABCDEF") == "ABCD");
 
-	l = new Layout(`<rbfile version="1.0" mapper="type:1 map:0..2"></rbfile>`, LayoutSource.L_STRING);
-	assert(l.meta.mapper("ABCDEF") == "AB");
 
-	l = new Layout(`<rbfile	version="1.0" mapper="type:2 map:0..2,2..4"></rbfile>`, LayoutSource.L_STRING);
-	assert(l.meta.mapper("ABCDEF") == "ABCD");
-
-
-	l = new Layout(test_file);
+	auto l = new Layout(test_file);
 
 	assert(l.meta.description == "Continents, countries, cities");
 	assert(l.meta.layoutVersion == "1.0");

@@ -79,8 +79,8 @@ public:
 	this(string xmlConfigFile = "") {
 
 		// define new container for layouts and formats
-		_layoutDirectory = new LayoutDir;
-		_outputDirectory = new OutputDir;
+		_layoutDirectory = new LayoutDir("layout");
+		_outputDirectory = new OutputDir("output features");
 
     // settings file
     string settingsFile;

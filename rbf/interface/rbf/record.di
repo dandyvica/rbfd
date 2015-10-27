@@ -23,7 +23,6 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 	public 
 	{
 		this(in string name, in string description);
-		@property string name();
 		@property string description();
 		@property void value(string s);
 		@property string value();
@@ -33,11 +32,12 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 		@property string[] fieldDescriptions();
 		void opOpAssign(string op)(Field field) if (op == "~")
 		{
-			field.index = this.size;
-			field.offset = this.length;
+			field.context.index = this.size;
+			field.context.offset = this.length;
 			super.opOpAssign!"~"(field);
-			field.lowerBound = field.offset;
-			field.upperBound = field.offset + field.length;
+			field.context.occurence = this.size(field.name) - 1;
+			field.context.lowerBound = field.context.offset;
+			field.context.upperBound = field.context.offset + field.length;
 		}
 		override string toString();
 		bool matchRecordFilter(RecordFilter filter);

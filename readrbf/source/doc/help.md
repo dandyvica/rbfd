@@ -15,10 +15,10 @@ the %APPDATA%\\local\\rbf directory (Windows).
 # OPTIONS
 
 -b
-: Benchmark: don't write output file but just read input file
+: Benchmark: don't write output file but just read input file.
 
 -c
-: Validate layout structure
+: Validate layout structure.
 
 -f file
 : Full path and name of a file to filter fields.
@@ -31,7 +31,7 @@ the %APPDATA%\\local\\rbf directory (Windows).
 "--gf" is also specified, this --gl comes first.
 
 --gr condition
-: Grep records: include records matching condition
+: Grep records: include records matching condition.
 
 -i file
 : Full path and name of the file to be read and converted.
@@ -44,13 +44,13 @@ configuration file rbf.xml.
 : Name of the output file format. Possible values are:
 html, tag, csv, txt, xlsx, sqlite3, ident. Defaulted to txt
 if not specified. ident means the output file format is
-the same than the input one
+the same than the input one.
 
 -O
-: write to standard output only
+: Write to standard output only.
 
 -p
-: Print out progress
+: Print out progress.
 
 -r file
 : Full path and name of a file to filter records.
@@ -59,7 +59,7 @@ the same than the input one
 : Only convert the n-first records.
 
 -v
-: Verbose: print out options
+: Verbose: print out options.
 
 -V
 : Version.

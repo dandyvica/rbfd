@@ -9,9 +9,19 @@ import std.algorithm;
 import std.typecons;
 import std.exception;
 import std.typecons;
+import std.variant;
+import rbf.errormsg;
 import rbf.element;
 import rbf.fieldtype;
-class Field : Element!(string, ulong)
+struct ContextualInfo
+{
+	ulong index;
+	ulong offset;
+	ulong occurence;
+	ulong lowerBound;
+	ulong upperBound;
+}
+class Field : Element!(string, ulong, ContextualInfo)
 {
 	private 
 	{
@@ -24,6 +34,7 @@ class Field : Element!(string, ulong)
 		ulong _upperBound;
 		byte _valueSign = 1;
 		Regex!char _fieldPattern;
+		string _charPattern;
 		public 
 		{
 			this(in string name, in string description, FieldType type, in ulong length);
@@ -37,16 +48,8 @@ class Field : Element!(string, ulong)
 			}
 			@property void value(in string s);
 			@property string rawValue();
-			@property ulong index();
-			@property void index(ulong new_index);
-			@property ulong offset();
-			@property void offset(ulong new_offset);
 			@property byte sign();
 			@property void sign(byte new_sign);
-			@property ulong lowerBound();
-			@property ulong upperBound();
-			@property void lowerBound(ulong new_bound);
-			@property void upperBound(ulong new_bound);
 			override string toString();
 			bool opEquals(Tuple!(string, string, string, ulong) t);
 			T opCast(T)()
