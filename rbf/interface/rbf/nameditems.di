@@ -249,7 +249,8 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				}
 				auto count(TNAME name)
 				{
-					return _list.count!"a.name == b"(name);
+					enforce(name in this, MSG001.format(name, this.name));
+					return _map[name].length;
 				}
 				bool opEquals(TNAME[] list)
 				{

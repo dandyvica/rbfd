@@ -20,12 +20,6 @@ import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
 import rbf.writers.latexwriter;
 
-/*********************************************
- * Orientation for printing out data:
- * 		horizontal: values per row
- * 		vertical: values per colmun
- */
-enum Orientation { Horizontal, Vertical }
 
 /*********************************************
  * writer class for writing to various ouput
@@ -35,13 +29,11 @@ abstract class Writer {
 private:
 
 	string _outputFileName; 			// name of the file we want to create
-	//string _zipperExe;						// name & path of the executable used to create zip
 
 package:
 
 	File _fh; 										/// file handle on output file if any
 	string _previousRecordName;		/// sometimes, we need to keep track of the previous record written
-	Orientation _orientation; 		/// manage how information is printed
 
 public:
 
@@ -66,14 +58,7 @@ public:
 		}
 		else
 			_fh = stdout;
-
-		// default orientation is horizontal
-		//_orientation = Orientation.Horizontal;
-		_orientation = Orientation.Vertical;
 	}
-
-	@property Orientation orientation() { return _orientation; }
-	@property void orientation(Orientation o) { _orientation = o; }
 
 	// should be implemented by derived classes
 	abstract void prepare();

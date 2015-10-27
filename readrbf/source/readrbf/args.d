@@ -119,9 +119,9 @@ public:
 	/// useful helper
 	void printOptions() {
 		foreach (member; FieldNameTuple!CommandLineOption)
-     {
-				mixin("writeln(\"" ~ member ~ ": \"," ~ member ~ ");");
-     }
+		{
+			mixin("writeln(\"" ~ member ~ ": \"," ~ member ~ ");");
+    }
 	}
 
 }

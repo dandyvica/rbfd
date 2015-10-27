@@ -11,6 +11,7 @@ import std.array;
 import std.functional;
 import rbf.field;
 import rbf.record;
+import rbf.config;
 import rbf.writers.writer;
 immutable formatter = "format(\"<%s>%s</%s>\",a,b,a)";
 alias htmlRowBuilder = binaryFun!formatter;

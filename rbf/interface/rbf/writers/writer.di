@@ -18,11 +18,6 @@ import rbf.writers.htmlwriter;
 import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
 import rbf.writers.latexwriter;
-enum Orientation 
-{
-	Horizontal,
-	Vertical,
-}
 abstract class Writer
 {
 	private 
@@ -32,13 +27,10 @@ abstract class Writer
 		{
 			File _fh;
 			string _previousRecordName;
-			Orientation _orientation;
 			public 
 			{
 				OutputFeature outputFeature;
 				this(in string outputFileName, in bool create = true);
-				@property Orientation orientation();
-				@property void orientation(Orientation o);
 				abstract void prepare();
 				abstract void write(Record rec);
 				void open();

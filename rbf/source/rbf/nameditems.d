@@ -375,7 +375,12 @@ static if (Meta.length > 0) {
 	// misc. methods
 	//----------------------------------------------------------------------------
 	/// count number of elements having the same name
-	auto count(TNAME name) { return _list.count!("a.name == b")(name); }
+	//auto count(TNAME name) { return _list.count!("a.name == b")(name); }
+	auto count(TNAME name)
+	{
+		enforce(name in this, MSG001.format(name, this.name));
+		return _map[name].length;
+	}
 
 	/// test if all elements match names
 	bool opEquals(TNAME[] list)

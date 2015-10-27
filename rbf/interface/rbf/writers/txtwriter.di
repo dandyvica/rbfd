@@ -24,10 +24,22 @@ class TXTWriter : Writer
 			override void write(Record rec);
 			private void _write(string member)(Field f, bool calculateLineLength = false)
 			{
-				auto cellLength = outputFeature.fielddesc ? f.cellLength2 : f.cellLength1;
+				size_t cellLength1 = f.cellLength1, cellLength2 = f.cellLength2;
+				auto fieldMember = mixin("f." ~ member);
+				static if (member == "name")
+				{
+					if (outputFeature.useAlternateName)
+					{
+						fieldMember = "%s(%d)".format(f.name, f.context.occurence + 1);
+						cellLength1 = max(f.cellLength1, fieldMember.length);
+						cellLength2 = max(f.cellLength2, fieldMember.length);
+					}
+				}
+
+				auto cellLength = outputFeature.fielddesc ? cellLength2 : cellLength1;
 				if (calculateLineLength)
 					_lineLength += cellLength;
-				_fh.writef(_fmt, cellLength, mixin("f." ~ member));
+				_fh.writef(_fmt, cellLength, fieldMember);
 			}
 		}
 	}

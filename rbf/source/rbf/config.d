@@ -14,6 +14,7 @@ import std.range;
 import std.functional;
 import std.regex;
 
+import rbf.errormsg;
 import rbf.nameditems;
 import rbf.layout;
 
@@ -27,7 +28,12 @@ version(Win64) {
 immutable xmlSettings = `\local\rbf\rbf.xml`;
 }
 
-
+/*********************************************
+ * Orientation for printing out data:
+ * 		horizontal: values per row
+ * 		vertical: values per colmun
+ */
+enum Orientation { horizontal, vertical }
 
 /***********************************
 	* struct for describing layout metadata
@@ -52,13 +58,14 @@ struct SettingCore {
 alias LayoutDir = NamedItemsContainer!(SettingCore, false);
 
 struct OutputFeature {
-	string name;		  	/// name of the outpout format (e.g.: "txt")
+	string name;		 	/// name of the outpout format (e.g.: "txt")
 	string outputDir;		/// location of output file
-	string fsep;		    /// field separator char for text output format
-	string lsep;		    /// line separator char for text output format
-	string orientation;	/// whether print by row or colums
-  string zipper;      /// name and path of the zipper executable
-	bool   fielddesc;		/// print field description if true
+	string fsep;		 /// field separator char for text output format
+	string lsep;		 /// line separator char for text output format
+	Orientation orientation;	/// whether print by row or colums
+  string zipper; /// name and path of the zipper executable
+	bool fielddesc;		/// print field description if true
+	bool useAlternateName; /// use field name followed by its occurence
 }
 alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 
@@ -74,13 +81,13 @@ private:
 
 public:
 	/**
-	 * read the XML configuraimport rbf.config;nal file configuration file
+	 * read the XML configuraimport rbf.xml file configuration file
 	 */
 	this(string xmlConfigFile = "") {
 
 		// define new container for layouts and formats
-		_layoutDirectory = new LayoutDir("layout");
-		_outputDirectory = new OutputDir("output features");
+		_layoutDirectory = new LayoutDir("layouts");
+		_outputDirectory = new OutputDir("outputs");
 
     // settings file
     string settingsFile;
@@ -92,7 +99,7 @@ public:
 		auto settingsFilePath = dirName(settingsFile) ~ "/";
 
 		// ensure file exists
-		std.exception.enforce(exists(settingsFile), "Settings file %s not found".format(settingsFile));
+		std.exception.enforce(exists(settingsFile), MSG004.format(settingsFile));
 
     // open XML file and load it into a string
 		string s = cast(string)std.file.read(settingsFile);
@@ -123,9 +130,10 @@ public:
         xml.tag.attr.get("outputDir", ""),
         xml.tag.attr.get("fsep", "|"),
         xml.tag.attr.get("lsep", ""),
-        xml.tag.attr.get("orientation", "horizontal"),
+        to!Orientation(xml.tag.attr.get("orientation", "horizontal")),
         xml.tag.attr.get("zipper", ""),
         (fdesc == "true") ? true : false,
+        to!bool(xml.tag.attr.get("useAlternateName", "false")),
       );
 		};
 

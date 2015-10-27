@@ -12,9 +12,10 @@ import std.functional;
 
 import rbf.field;
 import rbf.record;
+import rbf.config;
 import rbf.writers.writer;
 
-immutable formatter = "format(\"<%s>%s</%s>\",a,b,a)";
+immutable formatter = `format("<%s>%s</%s>",a,b,a)`;
 alias htmlRowBuilder = binaryFun!(formatter);
 
 /*********************************************
@@ -25,19 +26,19 @@ class HTMLWriter : Writer {
 	this(in string outputFileName)
 	{
 		super(outputFileName);
+	}
 
+	override void prepare() {
 		// bootstrap header
 		_fh.writeln(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">`);
 		_fh.writeln(`<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"></head>`);
 		_fh.writeln(`<body role="document"><div class="container">`);
 	}
 
-	override void prepare() {}
-
 	// write out record depending on orientation
 	override void write(Record rec)
 	{
-		if (orientation == Orientation.Horizontal)
+		if (outputFeature.orientation == Orientation.horizontal)
 			_writeH(rec);
 		else
 			_writeV(rec);
@@ -133,6 +134,7 @@ unittest {
 	auto reader = new Reader("./test/world.data", layout);
 
 	auto writer = writerFactory("./test/world_data.html", "html", layout);
+	writer.prepare;
 	foreach (rec; reader) { writer.write(rec); }
 
 	writer.close();

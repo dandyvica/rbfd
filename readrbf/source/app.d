@@ -7,6 +7,7 @@ import std.datetime;
 import std.range;
 import std.conv;
 import std.path;
+import std.traits;
 
 import rbf.field;
 import rbf.record;
@@ -93,10 +94,18 @@ int main(string[] argv)
 
 		// set writer features read in config
 		writer.outputFeature = settings.outputDir[opts.outputFormat];
+		writer.prepare;
 
 		// if verbose option is requested, print out what's possible
 		if (opts.bVerbose) {
 			opts.printOptions;
+
+			// also print out output features
+			foreach (member; FieldNameTuple!OutputFeature)
+			{
+				mixin("writefln(\"" ~ member ~ " : <%s>\", " ~
+							"settings.outputDir[opts.outputFormat]." ~ member ~ ");");
+			}
 		}
 
 		// now loop for each record in the file

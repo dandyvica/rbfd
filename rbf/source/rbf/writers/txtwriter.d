@@ -29,20 +29,16 @@ public:
 		super(outputFileName);
 	}
 
+	// preparation step beodre printing out records
 	override void prepare() {
+		// as seperator is known at that time, build formatting string
 		_fmt = "%%-*s%s".format(outputFeature.fsep);
 	}
 
 	override void write(Record rec)
 	{
-		//
+		// this
 		_lineLength = rec.size * outputFeature.fsep.length;
-
-		// build formatting string from field definitions
-
-		// use to know which cell length to use
-		// auto cellLength = (outputFeature.fielddesc) ?
-		// 			(Field f) => f.cellLength2 : (Field f) => f.cellLength1;
 
 		// print new header if new record
 		if (_previousRecordName != rec.name) {
@@ -54,7 +50,8 @@ public:
 			}
 
 			// print line separator if requested
-			if (outputFeature.lsep != "")	_fh.writef("\n%s", outputFeature.lsep[0].repeat(_lineLength));
+			if (outputFeature.lsep != "")
+				_fh.writef("\n%s", outputFeature.lsep[0].repeat(_lineLength));
 
 			_fh.writeln();
 	  }
@@ -71,17 +68,38 @@ private:
 
 	// print out each field
 	void _write(string member)(Field f, bool calculateLineLength = false) {
+		// in case of field name followed by its occurence within a record,
+		// we need to recalculate all cell lengths
+		size_t cellLength1 = f.cellLength1, cellLength2 = f.cellLength2;
+
+		// this is the field member to print
+		auto fieldMember = mixin("f." ~ member);
+
+		// build new field name if any
+		static if (member == "name") {
+			if (outputFeature.useAlternateName) {
+					fieldMember = "%s(%d)".format(f.name, f.context.occurence+1);
+					cellLength1 = max(f.cellLength1, fieldMember.length);
+					cellLength2 = max(f.cellLength2, fieldMember.length);
+			}
+		}
 
 		// calculate cell length depending on output seperator
-		auto cellLength = (outputFeature.fielddesc) ? f.cellLength2 : f.cellLength1;
+		auto cellLength = (outputFeature.fielddesc) ? cellLength2 : cellLength1;
 
 		// calculate line seperator length if any
 		if (calculateLineLength) _lineLength += cellLength;
 
 		// print out data
-	  _fh.writef(_fmt, cellLength, mixin("f." ~ member));
+	  _fh.writef(_fmt, cellLength, fieldMember);
 
 	}
+
+	// size_t _calculateLength(Field f) {
+	// 	size_t cellLength1 = f.cellLength1, cellLength2 = f.cellLength2;
+	//
+	//
+	// }
 
 
 }
@@ -100,6 +118,8 @@ unittest {
 	writer.outputFeature.fsep = "!";
 	writer.outputFeature.fielddesc = true;
 	writer.outputFeature.lsep = "$";
+	writer.outputFeature.useAlternateName = true;
+
 	writer.prepare;
 
 	foreach (rec; reader) { writer.write(rec); }
