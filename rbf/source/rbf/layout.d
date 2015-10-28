@@ -43,6 +43,7 @@ struct LayoutMeta {
 	string ignoreLinePattern;     /// in some case, we need to get rid of some lines
 	string[] skipField;						/// field names to systematically skip
 	MapperFunc mapper;						/// function which identifies a record name from a string
+	string mapperDefinition;			/// as defined in the XML file
 }
 
 /***********************************
@@ -107,6 +108,7 @@ public:
 
 		// save meta
 		meta.file = xmlFile;
+		meta.name = baseName(xmlFile);
 
 		// open XML file and load it into a string
 		string xmlData = cast(string)std.file.read(xmlFile);
@@ -137,6 +139,7 @@ public:
 			throw new Exception("error: mapper function is not defined in layout");
 		}
 		_extractMapper(xml.tag.attr["mapper"]);
+		meta.mapperDefinition = xml.tag.attr["mapper"];
 
 		// read <fieldtype> definitions and keep types
 		xml.onStartTag["fieldtype"] = (ElementParser xml)
@@ -149,9 +152,9 @@ public:
 				ftype[ftName] = new FieldType(attr["name"], attr["type"]);
 
 				// set extra features in any
-				ftype[ftName].extra.pattern      = attr.get("pattern", "");
-				ftype[ftName].extra.format       = attr.get("format", "");
-				ftype[ftName].extra.checkPattern = to!bool(attr.get("checkPattern", "false"));
+				ftype[ftName].meta.pattern      = attr.get("pattern", "");
+				ftype[ftName].meta.format       = attr.get("format", "");
+				ftype[ftName].meta.checkPattern = to!bool(attr.get("checkPattern", "false"));
 			}
 		};
 

@@ -15,11 +15,14 @@ import rbf.recordfilter;
 
 immutable helpString = import("help.txt");
 
+// common members
+
+
 
 /***********************************
  * This class is holding command line arguments
  */
-class CommandLineOption {
+struct CommandLineOption {
 
 public:
 	string inputFileName;						/// input file name to parse
@@ -114,15 +117,6 @@ public:
 	@property bool isFieldFilterSet()      { return fieldFilter != ""; }
 	@property bool isRecordFilterFileSet() { return recordFilterFile != ""; }
 	@property bool isRecordFilterSet()     { return recordFilter != ""; }
-
-
-	/// useful helper
-	void printOptions() {
-		foreach (member; FieldNameTuple!CommandLineOption)
-		{
-			mixin("writeln(\"" ~ member ~ ": \"," ~ member ~ ");");
-    }
-	}
 
 }
 ///

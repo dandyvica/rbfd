@@ -75,7 +75,7 @@ private:
 
 		// create field type, length row
 		_worksheetFile[rec.name].startRow();
-		rec.each!(f => _worksheetFile[rec.name].strCell(format("%s-%d", f.type.name, f.length)));
+		rec.each!(f => _worksheetFile[rec.name].strCell(format("%s-%d", f.type.meta.name, f.length)));
 		_worksheetFile[rec.name].endRow();
 
 		// create field name
@@ -132,7 +132,7 @@ public:
 		// for each record, just write data to worksheet
 		// depending on its type, an Excel cell doesn't contain the same XML
 		foreach (field; record) {
-			if (field.type.stringType == "string")
+			if (field.type.meta.stringType == "string")
 			{
 				_worksheetFile[record.name].strCell(field.value);
 			}

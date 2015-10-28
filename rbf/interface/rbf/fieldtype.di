@@ -16,93 +16,86 @@ enum AtomicType
 	integer,
 	date,
 	string,
-	overpunchedInteger,
 }
-struct ExtraFieldTypeInfo
+struct FieldTypeMeta
 {
+	string name;
+	AtomicType type;
+	string stringType;
 	string pattern;
 	string format;
 	bool checkPattern;
+	string fmtPattern;
+	Conv preConv;
+	CmpFunc filterTestCallback;
 }
 class FieldType
 {
-	private 
+	public 
 	{
-		AtomicType _type;
-		CmpFunc _filterTestCallback;
-		string _pattern;
-		string _stringType;
-		string _name;
-		public 
+		FieldTypeMeta meta;
+		this(string nickName, string declaredType);
+		@property bool isNumeric();
+		bool isFieldFilterMatched(string lvalue, string op, string rvalue);
+		static string testFilter(T)(string op)
 		{
-			Conv preConv;
-			ExtraFieldTypeInfo extra;
-			this(string name, string type);
-			@property AtomicType fieldType();
-			@property string stringType();
-			@property string name();
-			override string toString();
-			bool isFieldFilterMatched(string lvalue, string op, string rvalue);
-			static string testFilter(T)(string op)
+			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
+		}
+		bool matchFilter(T)(string lvalue, string operator, string rvalue)
+		{
+			bool condition;
+			try
 			{
-				return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
-			}
-			bool matchFilter(T)(string lvalue, string operator, string rvalue)
-			{
-				bool condition;
-				try
+				switch (operator)
 				{
-					switch (operator)
+					case "=":
 					{
-						case "=":
+					}
+					case "==":
+					{
+						mixin(testFilter!T("=="));
+						break;
+					}
+					case "!=":
+					{
+						mixin(testFilter!T("!="));
+						break;
+					}
+					case "<":
+					{
+						mixin(testFilter!T("<"));
+						break;
+					}
+					case ">":
+					{
+						mixin(testFilter!T(">"));
+						break;
+						static if (is(T == string))
 						{
-						}
-						case "==":
-						{
-							mixin(testFilter!T("=="));
-							break;
-						}
-						case "!=":
-						{
-							mixin(testFilter!T("!="));
-							break;
-						}
-						case "<":
-						{
-							mixin(testFilter!T("<"));
-							break;
-						}
-						case ">":
-						{
-							mixin(testFilter!T(">"));
-							break;
-							static if (is(T == string))
+							case "~":
 							{
-								case "~":
-								{
-									condition = !matchAll(lvalue, regex(rvalue)).empty;
-									break;
-								}
-								case "!~":
-								{
-									condition = matchAll(lvalue, regex(rvalue)).empty;
-									break;
-								}
+								condition = !matchAll(lvalue, regex(rvalue)).empty;
+								break;
 							}
+							case "!~":
+							{
+								condition = matchAll(lvalue, regex(rvalue)).empty;
+								break;
+							}
+						}
 
-						}
-						default:
-						{
-							throw new Exception("error: operator %s not supported".format(operator));
-						}
+					}
+					default:
+					{
+						throw new Exception("error: operator %s not supported".format(operator));
 					}
 				}
-				catch(ConvException e)
-				{
-					stderr.writeln("error: converting value %s %s %s to type %s".format(lvalue, operator, rvalue, T.stringof));
-				}
-				return condition;
 			}
+			catch(ConvException e)
+			{
+				stderr.writeln("error: converting value %s %s %s to type %s".format(lvalue, operator, rvalue, T.stringof));
+			}
+			return condition;
 		}
 	}
 }

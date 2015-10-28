@@ -47,37 +47,34 @@ enum AtomicType {
 	decimal,
 	integer,
 	date,
-	string,
-	overpunchedInteger
+	string
 }
 
 /***********************************
  * extra information for a field type
 * in a record-based file
  */
-struct ExtraFieldTypeInfo {
+struct FieldTypeMeta {
+	string name;
+	AtomicType type;
+	string stringType;
 	string pattern;
 	string format;
-	bool   checkPattern;
+	bool checkPattern;
+	string fmtPattern;
+	Conv preConv;								 /// conversion occruing before setting a field value
+	CmpFunc filterTestCallback; 	/// method to test whether a value matches a filter
 }
+
 
 /***********************************
  * This field type class represents possible field types
  */
 class FieldType {
-private:
-
-	AtomicType _type;								/// the corresponding "real" type
-	CmpFunc _filterTestCallback;  	/// method to test whether a value matches a filter
-	string  _pattern;						    /// standard pattern as the field
-	string _stringType;							/// as passed to constructor
-	string _name;										/// declared type name
 
 public:
 
-	Conv preConv;										/// conversion occruing before setting a field value
-
-	ExtraFieldTypeInfo extra;
+	FieldTypeMeta meta;
 
 	/**
  	 * creates a new type from a string type
@@ -85,54 +82,44 @@ public:
 	 * Params:
 	 *  type = whether the field holds numerical, alphanumerical... data
 	 */
-	this(string name, string type)
+	this(string nickName, string declaredType)
 	{
 		// set type according to what is passed
-		_stringType = type;
-		_type       = to!AtomicType(type);
-		_name				= name;
+		with(meta) {
+			stringType = declaredType;
+			type       = to!AtomicType(stringType);
+			name			 = nickName;
 
-		final switch (_type)
-		{
-			case AtomicType.decimal:
-				_filterTestCallback = &matchFilter!float;
-				break;
-			case AtomicType.integer:
-				_filterTestCallback = &matchFilter!long;
-				break;
-			case AtomicType.overpunchedInteger:
-				_filterTestCallback = &matchFilter!long;
-				preConv             = &overpunch;
-				break;
-			case AtomicType.date:
-				_filterTestCallback = &matchFilter!string;
-				break;
-			case AtomicType.string:
-				_filterTestCallback = &matchFilter!string;
-				break;
+			final switch (type)
+			{
+				case AtomicType.decimal:
+					filterTestCallback = &matchFilter!float;
+					fmtPattern = "%f";
+					break;
+				case AtomicType.integer:
+					filterTestCallback = &matchFilter!long;
+					fmtPattern = "%d";
+					break;
+				case AtomicType.date:
+					filterTestCallback = &matchFilter!string;
+					fmtPattern = "%s";
+					break;
+				case AtomicType.string:
+					filterTestCallback = &matchFilter!string;
+					fmtPattern = "%s";
+					break;
+			}
 		}
 	}
 
-	/// return atomic type
-	@property AtomicType fieldType() { return _type; }
-	///
-	unittest {
-		auto ft = new FieldType("N","decimal");
-		assert(ft.fieldType == AtomicType.decimal);
-	}
-
-	/// type pattern
-	@property string stringType() { return _stringType; }
-	@property string name() { return _name; }
-
-	override string toString()
-	{
-		return format("name=%s, type=%s, extra=%s", _name, _type, extra);
+	//
+	@property bool isNumeric() {
+		return meta.type == AtomicType.decimal || meta.type == AtomicType.integer;
 	}
 
 	/// test a filter
 	bool isFieldFilterMatched(string lvalue, string op, string rvalue) {
-		return _filterTestCallback(lvalue, op, rvalue);
+		return meta.filterTestCallback(lvalue, op, rvalue);
 	}
 	///
 	unittest {
@@ -198,13 +185,13 @@ unittest {
 	FieldType[string] map;
 
 	map["I"]   = new FieldType("I","decimal");
-	map["I"].extra.pattern = r"\d+";
+	map["I"].meta.pattern = r"\d+";
 	map["A/N"] = new FieldType("A/N","string");
-	map["A/N"].extra.pattern = r"\w+";
+	map["A/N"].meta.pattern = r"\w+";
 
-	map["N"]   = new FieldType("N","overpunchedInteger");
-	map["N"].extra.pattern = r"[\dA-R{}]+";
-	assert(map["N"].preConv("6{}") == "600");
-	assert(map["N"].preConv("6J1") == "-611");
+	// map["N"]   = new FieldType("N","overpunchedInteger");
+	// map["N"].meta.pattern = r"[\dA-R{}]+";
+	// assert(map["N"].meta.preConv("6{}") == "600");
+	// assert(map["N"].meta.preConv("6J1") == "-611");
 
 }

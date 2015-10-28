@@ -39,6 +39,7 @@ struct LayoutMeta
 	string ignoreLinePattern;
 	string[] skipField;
 	MapperFunc mapper;
+	string mapperDefinition;
 }
 class Layout : NamedItemsContainer!(Record, false, LayoutMeta)
 {

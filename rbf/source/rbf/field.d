@@ -24,6 +24,7 @@ struct ContextualInfo {
 	ulong occurence;								/// index of the field within all the fields having the same name
 	ulong lowerBound;				        /// when adding a field to a record, give
 	ulong upperBound;								/// absolute position within the line read
+	string alternateName;						///
 }
 
 /***********************************
@@ -74,7 +75,7 @@ public:
 		_fieldType = type;
 
 		// set pattern from its type
-		_charPattern  = type.extra.pattern;
+		_charPattern  = type.meta.pattern;
 		_fieldPattern = regex(_charPattern);
 	}
 	///
@@ -127,8 +128,8 @@ public:
 		auto _strippedValue = s.strip;
 
 		// convert if field type requests it
-		if (type.preConv) {
-			_strValue = type.preConv(s.strip);
+		if (type.meta.preConv) {
+			_strValue = type.meta.preConv(s.strip);
 		}
 		else
 			_strValue = s.strip;
@@ -141,7 +142,7 @@ public:
 		// }
 
 		// do we need to chek value?
-		if (type.extra.checkPattern) {
+		if (type.meta.checkPattern) {
 			// writefln("field=%s, type=%s, value=<%s>, checkPattern=%s, pattern=%s, match=%s, empty?=%s",
 			// 	name, type.name, _strippedValue, type.extra.checkPattern, type.extra.pattern, matchPattern,
 			// 		matchAll(_rawValue.strip, regex(type.extra.pattern)).empty);
@@ -157,9 +158,9 @@ public:
 		field1.value = "50";
 		assert(field1.value == "50");
 
-		field1 = new Field("AGE", "Person's age", new FieldType("N","overpunchedInteger"), 10);
-		field1.value = "  5{}";
-		assert(field1.value == "500");
+		// field1 = new Field("AGE", "Person's age", new FieldType("N","overpunchedInteger"), 10);
+		// field1.value = "  5{}";
+		// assert(field1.value == "500");
 	}
 
 	/// set field value
@@ -241,10 +242,10 @@ public:
 	/// useful for unit tests
 	bool opEquals(Tuple!(string,string,string,ulong) t) {
 		return
-			name        == t[0] &&
-			description == t[1] &&
-			type.name   == t[2] &&
-			length      == t[3];
+			name           == t[0] &&
+			description    == t[1] &&
+			type.meta.name == t[2] &&
+			length         == t[3];
 	}
 	///
 	unittest {
@@ -259,9 +260,9 @@ public:
 		field1.value = " 50";
 		assert(to!int(field1) == 50);
 
-		field1 = new Field("AGE", "Person's age", new FieldType("O","overpunchedInteger"), 10);
-		field1.value = " 5{}";
-		assert(to!int(field1) == 500);
+		// field1 = new Field("AGE", "Person's age", new FieldType("O","overpunchedInteger"), 10);
+		// field1.value = " 5{}";
+		// assert(to!int(field1) == 500);
 	}
 
 }
@@ -271,7 +272,7 @@ unittest {
 		writeln("========> testing ", __FILE__);
 
 		auto ft = new FieldType("N","decimal");
-		ft.extra.pattern = r"^\d{1,2}$";
+		ft.meta.pattern = r"^\d{1,2}$";
 		auto f1 = new Field("AGE", "Person's age", ft, 13);
 
 		f1.value = "   123   ";

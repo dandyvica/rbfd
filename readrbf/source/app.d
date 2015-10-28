@@ -9,6 +9,7 @@ import std.conv;
 import std.path;
 import std.traits;
 
+import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
 import rbf.recordfilter;
@@ -38,7 +39,7 @@ int main(string[] argv)
 
 		// manage arguments passed from the command line
 		//writeln(argv);
-		auto opts = new CommandLineOption(argv);
+		auto opts = CommandLineOption(argv);
 
 		// check output formats
 		if (opts.outputFormat !in settings.outputDir) {
@@ -74,14 +75,6 @@ int main(string[] argv)
 			reader.lineRegexPattern = opts.lineFilter;
 		}
 
-		// do we want to always get rid of some fields for all records?
-		if (layout.meta.skipField != []) {
-			stderr.writefln("info: skipping fields %s", layout.meta.skipField);
-		}
-		if (layout.meta.ignoreLinePattern != "") {
-			stderr.writefln("info: skipping line pattern = %s", layout.meta.ignoreLinePattern);
-		}
-
 		// create new writer to generate outputFileName matching the outputFormat
 		Writer writer;
 		auto outputFileName = buildNormalizedPath(
@@ -98,14 +91,16 @@ int main(string[] argv)
 
 		// if verbose option is requested, print out what's possible
 		if (opts.bVerbose) {
-			opts.printOptions;
-
-			// also print out output features
-			foreach (member; FieldNameTuple!OutputFeature)
-			{
-				mixin("writefln(\"" ~ member ~ " : <%s>\", " ~
-							"settings.outputDir[opts.outputFormat]." ~ member ~ ");");
+			// print out field type meta info
+			printMembers!(LayoutMeta)(layout.meta);
+			stderr.writeln;
+			foreach (t; layout.ftype) {
+				printMembers!(FieldTypeMeta)(t.meta);
+				stderr.writeln;
 			}
+			printMembers!(CommandLineOption)(opts);
+			stderr.writeln;
+			printMembers!(OutputFeature)(settings.outputDir[opts.outputFormat]);
 		}
 
 		// now loop for each record in the file
@@ -122,6 +117,10 @@ int main(string[] argv)
 				if (!rec.matchRecordFilter(opts.filteredRecords))
 					continue;
 			}
+
+			// don't want a progress bar?
+			if (opts.bProgressBar && nbReadRecords % 1000 == 0)
+				stderr.writef("%d lines read so far\r",nbReadRecords);
 
 			// don't want to write? Just loop
 			if (opts.bJustRead) continue;

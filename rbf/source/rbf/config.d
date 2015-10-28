@@ -13,12 +13,20 @@ import std.algorithm;
 import std.range;
 import std.functional;
 import std.regex;
+import std.traits;
 
 import rbf.errormsg;
 import rbf.nameditems;
 import rbf.layout;
 
-//alias RECORD_MAPPER = string delegate(string);
+// helper function to print out members values of a struct
+void printMembers(T)(T v)
+{
+	foreach (member; FieldNameTuple!T)
+	{
+		mixin("stderr.writefln(\"%-50.50s : <%s>\", \"" ~ T.stringof ~ "." ~ member ~ "\", v." ~ member ~ ");");
+	}
+}
 
 /// configuration file name
 version(linux) {
@@ -58,14 +66,15 @@ struct SettingCore {
 alias LayoutDir = NamedItemsContainer!(SettingCore, false);
 
 struct OutputFeature {
-	string name;		 	/// name of the outpout format (e.g.: "txt")
-	string outputDir;		/// location of output file
-	string fsep;		 /// field separator char for text output format
-	string lsep;		 /// line separator char for text output format
+	string name;		 	        /// name of the outpout format (e.g.: "txt")
+	string outputDir;		      /// location of output file
+	string fsep;		          /// field separator char for text output format
+	string lsep;		          /// line separator char for text output format
 	Orientation orientation;	/// whether print by row or colums
-  string zipper; /// name and path of the zipper executable
-	bool fielddesc;		/// print field description if true
-	bool useAlternateName; /// use field name followed by its occurence
+  string zipper;            /// name and path of the zipper executable
+	bool fielddesc;		        /// print field description if true
+	bool useAlternateName;    /// use field name followed by its occurence
+  string alternateNameFmt;  /// format to use when formatting alternate name
 }
 alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 
@@ -134,6 +143,7 @@ public:
         xml.tag.attr.get("zipper", ""),
         (fdesc == "true") ? true : false,
         to!bool(xml.tag.attr.get("useAlternateName", "false")),
+        xml.tag.attr.get("alternateNameFmt", "%s(%d)"),
       );
 		};
 

@@ -16,8 +16,8 @@ private:
 	T _name;					            		/// name of the element
 	immutable T _description;	  			/// description of the element
 	immutable U _length;		      		/// length (in bytes) of the element
-	immutable U _cellLength1; 				/// max(name,length)
-	immutable U _cellLength2; 				/// max(name,length,description)
+	 U _cellLength1; 									/// max(name,length)
+	 U _cellLength2; 									/// max(name,length,description)
 
 public:
 
@@ -91,7 +91,9 @@ public:
 
 	/// read property for cell length when creating ascii tables
 	@property U cellLength1() { return _cellLength1; }
+	@property void cellLength1(U l1) { _cellLength1 = l1; }
 	@property U cellLength2() { return _cellLength2; }
+	@property void cellLength2(U l2) { _cellLength2 = l2; }
 	///
 	unittest {
 		auto element1 = new Element!(string, ulong)("IDENTITY", "Name", 30);

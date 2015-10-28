@@ -73,7 +73,7 @@ private:
 		foreach (f; rec) {
 			_fh.write(
 				`<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>`.
-						format(f.context.index+1, f.name, f.description, f.length, f.type.name, f.value)
+						format(f.context.index+1, f.name, f.description, f.length, f.type.meta.name, f.value)
 			);
 		}
 

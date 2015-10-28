@@ -20,6 +20,7 @@ struct ContextualInfo
 	ulong occurence;
 	ulong lowerBound;
 	ulong upperBound;
+	string alternateName;
 }
 class Field : Element!(string, ulong, ContextualInfo)
 {

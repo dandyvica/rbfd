@@ -13,6 +13,8 @@ import rbf.field;
 import rbf.record;
 import rbf.writers.writer;
 
+// format used to print out string or numerical data
+
 /*********************************************
  * in this case, each record is displayed as an ASCII table
  */
@@ -40,9 +42,34 @@ public:
 		// this
 		_lineLength = rec.size * outputFeature.fsep.length;
 
+		// build alternate names if any
+		if (outputFeature.useAlternateName) {
+			foreach (f; rec) {
+				if (rec.size(f.name) > 1) {
+					// change names only for >1 occurences
+					f.context.alternateName =
+							outputFeature.alternateNameFmt.format(f.name, f.context.occurence+1);
+
+					// recalculate cell lengths
+					f.cellLength1 = max(f.cellLength1, f.context.alternateName.length);
+					f.cellLength2 = max(f.cellLength2, f.context.alternateName.length);
+				}
+				else
+					f.context.alternateName = f.name;
+			}
+		}
+
+		// now we can write out records
+
 		// print new header if new record
 		if (_previousRecordName != rec.name) {
-			_fh.writeln(); rec.each!(f => _write!"name"(f, true));
+			_fh.writeln();
+
+			// print out names or alternate names
+			if (outputFeature.useAlternateName)
+				rec.each!(f => _write!"context.alternateName"(f, true));
+			else
+				rec.each!(f => _write!"name"(f, true));
 
 			// print field descriptions if requested
 			if (outputFeature.fielddesc) {
@@ -50,8 +77,10 @@ public:
 			}
 
 			// print line separator if requested
-			if (outputFeature.lsep != "")
-				_fh.writef("\n%s", outputFeature.lsep[0].repeat(_lineLength));
+			if (outputFeature.lsep != "") {
+				// print out line separator
+				_fh.writef("\n%s", outputFeature.lsep[0].repeat(_calculateLineLength(rec)));
+			}
 
 			_fh.writeln();
 	  }
@@ -68,39 +97,24 @@ private:
 
 	// print out each field
 	void _write(string member)(Field f, bool calculateLineLength = false) {
-		// in case of field name followed by its occurence within a record,
-		// we need to recalculate all cell lengths
-		size_t cellLength1 = f.cellLength1, cellLength2 = f.cellLength2;
-
-		// this is the field member to print
-		auto fieldMember = mixin("f." ~ member);
-
-		// build new field name if any
-		static if (member == "name") {
-			if (outputFeature.useAlternateName) {
-					fieldMember = "%s(%d)".format(f.name, f.context.occurence+1);
-					cellLength1 = max(f.cellLength1, fieldMember.length);
-					cellLength2 = max(f.cellLength2, fieldMember.length);
-			}
-		}
-
 		// calculate cell length depending on output seperator
-		auto cellLength = (outputFeature.fielddesc) ? cellLength2 : cellLength1;
+		auto cellLength = (outputFeature.fielddesc) ? f.cellLength2 : f.cellLength1;
 
 		// calculate line seperator length if any
 		if (calculateLineLength) _lineLength += cellLength;
 
 		// print out data
-	  _fh.writef(_fmt, cellLength, fieldMember);
-
+	  _fh.writef(_fmt, cellLength, mixin("f." ~ member));
 	}
 
-	// size_t _calculateLength(Field f) {
-	// 	size_t cellLength1 = f.cellLength1, cellLength2 = f.cellLength2;
-	//
-	//
-	// }
-
+	size_t _calculateLineLength(Record rec) {
+		auto lineLength = rec.size * outputFeature.fsep.length;
+		foreach (f; rec) {
+			auto cellLength = (outputFeature.fielddesc) ? f.cellLength2 : f.cellLength1;
+			lineLength += cellLength;
+		}
+		return lineLength;
+	}
 
 }
 ///

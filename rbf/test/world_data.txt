@@ -1,10 +1,10 @@
 
-NAME(1)              !AREA(1)              !POPULATION(1)              !DENSITY(1)     !CITY(1)             !
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
 Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 Asia                 !43820000             !16920000                   !29.5           !Shanghai            !
 
-NAME(1)                       !POPULATION(1)        !CAPITAL(1)            !
+NAME                          !POPULATION           !CAPITAL               !
 Name of the country           !Number of inhabitants!Capital of the country!
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 China                         !1338100000           !Beijing               !
@@ -61,12 +61,12 @@ Turkey                        !73600000             !Ankara                !
 United Arab Emirates          !5400000              !Abu Dhabi             !
 Yemen                         !23600000             !Sanaa                 !
 
-NAME(1)              !AREA(1)              !POPULATION(1)              !DENSITY(1)     !CITY(1)             !
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
 Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 Africa               !30370000          11 !730000          20.4       !Lago           !s                   !
 
-NAME(1)                       !POPULATION(1)        !CAPITAL(1)            !
+NAME                          !POPULATION           !CAPITAL               !
 Name of the country           !Number of inhabitants!Capital of the country!
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 Burundi                       !8500000              !Bujumbura             !
@@ -127,24 +127,24 @@ Senegal                       !12500000             !Dakar                 !
 Sierra Leone                  !5800000              !Freetown              !
 Togo                          !6800000              !Lomé                 !
 
-NAME(1)              !AREA(1)              !POPULATION(1)              !DENSITY(1)     !CITY(1)             !
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
 Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 North America        !24709000          95 !40000           16.5       !Mexi           !co City             !
 
-NAME(1)                       !POPULATION(1)        !CAPITAL(1)            !
+NAME                          !POPULATION           !CAPITAL               !
 Name of the country           !Number of inhabitants!Capital of the country!
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 Canada                        !3400000              !Ottawa - Toronto      !
 Mexico                        !112000000            !Mexico (City)         !
 United States                 !313000000            !Washington - New Yor  !
 
-NAME(1)              !AREA(1)              !POPULATION(1)              !DENSITY(1)     !CITY(1)             !
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
 Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 South America        !17840000          68 !90000           12.0       !São           !Paulo               !
 
-NAME(1)                       !POPULATION(1)        !CAPITAL(1)            !
+NAME                          !POPULATION           !CAPITAL               !
 Name of the country           !Number of inhabitants!Capital of the country!
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 Argentina                     !40500000             !Buenos Aires          !
@@ -161,13 +161,13 @@ Suriname                      !500000               !Paramaribo            !
 Uruguay                       !3400000              !Montevideo            !
 Venezuela                     !28800000             !Caracas               !
 
-NAME(1)              !AREA(1)              !POPULATION(1)              !DENSITY(1)     !CITY(1)             !
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
 Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 Antarctica           !13720000          53 !00000           9.2        !Vill           !a Las Estrellas     !
 Europe               !10180000          39 !30000           6.8        !Mosc           !ow                  !
 
-NAME(1)                       !POPULATION(1)        !CAPITAL(1)            !
+NAME                          !POPULATION           !CAPITAL               !
 Name of the country           !Number of inhabitants!Capital of the country!
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 Belarus                       !9500000              !Minsk                 !
@@ -222,12 +222,12 @@ Monaco                        !40000                !Monaco                !
 Netherlands                   !16600000             !The Hague             !
 Switzerland                   !7800000              !Bern - Zürich        !
 
-NAME(1)              !AREA(1)              !POPULATION(1)              !DENSITY(1)     !CITY(1)             !
+NAME                 !AREA                 !POPULATION                 !DENSITY        !CITY                !
 Name of the continent!Area of the continent!Population of the continent!Density per km2!Most populus city   !
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 Oceania              !9008500           34 !78200           5.9        !Sydn           !ey                  !
 
-NAME(1)                       !POPULATION(1)        !CAPITAL(1)            !
+NAME                          !POPULATION           !CAPITAL               !
 Name of the country           !Number of inhabitants!Capital of the country!
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 Australia                     !22400000             !Canberra - Sydney     !
