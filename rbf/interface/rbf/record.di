@@ -30,6 +30,8 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 		@property string[] fieldValues();
 		@property string[] fieldRawValues();
 		@property string[] fieldDescriptions();
+		Field succ(Field f);
+		Field pred(Field f);
 		void opOpAssign(string op)(Field field) if (op == "~")
 		{
 			field.context.index = this.size;

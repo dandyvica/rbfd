@@ -14,7 +14,7 @@ import rbf.record;
 import rbf.layout;
 
 string inputLayoutFileName;			/// input file layout
-enum Format {html, xml, cstruct};		/// output format HTML, ...
+enum Format {html, xml, cstruct, csv};		/// output format HTML, ...
 Format outputFormat;
 bool bCheckLayout;							/// if true, try to validate layouy by checking length
 bool stdOutput;									/// if true, print to standard output instead of file
@@ -30,7 +30,7 @@ Usage: layoutconv -l xmlfile -o [html,xml,cstruct] [-O] [-c]
 
 where:
 
--O	: write to stdout instead of a file
+-O  : write to stdout instead of a file
 -c  : valide layout first
 
 
@@ -72,10 +72,82 @@ where:
 			break;
 		case outputFormat.cstruct:
 			break;
+		case outputFormat.csv:
+			layout2csv(outputHandle, layout);
+			break;
 	}
+
+	explore(layout, "04");
 
 	// ok
 	return 0;
+}
+
+// write out layout as a CSV-list of records and fields
+void explore(Layout layout, string recName) {
+
+	// list of records (sorted)
+	auto rec = layout[recName];
+	//
+	// auto list = rec[].filter!(f => rec.count(f.name) > 1);
+	//
+	//
+	// // foreach (f; list) {
+	// // 	auto i = f.index;
+	// // 	if
+	// //
+	// // }
+	//
+	// writeln(recName,":");
+	// foreach (f; list) {
+	// 	auto count = rec.count(f.name);
+	// 	writef("%s%d(%s-%d): ", f.name, f.context.index, f.name, count);
+	// 	if (count > 1)
+	// 		rec[f.name].each!(f => writef("%s%d ", f.name, f.context.index));
+	// 	writeln();
+	// }
+
+	Field[] candidates;
+
+	foreach (f; rec) {
+		auto count = rec.count(f.name);
+		if (count == 1) continue;
+
+		// successor:
+		auto succ = rec.succ(f);
+		if (succ is null) continue;
+
+		count = rec.count(succ.name);
+		//writefln("--- %s%d(%s-%d): ", f.name, f.context.index, f.name, count);
+		if (count == 1) continue;
+
+		candidates ~= f;
+		//writefln("%s%d(%s-%d): ", f.name, f.context.index, f.name, count);
+	}
+
+	candidates.each!(f => writefln("%s%d(%s-%d) : ",
+					f.name, f.context.index, f.name, rec.count(f.name)));
+
+
+	foreach (f; candidates) {
+		auto succ = rec.succ(f);
+	}
+
+}
+
+
+
+
+
+
+
+// write out layout as a CSV-list of records and fields
+void layout2csv(File output, Layout layout) {
+	// list of records (sorted)
+	foreach (rec; &layout.sorted) {
+		output.write(rec.name, ";");
+		output.writeln(rec.names.join(';'));
+	}
 }
 
 // write out HTML table from XML Layout
@@ -112,7 +184,7 @@ void layout2html(File html, Layout layout) {
 			html.writefln(`<td><strong>%s</strong></td>`,field.name);
 			html.writefln(`<td>%s</td>`, field.description);
 			html.writefln(`<td>%s</td>`, field.length);
-			html.writefln(`<td>%s</td>`, field.offset+1);
+			html.writefln(`<td>%s</td>`, field.context.offset+1);
 			html.writeln(`</tr>`);
 
 		}

@@ -133,6 +133,21 @@ public:
 		mixin(NamedItemsContainer!(Field,true).getMembersData("description"));
 	}
 
+	/**
+	 * return the field successor in the container. null if the last one
+	 */
+	 Field succ(Field f) {
+		 if (f.context.index == size-1) return null;
+		 else return this[f.context.index+1];
+	 }
+
+	 /**
+ 	 * return the field predecessor in the container. null if the last one
+ 	 */
+ 	 Field pred(Field f) {
+ 		 if (f.context.index == 0) return null;
+ 		 else return this[f.context.index-1];
+ 	 }
 
 
 	/**
@@ -156,7 +171,7 @@ public:
 		// add element
 		super.opOpAssign!"~"(field);
 
-		// at this point, occurence is the length of map containing fiedls by name
+		// at this point, occurence is the length of map containing fields by name
 		field.context.occurence  = this.size(field.name)-1;
 
 		// lower/upper bounds calculation inside the record
@@ -252,5 +267,10 @@ unittest {
 	assert(rec.fieldNames == ["FIELD1", "FIELD2", "FIELD3", "FIELD2", "FIELD2"]);
 	assert(rec.fieldValues == ["AAAAAAAAAA", "BBBBBBBBBB", "CCCCCCCCCC", "DDDDDDDDDD", "EEEEEEEEEE"]);
 
+	// succ
+	assert(rec.succ(rec[2]).name == "FIELD2");
+	assert(rec.succ(rec[4]) is null);
+	assert(rec.pred(rec[2]).name == "FIELD2");
+	assert(rec.pred(rec[0]) is null);
 
 }
