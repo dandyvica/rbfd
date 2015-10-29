@@ -17,12 +17,14 @@ struct RecordMeta
 	string name;
 	string description;
 	bool skip;
+	string[][] repeatingPattern;
 }
 class Record : NamedItemsContainer!(Field, true, RecordMeta)
 {
 	public 
 	{
 		this(in string name, in string description);
+		this(Field[] list);
 		@property string description();
 		@property void value(string s);
 		@property string value();
@@ -32,6 +34,8 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 		@property string[] fieldDescriptions();
 		Field succ(Field f);
 		Field pred(Field f);
+		void findRepeatingPattern();
+		Field[][] matchFieldList(string[] list);
 		void opOpAssign(string op)(Field field) if (op == "~")
 		{
 			field.context.index = this.size;

@@ -201,7 +201,7 @@ static if (Meta.length > 0) {
 	 An array of elements of type T
 	 */
 	ref TRETURN opIndex(TNAME name) {
-		enforce(name in this, "error: element %s is not found in container".format(name));
+		enforce(name in this, MSG001.format(name));
 		return _contextMap(_map, name);
 	}
 
@@ -217,7 +217,14 @@ static if (Meta.length > 0) {
 	An array of elements of type T
 
 	*/
-	T[] opSlice(size_t i, size_t j) { return _list[i..j]; }
+	T[] opSlice(size_t i, size_t j)
+	{
+		enforce(0 <= i && i < size, MSG007.format(i,size));
+		enforce(0 <= j && j < size, MSG008.format(j,size));
+		enforce(i <= j, MSG009.format(i,j));
+
+		return _list[i..j];
+	}
 
 	/// Return a range on the container
 	Range opSlice() {
@@ -234,11 +241,11 @@ static if (Meta.length > 0) {
 	*/
 	T get(TNAME name, ushort index = 0)
   {
-		enforce(name in this, "error: element %s not found in container".format(name));
-		enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name,index));
+		enforce(name in this, MSG001.format(name));
+		enforce(0 <= index && index < _map[name].length, MSG005.format(name,index));
 
 		static if (!allowDuplicates) {
-			enforce(index == 0, "error: cannot call get method with index %d without allowing duplicated".format(index));
+			enforce(index == 0, MSG006.format(index));
 		}
 
 		return _map[name][index];
@@ -293,11 +300,11 @@ static if (Meta.length > 0) {
 
 	/// remove a single occurence of an element
 	void remove(TNAME name, size_t index) {
-		enforce(name in this, "error: element %s not found in container".format(name));
-		enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name,index));
+		enforce(name in this, MSG001.format(name));
+		enforce(0 <= index && index < _map[name].length, MSG005.format(name,index));
 
 		static if (!allowDuplicates) {
-			enforce(index == 0, "error: cannot call get method with index %d without allowing duplicated".format(index));
+			enforce(index == 0, MSG006.format(index));
 		}
 
 		// remove from main list. Find its real index in the list array

@@ -80,10 +80,17 @@ where:
 	}
 
 
-	explore(layout, argv[1]);
+	layout[argv[1]].findRepeatingPattern;
+	auto p = layout[argv[1]].meta.repeatingPattern;
+	foreach (l; p)
+	{
+		writeln(layout[argv[1]].matchFieldList(l));
+	}
+
+
 	/*foreach (rec; &layout.sorted) {
 		writeln("trying record: ", rec.name);
-		explore(layout, rec.name);
+		writeln(rec.findRepeatingPattern);
 	}*/
 
 	// ok
@@ -135,6 +142,7 @@ void explore(Layout layout, string recName) {
 		auto result = matchAll(m[1], r"\((\d+)\)");
 		auto a = array(result.map!(r => rec[to!int(r[1])].name));
 		writeln(a);
+		rec.matchFieldList(a);
 	}
 
 

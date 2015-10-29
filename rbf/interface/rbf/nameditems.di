@@ -160,11 +160,14 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				}
 				ref TRETURN opIndex(TNAME name)
 				{
-					enforce(name in this, "error: element %s is not found in container".format(name));
+					enforce(name in this, MSG001.format(name));
 					return _contextMap(_map, name);
 				}
 				T[] opSlice(size_t i, size_t j)
 				{
+					enforce(0 <= i && i < size, MSG007.format(i, size));
+					enforce(0 <= j && j < size, MSG008.format(j, size));
+					enforce(i <= j, MSG009.format(i, j));
 					return _list[i..j];
 				}
 				Range opSlice()
@@ -173,11 +176,11 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				}
 				T get(TNAME name, ushort index = 0)
 				{
-					enforce(name in this, "error: element %s not found in container".format(name));
-					enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name, index));
+					enforce(name in this, MSG001.format(name));
+					enforce(0 <= index && index < _map[name].length, MSG005.format(name, index));
 					static if (!allowDuplicates)
 					{
-						enforce(index == 0, "error: cannot call get method with index %d without allowing duplicated".format(index));
+						enforce(index == 0, MSG006.format(index));
 					}
 
 					return _map[name][index];
@@ -190,11 +193,11 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				}
 				void remove(TNAME name, size_t index)
 				{
-					enforce(name in this, "error: element %s not found in container".format(name));
-					enforce(0 <= index && index < _map[name].length, "element %s, index %d is out of bounds".format(name, index));
+					enforce(name in this, MSG001.format(name));
+					enforce(0 <= index && index < _map[name].length, MSG005.format(name, index));
 					static if (!allowDuplicates)
 					{
-						enforce(index == 0, "error: cannot call get method with index %d without allowing duplicated".format(index));
+						enforce(index == 0, MSG006.format(index));
 					}
 
 					size_t i, j;

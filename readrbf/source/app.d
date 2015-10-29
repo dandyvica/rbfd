@@ -103,6 +103,10 @@ int main(string[] argv)
 			printMembers!(OutputFeature)(settings.outputDir[opts.outputFormat]);
 		}
 
+
+		//
+		layout.each!(r => r.findRepeatingPattern);
+
 		// now loop for each record in the file
 		foreach (rec; reader)
 		{
@@ -128,6 +132,20 @@ int main(string[] argv)
 			// use our writer to generate the file
 			writer.write(rec);
 			nbWrittenRecords++;
+
+
+			//
+			foreach (l; rec.meta.repeatingPattern)
+			{
+				writeln(rec.name, ": ", l);
+				auto fieldList = rec.matchFieldList(l);
+				foreach (list; fieldList)
+				{
+					list.each!(f => writefln("%s<%d>", f.name, f.context.index));
+					auto newRec = new Record(list);
+					writer.write(newRec);
+				}
+			}
 		}
 
 		// explicitly call close to finish creating file (specially for Excel files)

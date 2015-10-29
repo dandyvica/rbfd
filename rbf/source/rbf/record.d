@@ -23,6 +23,7 @@ struct RecordMeta {
 	string name;							/// record name
 	string description;				/// record description
 	bool   skip;							/// do we skip this record?
+	string[][] repeatingPattern;
 }
 
 /***********************************
@@ -58,6 +59,12 @@ public:
 			// fill container name/desc
 			this.meta.name = name;
 			this.meta.description = description;
+	}
+
+	//
+	this(Field[] list) {
+		this("new","");
+		list.each!(f => this ~= f);
 	}
 
 	// set/get properties
@@ -144,10 +151,77 @@ public:
 	 /**
  	 * return the field predecessor in the container. null if the last one
  	 */
- 	 Field pred(Field f) {
+ 	 Field pred(Field f)
+	 {
  		 if (f.context.index == 0) return null;
  		 else return this[f.context.index-1];
  	 }
+
+	 void findRepeatingPattern()
+	 {
+		 //string[][] resultList;
+
+		 // get field names
+		 auto fields = this.names;
+
+		 // sort field names
+		 string[] sorted_fields = array(sort!("a < b")(this.names));
+
+		 // get a unique list because can be duplicated
+		 auto uniqueFields = array(fields.uniq);
+
+		 // build our string to search for
+		 string s;
+		 foreach(f; this) {
+			 auto i = this[f.name][0].context.index;
+			 s ~= "<%d>".format(i);
+		 }
+
+		 // real pattern matching here
+		 auto pattern = ctRegex!(r"((<\d+>)+?)\1+");
+		 auto match = matchAll(s, pattern);
+
+		 // we've matched here duplicated pattern
+		 foreach (m; match) {
+			 auto result = matchAll(m[1], r"<(\d+)>");
+			 auto a = array(result.map!(r => this[to!int(r[1])].name));
+			 meta.repeatingPattern ~= a;
+		 }
+
+		 //return resultList;
+
+	 }
+
+
+ 	 /**
+  	 * try to match fields
+  	 */
+	 Field[][] matchFieldList(string[] list) {
+		 // get first element index in the list
+		 //if (list.length == 1) return this[list[0]];
+
+		 Field[][] fieldList;
+
+		 auto indexOfFirstField = array(this[list[0]].map!(f => f.context.index));
+		 auto l = list.length;
+
+		 foreach (i; indexOfFirstField)
+		 {
+			 if (i+l > size-1) break;
+			 auto a = this[i..i+l];
+			 if (array(this[i..i+l].map!(f => f.name)) == list)
+			 {
+				 fieldList ~= a;
+				 //a.each!(f => writefln("%s<%d>",f.name,f.context.index));
+			 }
+		 }
+
+		 //writeln("first=",first);
+
+
+		 return fieldList;
+
+	 }
 
 
 	/**
