@@ -8,6 +8,7 @@ import std.range;
 import std.conv;
 import std.exception;
 import std.path;
+import std.regex;
 
 import rbf.field;
 import rbf.record;
@@ -21,6 +22,7 @@ bool stdOutput;									/// if true, print to standard output instead of file
 
 int main(string[] argv)
 {
+
 	// check args
 	if (argv.length == 1) {
 		writeln(r"
@@ -77,7 +79,12 @@ where:
 			break;
 	}
 
-	explore(layout, "04");
+
+	explore(layout, argv[1]);
+	/*foreach (rec; &layout.sorted) {
+		writeln("trying record: ", rec.name);
+		explore(layout, rec.name);
+	}*/
 
 	// ok
 	return 0;
@@ -107,31 +114,56 @@ void explore(Layout layout, string recName) {
 	// 	writeln();
 	// }
 
-	Field[] candidates;
+	auto fields = rec.names;
+	string[] sorted_fields = array(sort!("a < b")(rec.names));
+	auto uniqueFields = array(fields.uniq);
+	//writeln(uniqueFields);
+	writefln("fields = %s", fields);
 
-	foreach (f; rec) {
-		auto count = rec.count(f.name);
-		if (count == 1) continue;
-
-		// successor:
-		auto succ = rec.succ(f);
-		if (succ is null) continue;
-
-		count = rec.count(succ.name);
-		//writefln("--- %s%d(%s-%d): ", f.name, f.context.index, f.name, count);
-		if (count == 1) continue;
-
-		candidates ~= f;
-		//writefln("%s%d(%s-%d): ", f.name, f.context.index, f.name, count);
+	string s;
+	foreach(f; rec) {
+		auto i = rec[f.name][0].context.index;
+		s ~= "(%d)".format(i);
 	}
 
-	candidates.each!(f => writefln("%s%d(%s-%d) : ",
-					f.name, f.context.index, f.name, rec.count(f.name)));
+	auto pattern = ctRegex!(r"((\(\d+\))+?)\1+");
 
-
-	foreach (f; candidates) {
-		auto succ = rec.succ(f);
+	auto match = matchAll(s, pattern);
+	//writeln(match);
+	foreach (m; match) {
+		writeln(m);
+		auto result = matchAll(m[1], r"\((\d+)\)");
+		auto a = array(result.map!(r => rec[to!int(r[1])].name));
+		writeln(a);
 	}
+
+
+/*
+	// assign a key to each unique field
+	int i = 32;
+	char[string] map1;
+	string[char] map2;
+	foreach (f; uniqueFields) {
+		auto c = to!char(i++);
+		map1[f] = c;
+		map2[c] = f;
+	}
+	writeln(map1);
+	writeln(map2);
+	//
+	string matchable = 	array(fields.map!(f => map1[f]));
+	//auto matchable = s.join;
+	writeln(matchable);
+
+	auto pattern = ctRegex!(r"(.+?)\1+");
+
+	auto match = matchAll(matchable, pattern);
+	//writeln(match);
+	foreach (m; match) {
+		string[] s;
+		m[1].each!(c => s ~= map2[c]);
+		writeln(s);
+	}*/
 
 }
 
