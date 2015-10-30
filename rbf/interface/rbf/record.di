@@ -18,6 +18,7 @@ struct RecordMeta
 	string description;
 	bool skip;
 	string[][] repeatingPattern;
+	Record[] subRecord;
 }
 class Record : NamedItemsContainer!(Field, true, RecordMeta)
 {
@@ -25,17 +26,15 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 	{
 		this(in string name, in string description);
 		this(Field[] list);
-		@property string description();
 		@property void value(string s);
 		@property string value();
 		@property string[] fieldNames();
 		@property string[] fieldValues();
 		@property string[] fieldRawValues();
 		@property string[] fieldDescriptions();
-		Field succ(Field f);
-		Field pred(Field f);
-		void findRepeatingPattern();
-		Field[][] matchFieldList(string[] list);
+		string findByIndex(ulong i);
+		void identifyRepeatedFields();
+		void findRepeatedFields(string[] fieldList);
 		void opOpAssign(string op)(Field field) if (op == "~")
 		{
 			field.context.index = this.size;
@@ -44,6 +43,10 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 			field.context.occurence = this.size(field.name) - 1;
 			field.context.lowerBound = field.context.offset;
 			field.context.upperBound = field.context.offset + field.length;
+		}
+		void opOpAssign(string op)(Field[] fieldList) if (op == "~")
+		{
+			fieldList.each!((f) => super.opOpAssign!"~"(f));
 		}
 		override string toString();
 		bool matchRecordFilter(RecordFilter filter);

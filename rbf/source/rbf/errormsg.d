@@ -10,3 +10,4 @@ immutable MSG006 = "error: cannot call get method with index %d without allowing
 immutable MSG007 = "error: lower index %d is out of bounds, upper bound = %d";
 immutable MSG008 = "error: upper index %d is out of bounds, upper bound = %d";
 immutable MSG009 = "error: lower index %d is higher than upper index %d";
+immutable MSG010 = "error: unable to create field, wrong number of csv data (%d, expected %d)";

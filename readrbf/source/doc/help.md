@@ -17,6 +17,10 @@ the %APPDATA%\\local\\rbf directory (Windows).
 -b
 : Benchmark: don't write output file but just read input file.
 
+--br
+: Break records: try to break record into individual sub-records for better
+text presentation.
+
 -c
 : Validate layout structure.
 

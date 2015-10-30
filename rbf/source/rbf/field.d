@@ -83,6 +83,26 @@ public:
 		auto field1 = new Field("FIELD1", "Field description", new FieldType("N","decimal"), 15);
 	}
 
+	/**
+ 	 * create a new field object from a CSV string
+	 *
+	 * Params:
+	 * 	csvdata = string containing field data in CSV format
+	 *
+	 */
+	this(in string csvdata)
+	{
+		auto f = csvdata.split(";");
+		enforce(f.length == 5, MSG010.format(f.length, 5));
+		// create object
+		this(f[0], f[1], new FieldType(f[2],f[3]), to!ulong(f[4]));
+	}
+	///
+	unittest {
+		auto field1 = new Field("FIELD1;Field description;N;decimal;15");
+		assertThrown(new Field("FIELD1;Field description;N;decimal"));
+	}
+
 	/// read property for element type
 	@property FieldType type() { return _fieldType; }
 

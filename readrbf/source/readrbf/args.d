@@ -45,6 +45,7 @@ public:
 	bool bProgressBar;
 	bool bCheckLayout;							/// if true, try to validate layouy by checking length
 	bool stdOutput;									/// if true, print to standard output instead of file
+	bool bBreakRecord;  						/// if true, break records into individual sub-records
 
 
 	ulong samples;									/// limit to n first lines (n == samples)
@@ -84,7 +85,8 @@ public:
 				"s", &samples,
 				"b", &bJustRead,
 				"p", &bProgressBar,
-				"c", &bCheckLayout
+				"c", &bCheckLayout,
+				"br", &bBreakRecord
 			);
 		}
 		catch (Exception e) {

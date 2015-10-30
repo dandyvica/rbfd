@@ -20,10 +20,11 @@ import rbf.nameditems;
 import rbf.recordfilter;
 
 struct RecordMeta {
-	string name;							/// record name
-	string description;				/// record description
-	bool   skip;							/// do we skip this record?
+	string name;							     /// record name
+	string description;			       /// record description
+	bool   skip;							     /// do we skip this record?
 	string[][] repeatingPattern;
+	Record[] subRecord;
 }
 
 /***********************************
@@ -67,12 +68,7 @@ public:
 		list.each!(f => this ~= f);
 	}
 
-	// set/get properties
-	//@property bool keep() { return _keep; }
-	//@property void keep(bool keep) { _keep = keep; }
-
-	//@property string name() { return meta.name; }
-	@property string description() { return meta.description; }
+	//@property string description() { return meta.description; }
 
 
 	/**
@@ -140,42 +136,49 @@ public:
 		mixin(NamedItemsContainer!(Field,true).getMembersData("description"));
 	}
 
+	string findByIndex(ulong i) {
+		foreach (f; this) {
+			if (f.context.index == i) return f.name;
+		}
+		return "";
+	}
+
 	/**
 	 * return the field successor in the container. null if the last one
 	 */
-	 Field succ(Field f) {
+	 /*Field succ(Field f) {
 		 if (f.context.index == size-1) return null;
 		 else return this[f.context.index+1];
-	 }
+	 }*/
 
 	 /**
  	 * return the field predecessor in the container. null if the last one
  	 */
- 	 Field pred(Field f)
+ 	 /*Field pred(Field f)
 	 {
  		 if (f.context.index == 0) return null;
  		 else return this[f.context.index-1];
- 	 }
+ 	 }*/
 
-	 void findRepeatingPattern()
+	 void identifyRepeatedFields()
 	 {
-		 //string[][] resultList;
 
 		 // get field names
 		 auto fields = this.names;
+writeln(fields);
 
-		 // sort field names
-		 string[] sorted_fields = array(sort!("a < b")(this.names));
-
-		 // get a unique list because can be duplicated
-		 auto uniqueFields = array(fields.uniq);
-
-		 // build our string to search for
+		 // build our string to search for: each field is replaced by
+ 		 // pattern <i> where i is the first field index
+		 // it allows to easily search using regex: ((<\d+>)+?)\1+
+		 // which means: find at least to successive tokens matching <i>
+		 // where i is a decimal digit
 		 string s;
 		 foreach(f; this) {
-			 auto i = this[f.name][0].context.index;
+writef("<field %s real index %d>", f.name, f.context.index);
+			 auto i = _map[f.name][0].context.index;
 			 s ~= "<%d>".format(i);
 		 }
+writeln();
 
 		 // real pattern matching here
 		 auto pattern = ctRegex!(r"((<\d+>)+?)\1+");
@@ -183,43 +186,47 @@ public:
 
 		 // we've matched here duplicated pattern
 		 foreach (m; match) {
-			 auto result = matchAll(m[1], r"<(\d+)>");
-			 auto a = array(result.map!(r => this[to!int(r[1])].name));
-			 meta.repeatingPattern ~= a;
+writeln(m);
+				// our result is a list of indexes liek "<2><5><7>...".
+				// each number traces back to the field name
+				auto result = matchAll(m[1], r"<(\d+)>");
+foreach (r; result) {
+	writef("<field %s supposed index %s>", _list[to!int(r[1])].name , r[1]);
+}
+writeln();
+				auto a = array(result.map!(r => findByIndex(to!ulong(r[1]))));
+writeln(a);
+				meta.repeatingPattern ~= a;
 		 }
-
-		 //return resultList;
 
 	 }
 
 
  	 /**
-  	 * try to match fields
+  	 * try to match fields whose names are repeated
   	 */
-	 Field[][] matchFieldList(string[] list) {
-		 // get first element index in the list
-		 //if (list.length == 1) return this[list[0]];
+	 void findRepeatedFields(string[] fieldList)
+	 {
 
-		 Field[][] fieldList;
+			auto indexOfFirstField = array(this[fieldList[0]].map!(f => f.context.index));
+			auto l = fieldList.length;
 
-		 auto indexOfFirstField = array(this[list[0]].map!(f => f.context.index));
-		 auto l = list.length;
+			foreach (i; indexOfFirstField)
+			{
+				if (i+l > size-1) break;
 
-		 foreach (i; indexOfFirstField)
-		 {
-			 if (i+l > size-1) break;
-			 auto a = this[i..i+l];
-			 if (array(this[i..i+l].map!(f => f.name)) == list)
-			 {
-				 fieldList ~= a;
-				 //a.each!(f => writefln("%s<%d>",f.name,f.context.index));
-			 }
-		 }
+				// create new record
+				meta.subRecord ~= new Record("new", "test");
+				//writefln("subRecord length = %d", meta.subRecord.length);
 
-		 //writeln("first=",first);
-
-
-		 return fieldList;
+				auto a = this[i..i+l];
+				if (array(this[i..i+l].map!(f => f.name)) == fieldList)
+				{
+				 	meta.subRecord[$-1] ~= a;
+				 	//a.each!(f => writef("%s<%d>",f.name,f.context.index));
+					//writeln();
+				}
+			}
 
 	 }
 
@@ -253,13 +260,19 @@ public:
 		field.context.upperBound = field.context.offset + field.length;
 	}
 
+	void opOpAssign(string op)(Field[] fieldList) if (op == "~")
+	{
+		fieldList.each!(f => super.opOpAssign!"~"(f));
+	}
+
+
 
 	/**
 	 * print out Record properties with all field and record data
 	 */
 	override string toString()
 	{
-		auto s = "\nname=<%s>, description=<%s>, length=<%u>, skip=<%s>\n".format(name, description, length, meta.skip);
+		auto s = "\nname=<%s>, description=<%s>, length=<%u>, skip=<%s>\n".format(name, meta.description, length, meta.skip);
 		foreach (field; this)
 		{
 			s ~= field.toString();
@@ -342,9 +355,58 @@ unittest {
 	assert(rec.fieldValues == ["AAAAAAAAAA", "BBBBBBBBBB", "CCCCCCCCCC", "DDDDDDDDDD", "EEEEEEEEEE"]);
 
 	// succ
-	assert(rec.succ(rec[2]).name == "FIELD2");
+	/*assert(rec.succ(rec[2]).name == "FIELD2");
 	assert(rec.succ(rec[4]) is null);
 	assert(rec.pred(rec[2]).name == "FIELD2");
-	assert(rec.pred(rec[0]) is null);
+	assert(rec.pred(rec[0]) is null);*/
+
+	// test for subrecords
+	rec = new Record("RECORD_A", "This is my main and top record");
+	rec ~= new Field("FIELD1", "Desc1", ft, 10);
+	rec ~= new Field("FIELD2", "Desc2", ft, 10);
+	rec ~= new Field("FIELD3", "Desc3", ft, 10);
+	rec ~= new Field("FIELD4", "Desc4", ft, 10);
+	rec ~= new Field("FIELD5", "Desc5", ft, 10);
+	rec ~= new Field("FIELD2", "Desc2", ft, 10);
+	rec ~= new Field("FIELD3", "Desc3", ft, 10);
+	rec ~= new Field("FIELD4", "Desc4", ft, 10);
+	rec ~= new Field("FIELD5", "Desc5", ft, 10);
+	rec ~= new Field("FIELD2", "Desc2", ft, 10);
+	rec ~= new Field("FIELD3", "Desc3", ft, 10);
+	rec ~= new Field("FIELD4", "Desc4", ft, 10);
+	rec ~= new Field("FIELD5", "Desc5", ft, 10);
+	rec ~= new Field("FIELD2", "Desc2", ft, 10);
+	rec ~= new Field("FIELD3", "Desc3", ft, 10);
+	rec ~= new Field("FIELD4", "Desc4", ft, 10);
+	rec ~= new Field("FIELD5", "Desc5", ft, 10);
+	rec ~= new Field("FIELD2", "Desc2", ft, 10);
+	rec ~= new Field("FIELD3", "Desc3", ft, 10);
+	rec ~= new Field("FIELD4", "Desc4", ft, 10);
+	rec ~= new Field("FIELD5", "Desc5", ft, 10);
+	rec ~= new Field("FIELD6", "Desc2", ft, 10);
+	rec ~= new Field("FIELD6", "Desc2", ft, 10);
+	rec ~= new Field("FIELD6", "Desc2", ft, 10);
+	rec ~= new Field("FIELD2", "Desc2", ft, 10);
+	rec ~= new Field("FIELD3", "Desc3", ft, 10);
+	rec ~= new Field("FIELD4", "Desc4", ft, 10);
+	rec.identifyRepeatedFields;
+
+	assert(rec.meta.repeatingPattern == [["FIELD2", "FIELD3", "FIELD4", "FIELD5"],["FIELD6"]]);
+
+	// f1 is Field[][]
+	Field[][] f1 = rec.findRepeatedFields(rec.meta.repeatingPattern[0]);
+	foreach (fl; f1)
+	{
+		// fl is Field[]
+		auto names = array(fl.map!(f => f.name));
+		assert(names == ["FIELD2", "FIELD3", "FIELD4", "FIELD5"]);
+	}
+	f1 = rec.findRepeatedFields(rec.meta.repeatingPattern[1]);
+	foreach (fl; f1)
+	{
+		// fl is Field[]
+		auto names = array(fl.map!(f => f.name));
+		assert(names == ["FIELD6"]);
+	}
 
 }

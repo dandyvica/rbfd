@@ -15,7 +15,7 @@ import rbf.record;
 import rbf.layout;
 
 string inputLayoutFileName;			/// input file layout
-enum Format {html, xml, cstruct, csv};		/// output format HTML, ...
+enum Format {html, xml, cstruct, csv, test};		/// output format HTML, ...
 Format outputFormat;
 bool bCheckLayout;							/// if true, try to validate layouy by checking length
 bool stdOutput;									/// if true, print to standard output instead of file
@@ -28,7 +28,7 @@ int main(string[] argv)
 		writeln(r"
 Convert XML layout file to other formats.
 
-Usage: layoutconv -l xmlfile -o [html,xml,cstruct] [-O] [-c]
+Usage: layoutconv -l xmlfile -o [html,xml,cstruct,csv,test] [-O] [-c]
 
 where:
 
@@ -77,101 +77,30 @@ where:
 		case outputFormat.csv:
 			layout2csv(outputHandle, layout);
 			break;
+		case outputFormat.test:
+			testLayout(inputLayoutFileName);
+			break;
 	}
-
-
-	layout[argv[1]].findRepeatingPattern;
-	auto p = layout[argv[1]].meta.repeatingPattern;
-	foreach (l; p)
-	{
-		writeln(layout[argv[1]].matchFieldList(l));
-	}
-
-
-	/*foreach (rec; &layout.sorted) {
-		writeln("trying record: ", rec.name);
-		writeln(rec.findRepeatingPattern);
-	}*/
 
 	// ok
 	return 0;
 }
 
 // write out layout as a CSV-list of records and fields
-void explore(Layout layout, string recName) {
+void testLayout(string inputLayoutFileName) {
 
-	// list of records (sorted)
-	auto rec = layout[recName];
-	//
-	// auto list = rec[].filter!(f => rec.count(f.name) > 1);
-	//
-	//
-	// // foreach (f; list) {
-	// // 	auto i = f.index;
-	// // 	if
-	// //
-	// // }
-	//
-	// writeln(recName,":");
-	// foreach (f; list) {
-	// 	auto count = rec.count(f.name);
-	// 	writef("%s%d(%s-%d): ", f.name, f.context.index, f.name, count);
-	// 	if (count > 1)
-	// 		rec[f.name].each!(f => writef("%s%d ", f.name, f.context.index));
-	// 	writeln();
-	// }
-
-	auto fields = rec.names;
-	string[] sorted_fields = array(sort!("a < b")(rec.names));
-	auto uniqueFields = array(fields.uniq);
-	//writeln(uniqueFields);
-	writefln("fields = %s", fields);
-
-	string s;
-	foreach(f; rec) {
-		auto i = rec[f.name][0].context.index;
-		s ~= "(%d)".format(i);
-	}
-
-	auto pattern = ctRegex!(r"((\(\d+\))+?)\1+");
-
-	auto match = matchAll(s, pattern);
-	//writeln(match);
-	foreach (m; match) {
-		writeln(m);
-		auto result = matchAll(m[1], r"\((\d+)\)");
-		auto a = array(result.map!(r => rec[to!int(r[1])].name));
-		writeln(a);
-		rec.matchFieldList(a);
+	foreach (i; 0..100)
+	{
+		auto layout = new Layout(inputLayoutFileName);
+		layout["06"].identifyRepeatedFields;
+		layout["06"].each!(f => writef("%s(%d);", f.name, f.context.index));
+		writeln();
+		//layout.each!(r => r.identifyRepeatedFields);
+		//assert(layout["04"].meta.repeatingPattern == [["COTP", "CORT", "COAM"], ["TMFT", "TMFA"]]);
+		writeln(layout["06"].meta.repeatingPattern);
 	}
 
 
-/*
-	// assign a key to each unique field
-	int i = 32;
-	char[string] map1;
-	string[char] map2;
-	foreach (f; uniqueFields) {
-		auto c = to!char(i++);
-		map1[f] = c;
-		map2[c] = f;
-	}
-	writeln(map1);
-	writeln(map2);
-	//
-	string matchable = 	array(fields.map!(f => map1[f]));
-	//auto matchable = s.join;
-	writeln(matchable);
-
-	auto pattern = ctRegex!(r"(.+?)\1+");
-
-	auto match = matchAll(matchable, pattern);
-	//writeln(match);
-	foreach (m; match) {
-		string[] s;
-		m[1].each!(c => s ~= map2[c]);
-		writeln(s);
-	}*/
 
 }
 
@@ -209,7 +138,7 @@ void layout2html(File html, Layout layout) {
 
 		// record description
 		html.writefln(`<h2><span class="label label-primary">%s-%s</span></h2>`,
-			rec.name, rec.description);
+			rec.name, rec.meta.description);
 
 		// fields description
 		html.writeln(`<table class="table table-striped">`);

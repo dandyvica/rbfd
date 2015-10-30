@@ -39,6 +39,7 @@ class Field : Element!(string, ulong, ContextualInfo)
 		public 
 		{
 			this(in string name, in string description, FieldType type, in ulong length);
+			this(in string csvdata);
 			@property FieldType type();
 			@property void pattern(string s);
 			bool matchPattern();

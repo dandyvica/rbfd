@@ -103,9 +103,17 @@ int main(string[] argv)
 			printMembers!(OutputFeature)(settings.outputDir[opts.outputFormat]);
 		}
 
+		// break records?
+		if (opts.bBreakRecord)
+		{
+			layout.each!(r => r.identifyRepeatedFields);
+			foreach (r; layout) {
+				writefln("%s:%s:%s", r.name, r.meta.repeatingPattern, r.names);
+				if (r.meta.repeatingPattern.length != 0)
 
-		//
-		layout.each!(r => r.findRepeatingPattern);
+					r.findRepeatedFields(r.meta.repeatingPattern[0]);
+			}
+		}
 
 		// now loop for each record in the file
 		foreach (rec; reader)
@@ -117,9 +125,9 @@ int main(string[] argv)
 			nbReadRecords++;
 
 			// do we filter out records?
-			if (opts.isRecordFilterFileSet || opts.isRecordFilterSet) {
-				if (!rec.matchRecordFilter(opts.filteredRecords))
-					continue;
+			if (opts.isRecordFilterFileSet || opts.isRecordFilterSet)
+			{
+				if (!rec.matchRecordFilter(opts.filteredRecords)) continue;
 			}
 
 			// don't want a progress bar?
@@ -133,17 +141,12 @@ int main(string[] argv)
 			writer.write(rec);
 			nbWrittenRecords++;
 
-
-			//
-			foreach (l; rec.meta.repeatingPattern)
+			// write sub records if any
+			if (opts.bBreakRecord)
 			{
-				writeln(rec.name, ": ", l);
-				auto fieldList = rec.matchFieldList(l);
-				foreach (list; fieldList)
+				foreach(subRec; rec.meta.subRecord)
 				{
-					list.each!(f => writefln("%s<%d>", f.name, f.context.index));
-					auto newRec = new Record(list);
-					writer.write(newRec);
+					writer.write(subRec);
 				}
 			}
 		}
@@ -153,8 +156,10 @@ int main(string[] argv)
 
 		// print out some stats
 		auto elapsedtime = Clock.currTime() - starttime;
+
 		stderr.writefln("\nLines: %d read, records: %d read, %d written\nElapsed time = %s",
 			reader.nbLinesRead, nbReadRecords, nbWrittenRecords, elapsedtime);
+
 		if (!opts.bJustRead)
 				stderr.writefln("Created file %s, size = %d bytes",
 								opts.outputFileName, getSize(opts.outputFileName));

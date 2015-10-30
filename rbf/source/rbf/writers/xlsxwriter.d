@@ -60,7 +60,7 @@ private:
 
 		// then create header (record name & record description)
 		_worksheetFile[rec.name].startRow();
-		_worksheetFile[rec.name].strCell(format("%s: %s", rec.name, rec.description));
+		_worksheetFile[rec.name].strCell(format("%s: %s", rec.name, rec.meta.description));
 		_worksheetFile[rec.name].endRow();
 
 		// create field description row

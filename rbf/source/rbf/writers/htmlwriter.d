@@ -63,7 +63,7 @@ private:
 
     // write record name & description
 		_fh.writefln(`</table><h2><span class="label label-primary">%s - %s</span></h2>`,
-					rec.name, rec.description);
+					rec.meta.name, rec.meta.description);
 
 		// gracefully end previous table and start a new HTML table
 		_fh.write(`<table class="table table-striped">`);
@@ -95,7 +95,7 @@ private:
 
       // write record name & description
   		_fh.writefln(`</table><h2><span class="label label-primary">%s - %s</span></h2>`,
-  					rec.name, rec.description);
+  					rec.name, rec.meta.description);
 
 			// gracefully end previous table and start a new HTML table
 			_fh.write(`<table class="table table-striped">`);
