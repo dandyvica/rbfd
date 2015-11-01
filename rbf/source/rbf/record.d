@@ -63,10 +63,11 @@ public:
 	}
 
 	//
+    /*
 	this(Field[] list) {
 		this("new","");
 		list.each!(f => this ~= f);
-	}
+	}*/
 
 	//@property string description() { return meta.description; }
 
@@ -165,7 +166,6 @@ public:
 
 		 // get field names
 		 auto fields = this.names;
-writeln(fields);
 
 		 // build our string to search for: each field is replaced by
  		 // pattern <i> where i is the first field index
@@ -174,11 +174,9 @@ writeln(fields);
 		 // where i is a decimal digit
 		 string s;
 		 foreach(f; this) {
-writef("<field %s real index %d>", f.name, f.context.index);
 			 auto i = _map[f.name][0].context.index;
 			 s ~= "<%d>".format(i);
 		 }
-writeln();
 
 		 // real pattern matching here
 		 auto pattern = ctRegex!(r"((<\d+>)+?)\1+");
@@ -186,16 +184,10 @@ writeln();
 
 		 // we've matched here duplicated pattern
 		 foreach (m; match) {
-writeln(m);
 				// our result is a list of indexes liek "<2><5><7>...".
 				// each number traces back to the field name
 				auto result = matchAll(m[1], r"<(\d+)>");
-foreach (r; result) {
-	writef("<field %s supposed index %s>", _list[to!int(r[1])].name , r[1]);
-}
-writeln();
 				auto a = array(result.map!(r => findByIndex(to!ulong(r[1]))));
-writeln(a);
 				meta.repeatingPattern ~= a;
 		 }
 

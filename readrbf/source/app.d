@@ -89,6 +89,17 @@ int main(string[] argv)
 		writer.outputFeature = settings.outputDir[opts.outputFormat];
 		writer.prepare;
 
+		// break records?
+		if (opts.bBreakRecord)
+		{
+			layout.each!(r => r.identifyRepeatedFields);
+			foreach (r; layout) {
+				//writefln("%s:%s", r.name, r.meta.repeatingPattern);
+				if (r.meta.repeatingPattern.length != 0)
+					r.findRepeatedFields(r.meta.repeatingPattern[0]);
+			}
+		}
+
 		// if verbose option is requested, print out what's possible
 		if (opts.bVerbose) {
 			// print out field type meta info
@@ -101,18 +112,23 @@ int main(string[] argv)
 			printMembers!(CommandLineOption)(opts);
 			stderr.writeln;
 			printMembers!(OutputFeature)(settings.outputDir[opts.outputFormat]);
-		}
+			stderr.writeln;
 
-		// break records?
-		if (opts.bBreakRecord)
-		{
-			layout.each!(r => r.identifyRepeatedFields);
-			foreach (r; layout) {
-				writefln("%s:%s:%s", r.name, r.meta.repeatingPattern, r.names);
-				if (r.meta.repeatingPattern.length != 0)
-
-					r.findRepeatedFields(r.meta.repeatingPattern[0]);
-			}
+            // print out repeated fields if any
+            if (opts.bBreakRecord)
+            {
+                foreach(r; layout) { 
+                    if (r.meta.repeatingPattern.length != 0) {
+                        writefln("Record %s", r.name);
+                        foreach(rp; r.meta.repeatingPattern) {
+                            writefln("\tRepeating pattern: %s", rp);
+                        }
+                        foreach(sr; r.meta.subRecord) {
+                            writefln("\tFound pattern: %s", sr.names);
+                        }
+                    }
+                }
+            }
 		}
 
 		// now loop for each record in the file
@@ -147,6 +163,8 @@ int main(string[] argv)
 				foreach(subRec; rec.meta.subRecord)
 				{
 					writer.write(subRec);
+                    //subRec.each!(f => writef("%s-(%s)",f.name, f.value));
+                    //writeln();
 				}
 			}
 		}

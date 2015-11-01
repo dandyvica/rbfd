@@ -104,7 +104,8 @@ private:
 		if (calculateLineLength) _lineLength += cellLength;
 
 		// print out data
-	  _fh.writef(_fmt, cellLength, mixin("f." ~ member));
+        //_fh.writef("format=%s-%d-%d, value=<%s>", f.name, f.cellLength1, f.cellLength2, mixin("f." ~ member));
+	    _fh.writef(_fmt, cellLength, mixin("f." ~ member));
 	}
 
 	size_t _calculateLineLength(Record rec) {
