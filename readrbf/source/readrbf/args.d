@@ -14,8 +14,14 @@ import std.traits;
 import rbf.recordfilter;
 
 immutable helpString = import("help.txt");
+immutable IAformat = "%-50.50s : ";
 
-// common members
+// useful mixin to generate input
+template GenInput(string input)
+{
+    const char[] GenInput = `writef(IAformat, "` ~ input ~ `".leftJustify(50,'.')); input = readln();`;
+}
+
 
 
 
@@ -52,6 +58,8 @@ public:
 
 
 
+
+
 public:
 /***********************************
  * Process command line arguments
@@ -61,38 +69,41 @@ public:
 		// print-out help
 		if (argv.length == 1)
 		{
-			writeln(helpString);
-			writefln("\nCompiled on %s with %s version %d\n", __DATE__, __VENDOR__, __VERSION__);
-			core.stdc.stdlib.exit(1);
+            _interactiveMode();
 		}
-
-		try {
-			// get command line arguments
-			getopt(argv,
-				std.getopt.config.caseSensitive,
-				std.getopt.config.required,
-				"i", &inputFileName,
-				std.getopt.config.required,
-				"l", &inputLayout,
-				"o", &outputFormat,
-				"O", &stdOutput,
-				"f", &fieldFilterFile,
-				"gf", &fieldFilter,
-				"gl", &lineFilter,
-				"r", &recordFilterFile,
-				"gr", &recordFilter,
-				"v", &bVerbose,
-				"s", &samples,
-				"b", &bJustRead,
-				"p", &bProgressBar,
-				"c", &bCheckLayout,
-				"br", &bBreakRecord
-			);
-		}
-		catch (Exception e) {
-			stderr.writefln("error: %s", e.msg);
-			core.stdc.stdlib.exit(2);
-		}
+        else if (argv.length == 2 && argv[1] == "-h")
+        {
+            _printHelp();
+        }
+        else
+        {
+            try {
+                // get command line arguments
+                auto cmd = getopt(argv,
+                    std.getopt.config.caseSensitive,
+                    std.getopt.config.required,
+                    "i" , &inputFileName,
+                    std.getopt.config.required,
+                    "l" , &inputLayout     ,
+                    "o" , &outputFormat    ,
+                    "O" , &stdOutput       ,
+                    "f" , &fieldFilterFile ,
+                    "gf", &fieldFilter     ,
+                    "gl", &lineFilter      ,
+                    "r" , &recordFilterFile,
+                    "gr", &recordFilter    ,
+                    "v" , &bVerbose        ,
+                    "s" , &samples         ,
+                    "b" , &bJustRead       ,
+                    "p" , &bProgressBar    ,
+                    "c" , &bCheckLayout    ,
+                    "br", &bBreakRecord
+                );
+            }
+            catch (Exception e) {
+                _printHelp(e.msg);
+            }
+        }
 
 		// if no output file name specified, then use input file name and
 		// append the suffix
@@ -119,6 +130,42 @@ public:
 	@property bool isFieldFilterSet()      { return fieldFilter != ""; }
 	@property bool isRecordFilterFileSet() { return recordFilterFile != ""; }
 	@property bool isRecordFilterSet()     { return recordFilter != ""; }
+
+    void _interactiveMode()
+    {
+        string input;
+
+        mixin(GenInput!("Input file name (mandatory)"));
+        inputFileName    = input.strip;
+
+        mixin(GenInput!("Layout name (mandatory)"));
+        inputLayout      = input.strip;
+
+        mixin(GenInput!("Output format (optional but default: txt)"));
+        outputFormat     = (input.strip == "") ? "txt" : input.strip;
+
+        mixin(GenInput!("Field filter file (optional)"));
+        fieldFilterFile  = input.strip;
+
+        mixin(GenInput!("Field filter (optional)"));
+        fieldFilter      = input.strip;
+
+        mixin(GenInput!("Record filter file (optional)"));
+        recordFilterFile = input.strip;
+
+        mixin(GenInput!("Record filter (optional)"));
+        recordFilter     = input.strip;
+
+        bVerbose = true;
+    }
+
+    void _printHelp(string msg="")
+    {
+        writeln(helpString);
+        writefln("\nCompiled on %s with %s version %d\n", __DATE__, __VENDOR__, __VERSION__);
+        if (msg != "") stderr.writefln("error: %s", msg);
+        core.stdc.stdlib.exit(1);
+    }
 
 }
 ///

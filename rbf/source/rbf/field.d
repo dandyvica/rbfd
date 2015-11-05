@@ -27,14 +27,13 @@ struct ContextualInfo {
 	string alternateName;						///
 }
 
-/***********************************
- *This field class represents a field as found
- * in record-based files
+/******************************************************************************************************
+ * This field class represents a field as found in record-based files
  */
 class Field : Element!(string, ulong, ContextualInfo) {
 private:
 
-	FieldType _fieldType; 		        /// type of the field
+	FieldType _fieldType; 		        /// type of the field as defined in the XML layout
 
 	string _rawValue;                 /// pristine value
 	string _strValue;				          /// store the string value of the field

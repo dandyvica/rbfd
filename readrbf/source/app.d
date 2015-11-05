@@ -96,7 +96,8 @@ int main(string[] argv)
 			foreach (r; layout) {
 				//writefln("%s:%s", r.name, r.meta.repeatingPattern);
 				if (r.meta.repeatingPattern.length != 0)
-					r.findRepeatedFields(r.meta.repeatingPattern[0]);
+                    r.meta.repeatingPattern.each!(rp => r.findRepeatedFields(rp));
+//					r.findRepeatedFields(r.meta.repeatingPattern[0]);
 			}
 		}
 
@@ -119,17 +120,21 @@ int main(string[] argv)
             {
                 foreach(r; layout) { 
                     if (r.meta.repeatingPattern.length != 0) {
-                        writefln("Record %s", r.name);
+                        stderr.writefln("\nRecord %s", r.name);
                         foreach(rp; r.meta.repeatingPattern) {
-                            writefln("\tRepeating pattern: %s", rp);
+                            stderr.writefln("\tRepeating pattern: %s", rp);
                         }
                         foreach(sr; r.meta.subRecord) {
-                            writefln("\tFound pattern: %s", sr.names);
+                            stderr.write("\t");
+                            sr.each!(f => stderr.writef("%s(%d)-", f.name, f.context.index)); 
+                            stderr.writeln();
                         }
                     }
                 }
             }
 		}
+
+        layout.each!(r => r.recalculate);
 
 		// now loop for each record in the file
 		foreach (rec; reader)

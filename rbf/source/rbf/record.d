@@ -161,6 +161,12 @@ public:
  		 else return this[f.context.index-1];
  	 }*/
 
+    void recalculate() 
+    {
+        auto i=0;
+        this.each!(f => f.context.index = i++);
+    }
+
 	 void identifyRepeatedFields()
 	 {
 
@@ -205,18 +211,19 @@ public:
 
 			foreach (i; indexOfFirstField)
 			{
-				if (i+l > size-1) break;
+                //stderr.writefln("%s-%s(%d..%d)", name, this[i].name, i, i+l);
+				if (i+l > size) break;
+                //stderr.writefln("after: %s-%s(%d..%d)", name, this[i].name, i, i+l);
 
 				// create new record
-				meta.subRecord ~= new Record("new", "test");
-				//writefln("subRecord length = %d", meta.subRecord.length);
+                // record name is based on field names
+                auto recName = join(fieldList, ";");
+				meta.subRecord ~= new Record(recName, "subRecord");
 
 				auto a = this[i..i+l];
 				if (array(this[i..i+l].map!(f => f.name)) == fieldList)
 				{
 				 	meta.subRecord[$-1] ~= a;
-				 	//a.each!(f => writef("%s<%d>",f.name,f.context.index));
-					//writeln();
 				}
 			}
 
@@ -332,7 +339,7 @@ unittest {
 
 	// test properties
 	assert(rec.name == "RECORD_A");
-	assert(rec.description == "This is my main and top record");
+	assert(rec.meta.description == "This is my main and top record");
 
 	// set value
 	auto s = "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEE";
@@ -386,19 +393,8 @@ unittest {
 	assert(rec.meta.repeatingPattern == [["FIELD2", "FIELD3", "FIELD4", "FIELD5"],["FIELD6"]]);
 
 	// f1 is Field[][]
-	Field[][] f1 = rec.findRepeatedFields(rec.meta.repeatingPattern[0]);
-	foreach (fl; f1)
-	{
-		// fl is Field[]
-		auto names = array(fl.map!(f => f.name));
-		assert(names == ["FIELD2", "FIELD3", "FIELD4", "FIELD5"]);
-	}
-	f1 = rec.findRepeatedFields(rec.meta.repeatingPattern[1]);
-	foreach (fl; f1)
-	{
-		// fl is Field[]
-		auto names = array(fl.map!(f => f.name));
-		assert(names == ["FIELD6"]);
-	}
-
+	rec.findRepeatedFields(rec.meta.repeatingPattern[0]);
+	assert(rec.meta.subRecord[0].names == ["FIELD2", "FIELD3", "FIELD4", "FIELD5"]);
+	rec.findRepeatedFields(rec.meta.repeatingPattern[1]);
+	assert(rec.meta.subRecord[5].names == ["FIELD6"]);
 }

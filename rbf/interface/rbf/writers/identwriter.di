@@ -12,7 +12,15 @@ import rbf.record;
 import rbf.writers.writer;
 class IdentWriter : Writer
 {
-	this(in string outputFileName);
-	override void prepare();
-	override void write(Record rec);
+	this(in string outputFileName)
+	{
+		super(outputFileName);
+	}
+	override void prepare()
+	{
+	}
+	override void write(Record rec)
+	{
+		_fh.writeln(rec.value);
+	}
 }

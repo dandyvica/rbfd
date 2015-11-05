@@ -4,7 +4,7 @@
 readrbf - read a record-based file and convert it to a known format
 
 # SYNOPSIS
-readrbf -i file - l layout [-o format] [-c file] [-r file] [-s n] [-v]
+readrbf -i file - l layout [-o format] [-f file] [-c] [-O] [--br] [--gf] [--gr] [-r file] [-s n] [-v] [-p] [-h]
 
 # DESCRIPTION
 This program is aimed at reading a record-based file and converting it to
@@ -37,6 +37,9 @@ text presentation.
 --gr condition
 : Grep records: include records matching condition.
 
+-h
+: Print this help.
+
 -i file
 : Full path and name of the file to be read and converted.
 
@@ -46,7 +49,7 @@ configuration file rbf.xml.
 
 -o format
 : Name of the output file format. Possible values are:
-html, tag, csv, txt, xlsx, sqlite3, ident. Defaulted to txt
+html, tag, box, csv, txt, xlsx, sqlite3, ident. Defaulted to txt
 if not specified. ident means the output file format is
 the same than the input one.
 
@@ -54,7 +57,7 @@ the same than the input one.
 : Write to standard output only.
 
 -p
-: Print out progress.
+: Print out progress status.
 
 -r file
 : Full path and name of a file to filter records.
@@ -64,6 +67,3 @@ the same than the input one.
 
 -v
 : Verbose: print out options.
-
--V
-: Version.

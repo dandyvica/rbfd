@@ -15,6 +15,7 @@ import rbf.config;
 import rbf.writers.xlsxwriter;
 import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
+import rbf.writers.boxwriter;
 import rbf.writers.htmlwriter;
 import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
@@ -86,6 +87,7 @@ Writer writerFactory(in string output, in string mode, Layout layout)
 		case "html"  : return new HTMLWriter(output);
 		case "csv"   : return new CSVWriter(output);
 		case "txt"   : return new TXTWriter(output);
+		case "box"   : return new BoxWriter(output);
 		case "xlsx"  : return new XLSXWriter(output, layout);
 		case "sql"   : return new TXTWriter(output);
 		case "tag"   : return new TAGWriter(output);

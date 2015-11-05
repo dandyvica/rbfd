@@ -197,6 +197,9 @@ public:
 		// if any, delete skipped fields from layout
 		if (meta.skipField != []) {
 			this.removeFromAllRecords(meta.skipField);
+
+            // then recalculate all indexes as we deleted some fields
+            this.recalculate;
 		}
 	}
 	///
@@ -224,6 +227,11 @@ public:
 		}
 		return s;
 	}
+
+    void recalculate()
+    {
+        this.each!(r => r.recalculate);
+    }
 
 	/**
 	 * keep only fields specified for each record in the map

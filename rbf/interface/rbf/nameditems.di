@@ -166,7 +166,7 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				T[] opSlice(size_t i, size_t j)
 				{
 					enforce(0 <= i && i < size, MSG007.format(i, size));
-					enforce(0 <= j && j < size, MSG008.format(j, size));
+					enforce(0 <= j && j <= size, MSG008.format(j, size));
 					enforce(i <= j, MSG009.format(i, j));
 					return _list[i..j];
 				}
