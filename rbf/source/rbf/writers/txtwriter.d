@@ -11,6 +11,7 @@ import std.range;
 
 import rbf.field;
 import rbf.record;
+import rbf.layout;
 import rbf.writers.writer;
 
 // format used to print out string or numerical data
@@ -32,7 +33,7 @@ public:
 	}
 
 	// preparation step beodre printing out records
-	override void prepare() {
+	override void prepare(Layout layout) {
 		// as seperator is known at that time, build formatting string
 		_fmt = "%%-*s%s".format(outputFeature.fsep);
 	}

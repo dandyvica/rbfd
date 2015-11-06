@@ -114,6 +114,14 @@ public:
 	}
 
 	/**
+	 * return the list of all field names contained in the record
+	 */
+	@property string[] fieldAlternateNames()
+	{
+		mixin(NamedItemsContainer!(Field,true).getMembersData("context.alternateName"));
+	}
+
+	/**
 	 * return the list of all field values contained in the record
 	 */
 	@property string[] fieldValues()
@@ -161,11 +169,29 @@ public:
  		 else return this[f.context.index-1];
  	 }*/
 
-    void recalculate() 
+    void recalculateIndex() 
     {
         auto i=0;
         this.each!(f => f.context.index = i++);
     }
+
+    void buildAlternateNames()
+    {
+        foreach(f; this)
+        {
+            auto list = this[f.name];
+            if (list.length > 1)
+            {
+                auto i=1;
+                foreach(f1; list)
+                {
+                    f1.context.alternateName = f1.name ~ to!string(i++);
+                }
+            }
+        }
+    }
+
+
 
 	 void identifyRepeatedFields()
 	 {

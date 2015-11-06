@@ -19,7 +19,7 @@ import rbf.writers.boxwriter;
 import rbf.writers.htmlwriter;
 import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
-import rbf.writers.latexwriter;
+import rbf.writers.sqlite3writer;
 
 
 /*********************************************
@@ -62,7 +62,7 @@ public:
 	}
 
 	// should be implemented by derived classes
-	abstract void prepare();
+	abstract void prepare(Layout layout);
 	abstract void write(Record rec);
 	//abstract void write(Field rec);
 
@@ -89,9 +89,8 @@ Writer writerFactory(in string output, in string mode, Layout layout)
 		case "txt"   : return new TXTWriter(output);
 		case "box"   : return new BoxWriter(output);
 		case "xlsx"  : return new XLSXWriter(output, layout);
-		case "sql"   : return new TXTWriter(output);
+		case "sql"   : return new Sqlite3Writer(output);
 		case "tag"   : return new TAGWriter(output);
-		case "latex" : return new LatexWriter(output);
 		case "ident" : return new IdentWriter(output);
 		default:
 			throw new Exception("error: writer unknown mode <%s>".format(mode));

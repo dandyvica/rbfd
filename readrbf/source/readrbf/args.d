@@ -156,7 +156,8 @@ public:
         mixin(GenInput!("Record filter (optional)"));
         recordFilter     = input.strip;
 
-        bVerbose = true;
+        //bVerbose = true;
+        bProgressBar = true;
     }
 
     void _printHelp(string msg="")

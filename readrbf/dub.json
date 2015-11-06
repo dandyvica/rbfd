@@ -8,8 +8,8 @@
 	},
 	"targetPath": "bin",
 	"targetType": "executable",
-	"libs": ["rbf"],
+	"libs": ["rbf", "sqlite3"],
 	"importPaths": ["source", "../rbf/interface"],
-	"lflags": ["-L../rbf/lib"],
+	"lflags": ["-L../rbf/lib", "-L/usr/lib/x86_64-linux-gnu"],
 	"preBuildCommands": ["pandoc -s -t man source/doc/help.md -o views/help.1", "man views/help.1 | col -b > views/help.txt"],
 }

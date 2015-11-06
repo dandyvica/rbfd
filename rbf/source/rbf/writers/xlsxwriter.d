@@ -113,7 +113,7 @@ public:
 
 	}
 
-	override void prepare() {}
+	override void prepare(Layout layout) {}
 
 	override void write(Record record)
 	{

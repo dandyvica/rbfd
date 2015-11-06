@@ -38,7 +38,6 @@ int main(string[] argv)
 		auto settings = new Setting();
 
 		// manage arguments passed from the command line
-		//writeln(argv);
 		auto opts = CommandLineOption(argv);
 
 		// check output formats
@@ -51,12 +50,12 @@ int main(string[] argv)
 		// define new layout corresponding to the requested layout
 		auto layout = new Layout(settings.layoutDir[opts.inputLayout].file);
 
-		// syntax validation requested
+		// layout syntax validation requested
 		if (opts.bCheckLayout) {
 			layout.validate;
 		}
 
-		// need to get rid of some records?
+		// need to get rid of some fields ?
 		if (opts.isFieldFilterFileSet) {
 			// only keep specified fields
 			layout.keepOnly(opts.filteredFields, "\n");
@@ -73,32 +72,6 @@ int main(string[] argv)
 		// grep lines?
 		if (opts.lineFilter != "") {
 			reader.lineRegexPattern = opts.lineFilter;
-		}
-
-		// create new writer to generate outputFileName matching the outputFormat
-		Writer writer;
-		auto outputFileName = buildNormalizedPath(
-				settings.outputDir[opts.outputFormat].outputDir,
-				opts.outputFileName
-		);
-
-		auto output = (opts.stdOutput) ? "" :outputFileName;
-		writer = writerFactory(output, opts.outputFormat, layout);
-
-		// set writer features read in config
-		writer.outputFeature = settings.outputDir[opts.outputFormat];
-		writer.prepare;
-
-		// break records?
-		if (opts.bBreakRecord)
-		{
-			layout.each!(r => r.identifyRepeatedFields);
-			foreach (r; layout) {
-				//writefln("%s:%s", r.name, r.meta.repeatingPattern);
-				if (r.meta.repeatingPattern.length != 0)
-                    r.meta.repeatingPattern.each!(rp => r.findRepeatedFields(rp));
-//					r.findRepeatedFields(r.meta.repeatingPattern[0]);
-			}
 		}
 
 		// if verbose option is requested, print out what's possible
@@ -134,7 +107,37 @@ int main(string[] argv)
             }
 		}
 
-        layout.each!(r => r.recalculate);
+        // re-index each field index
+        layout.each!(r => r.recalculateIndex);
+
+        // get alternate names
+        layout.each!(r => r.buildAlternateNames);
+
+		// create new writer to generate outputFileName matching the outputFormat
+		Writer writer;
+		auto outputFileName = buildNormalizedPath(
+				settings.outputDir[opts.outputFormat].outputDir,
+				opts.outputFileName
+		);
+
+		auto output = (opts.stdOutput) ? "" :outputFileName;
+		writer = writerFactory(output, opts.outputFormat, layout);
+
+		// set writer features read in config and process preliminary steps
+		writer.outputFeature = settings.outputDir[opts.outputFormat];
+		writer.prepare(layout);
+
+		// break records?
+		if (opts.bBreakRecord)
+		{
+			layout.each!(r => r.identifyRepeatedFields);
+			foreach (r; layout) {
+				//writefln("%s:%s", r.name, r.meta.repeatingPattern);
+				if (r.meta.repeatingPattern.length != 0)
+                    r.meta.repeatingPattern.each!(rp => r.findRepeatedFields(rp));
+//					r.findRepeatedFields(r.meta.repeatingPattern[0]);
+			}
+		}
 
 		// now loop for each record in the file
 		foreach (rec; reader)
@@ -151,9 +154,15 @@ int main(string[] argv)
 				if (!rec.matchRecordFilter(opts.filteredRecords)) continue;
 			}
 
-			// don't want a progress bar?
-			if (opts.bProgressBar && nbReadRecords % 1000 == 0)
-				stderr.writef("%d lines read so far\r",nbReadRecords);
+            // don't want a progress bar?
+            if (opts.bProgressBar && nbReadRecords % 1000 == 0)
+            {
+                if (reader.nbRecords != 0)
+                    stderr.writef("%d/%d records read so far (%.0f %%)\r",
+                            nbReadRecords, reader.nbRecords, to!float(nbReadRecords)/reader.nbRecords*100);
+                else
+                    stderr.writef("%d lines read so far\r",nbReadRecords);
+            }
 
 			// don't want to write? Just loop
 			if (opts.bJustRead) continue;

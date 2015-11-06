@@ -12,6 +12,7 @@ import std.functional;
 
 import rbf.field;
 import rbf.record;
+import rbf.layout;
 import rbf.config;
 import rbf.writers.writer;
 
@@ -28,7 +29,7 @@ class HTMLWriter : Writer {
 		super(outputFileName);
 	}
 
-	override void prepare() {
+	override void prepare(Layout layout) {
 		// bootstrap header
 		_fh.writeln(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">`);
 		_fh.writeln(`<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"></head>`);

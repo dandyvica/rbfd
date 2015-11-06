@@ -199,7 +199,7 @@ public:
 			this.removeFromAllRecords(meta.skipField);
 
             // then recalculate all indexes as we deleted some fields
-            this.recalculate;
+            //this.each!(r => r.recalculateIndex);
 		}
 	}
 	///
@@ -227,11 +227,6 @@ public:
 		}
 		return s;
 	}
-
-    void recalculate()
-    {
-        this.each!(r => r.recalculate);
-    }
 
 	/**
 	 * keep only fields specified for each record in the map

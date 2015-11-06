@@ -12,6 +12,7 @@ import std.utf;
 
 import rbf.field;
 import rbf.record;
+import rbf.layout;
 import rbf.writers.writer;
 
 // list of box characters
@@ -47,7 +48,7 @@ public:
 	}
 
 	// preparation step beodre printing out records
-	override void prepare() {
+	override void prepare(Layout layout) {
 		// as seperator is known at that time, build formatting string
 		_fmt = "%%-*s%s".format(outputFeature.fsep);
 	}

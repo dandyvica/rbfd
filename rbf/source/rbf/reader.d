@@ -59,6 +59,9 @@ private:
 	/// input file size
 	ulong _inputFileSize;
 
+    /// guessed number of records (in case of a lauyout having reclength!=0)
+    ulong _guessedRecordNumber;
+
 public:
 	/**
 	 * creates a new Reader object for rb files
@@ -82,8 +85,9 @@ public:
 		// save record identifier lambda
 		_recordIdentifier = (recIndentifier) ? recIndentifier : layout.meta.mapper;
 
-		// get file size
+		// get file size and try to calculate number of records
 		_inputFileSize = getSize(rbFile);
+        if (layout.meta.length != 0) _guessedRecordNumber = _inputFileSize / layout.meta.length;
 
 		// set regex if any
 		if (layout.meta.ignoreLinePattern != "")
@@ -100,6 +104,8 @@ public:
 	 */
 	@property void ignoreRegexPattern(string pattern) { _ignoreRegex = regex(pattern); }
 	@property void lineRegexPattern(string pattern)   { _lineRegex   = regex(pattern); }
+
+	@property ulong nbRecords()   { return _guessedRecordNumber; }
 
 	/**
 	 * register a callback function which will be called for each fetched record

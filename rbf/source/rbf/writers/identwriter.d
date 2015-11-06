@@ -10,6 +10,7 @@ import std.variant;
 
 import rbf.field;
 import rbf.record;
+import rbf.layout;
 import rbf.writers.writer;
 
 /*********************************************
@@ -23,7 +24,7 @@ class IdentWriter : Writer {
 		super(outputFileName);
 	}
 
-	override void prepare() {}
+	override void prepare(Layout layout) {}
 
 	override void write(Record rec)
 	{

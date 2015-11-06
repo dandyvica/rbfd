@@ -69,6 +69,7 @@ public:
 
 		// just copy what is passed to constructor
 		super(name, description, length);
+        context.alternateName = name;
 
 		// save field type
 		_fieldType = type;
@@ -128,19 +129,6 @@ public:
 		assert(field1.value!int == 50);
 	}
 
-	// /// copy field value when read from a file
-	// @property void value(string s)
-	// {
-	// 	_rawValue = s;
-	// 	_strValue = s.strip();
-	// }
-	// ///
-	// unittest {
-	// 	auto field1 = new Field("AGE", "Person's age", new FieldType!float, 3);
-	// 	field1.value = "50";
-	// 	assert(field1.value == "50");
-	// }
-
 	@property void value(in string s)
 	{
 		_rawValue = s;
@@ -182,31 +170,6 @@ public:
 		// assert(field1.value == "500");
 	}
 
-	/// set field value
-	// @property void setValue(string s)
-	// {
-	// 	// when field is string, we need to left justify with blanks
-	// 	if (_fieldType.type == AtomicType.string) {
-	// 		_strValue = s.strip();
-	// 		_rawValue = _strValue.leftJustify(_length);
-	// 	}
-	// 	else if (_fieldType.type == AtomicType.decimal) {
-	// 		_strValue = s.strip();
-	// 		_rawValue = _strValue.rightJustify(_length,'0');
-	// 	}
-	// }
-	///
-	// unittest {
-	// 	auto field1 = new Field("FIELD1", "Desc1", new FieldType!string, 10);
-	// 	field1.setValue("AA");
-	// 	assert(field1.rawValue == "AA        ");
-	// 	field1 = new Field("FIELD1", "Desc1", "N", 10);
-	// 	field1.setValue("12.34");
-	// 	assert(field1.rawValue == "0000012.34");
-	// }
-
-
-
 	/// read property for field raw value. Raw value is not stripped
 	@property string rawValue() { return _rawValue; }
 	///
@@ -216,20 +179,6 @@ public:
 		assert(field1.value == "John Doe");
 		assert(field1.rawValue == "       John Doe      ");
 	}
-
-	// /// read/write property for the field index
-	// @property ulong index() { return _index; }
-	// @property void index(ulong new_index) { _index = new_index; }
-	//
-	// /// read/write property for the field offset
-	// @property ulong offset() { return _offset; }
-	// @property void offset(ulong new_offset) { _offset = new_offset; }
-	//
-	// /// read/write property lower/upper bounds
-	// @property ulong lowerBound() { return _lowerBound; }
-	// @property ulong upperBound() { return _upperBound; }
-	// @property void lowerBound(ulong new_bound) { _lowerBound = new_bound; }
-	// @property void upperBound(ulong new_bound) { _upperBound = new_bound; }
 
 	/// read/write property for the sign field
 	@property byte sign() { return _valueSign; }
@@ -243,20 +192,6 @@ public:
 			return(MSG003.format(name, description, length, type, lowerBound, upperBound, rawValue, value, offset, index));
 		}
 	}
-
-	/**
-	 * test if field value matches condition using the operator.
-	 */
-	// bool isFieldFilterMatched(in string op, in string rvalue)
-	// {
-	// 	return _fieldType.testFieldFilter(value, op, rvalue);
-	// }
-	// ///
-	// unittest {
-	// 	auto field1 = new Field("AGE", "Person's age", "N", 3);
-	// 	field1.value = "50";
-	// 	assert(field1.isFieldFilterMatched("<","60"));
-	// }
 
 	/// useful for unit tests
 	bool opEquals(Tuple!(string,string,string,ulong) t) {
