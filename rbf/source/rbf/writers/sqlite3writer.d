@@ -11,12 +11,13 @@ import std.ascii;
 
 import etc.c.sqlite3;
 
-
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
+
+immutable trxPool = 30;
 
 /*********************************************
  * in this case, each record is displayed as an ASCII table
@@ -30,6 +31,8 @@ private:
 
     string[string] _insertStmt;         /// list of pre-build INSERT statements
 
+    ushort _trxCounter;
+
     string _buildTableName(string s)
     {
         return s[0].isDigit ? "R" ~ s : s;
@@ -40,7 +43,7 @@ private:
     {
         auto cols = rec[].map!(f => _buildColumnWithinCreateTableStatement(f));
         auto tableName = _buildTableName(rec.name);
-        string stmt = "create table %s (%s);".format(tableName, join(cols, ","));
+        string stmt = "create table if not exists %s (%s);".format(tableName, join(cols, ","));
         return stmt;
     }
 
@@ -73,9 +76,10 @@ private:
         final switch (f.type.meta.type)
         {
             case AtomicType.decimal:
+                colStmt = (f.value == "") ? "0" : f.value;
                 break;
             case AtomicType.integer:
-                colStmt = f.value;
+                colStmt = (f.value == "") ? "0" : f.value;
                 break;
             case AtomicType.date:
                 colStmt = f.value;
@@ -87,68 +91,85 @@ private:
         return colStmt;
     }
 
-    int _executeStmt(string stmt)
+    void _executeStmt(string stmt)
     {
-        return sqlite3_exec(_db, toStringz(stmt), null, null, null); 
+        _sqlCode = sqlite3_exec(_db, toStringz(stmt), null, null, null); 
+        if (_sqlCode != SQLITE_OK) 
+        {
+            throw new Exception("error: SQL error %d, statement <%s>, error msg <%s>".format(_sqlCode, stmt, sqlite3_errmsg(_db)));
+        }
     }
 
     void _prepareInsertStatement(Record rec)
     {
-        _insertStmt[rec.name] = "insert into %s values (%%s)".format(_buildTableName(rec.name));
+        _insertStmt[rec.name] = "insert into %s values (%%s);".format(_buildTableName(rec.name));
     }
 
 public:
 
 	this(in string outputFileName)
 	{
-		super(outputFileName);
+		super(outputFileName, false);
 
-        _sqlCode = sqlite3_open("file.db", &_db);
+        _sqlCode = sqlite3_open(toStringz(outputFileName), &_db);
         if(_sqlCode != SQLITE_OK)
         {
             stderr.writefln("error: database create error: %s\n", sqlite3_errmsg(_db));
-            return;
+            throw new Exception("error: SQL error %d when opening file %d, SQL msg %s ".format(_sqlCode, outputFileName, sqlite3_errmsg(_db)));
         }
-        printf("DB open!\n");
 	}
 
 	override void prepare(Layout layout) 
     {
         // creation of all tables
-        stderr.writeln("info: creating tables");
+        stderr.writeln("info: trying to create tables");
 
         // create all tables = one table per record
         foreach(rec; layout)
         {
             // build statement
             auto stmt = _buildCreateTableStatement(rec);
+            //writefln("CREATE TABLE sql=<%s>",stmt);
 
             // execute statement
-            _sqlCode = _executeStmt(stmt);
+            _executeStmt(stmt);
+            //writefln("CREATE TABLE sqlcode=%d",_sqlCode);
+
 
             // prepare further INSERT statements
             _prepareInsertStatement(rec);
-            writeln(_insertStmt[rec.name]);
+            //writeln(_insertStmt[rec.name]);
         }
-        _sqlCode = _executeStmt("COMMIT;");
-        //writeln(_sqlCode);
-
-        // build INSERT statements
-
-
-
     }
 
 	override void write(Record rec)
 	{
         auto values = rec[].map!(f => _buildColumnWithinInsertStatement(f));
+        auto stmt = _insertStmt[rec.name].format(join(values, ","));
 
-        auto stmt = _insertStmt[rec.name].format(values);
+        // make a transaction to group INSERTs
+        if (_trxCounter == 0)
+        {
+            // insert using transaction
+            _executeStmt("BEGIN IMMEDIATE TRANSACTION");
+        }
 
-        _sqlCode = _executeStmt(stmt);
-        writeln(_sqlCode);
-        _sqlCode = _executeStmt("COMMIT;");
-        writeln(_sqlCode);
+        // execute insert
+        _executeStmt(stmt);
+
+        // TRX one more
+        _trxCounter++;
+
+        // end transaction if needed
+        if (_trxCounter == trxPool)
+        {
+            // insert using transaction
+            _executeStmt("COMMIT TRANSACTION");
+
+            // reset counter
+            _trxCounter = 0;
+        }
+
     }
 
 	override void close() {

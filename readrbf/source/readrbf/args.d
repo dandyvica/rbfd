@@ -123,7 +123,10 @@ public:
 		}
 
 		// build output file name
-		outputFileName = baseName(inputFileName) ~ "." ~ outputFormat;
+        if (outputFormat == "sql") 
+            outputFileName = baseName(inputFileName) ~ ".db";
+        else
+            outputFileName = baseName(inputFileName) ~ "." ~ outputFormat;
 	}
 
 	@property bool isFieldFilterFileSet()  { return fieldFilterFile != ""; }

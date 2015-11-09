@@ -22,7 +22,7 @@ static string overpunch(string s) {
 	static string posTable = makeTrans("{ABCDEFGHI}", "01234567890");
 	static string negTable = makeTrans("JKLMNOPQR", "123456789");
 
-	string trans;
+	string trans = s;
 
 	// found {ABCDEFGHI} in s: need to translate
 	if (s.indexOfAny("{ABCDEFGHI}") != -1) {

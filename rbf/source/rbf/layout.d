@@ -155,6 +155,9 @@ public:
 				ftype[ftName].meta.pattern      = attr.get("pattern", "");
 				ftype[ftName].meta.format       = attr.get("format", "");
 				ftype[ftName].meta.checkPattern = to!bool(attr.get("checkPattern", "false"));
+
+                // preconv is set to overpunch if any
+                if (attr.get("preconv","") == "overpunch") ftype[ftName].meta.preConv = &overpunch;
 			}
 		};
 
