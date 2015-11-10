@@ -46,35 +46,22 @@ enum Orientation { horizontal, vertical }
 /***********************************
 	* struct for describing layout metadata
  */
-/*
-struct LayoutConfig {
-  string description;         /// a short description of the layout
-  string mapping;             /// how to map a read line to a record object?
-  string xmlFile;             /// XML definition of layout
-  Regex!char ignoreRecord;    /// in some case, we need to get rid of some lines
-  string skipField;           /// in some cases, don't take into account some fields
-  string layoutType;          /// what kind of layout is it?
-
-  // mapper is used to find a record name from a line read from file
-  RECORD_MAPPER mapper;
-}*/
-
-
 struct SettingCore {
 	mixin  LayoutCore;
 }
 alias LayoutDir = NamedItemsContainer!(SettingCore, false);
 
 struct OutputFeature {
-	string name;		 	        /// name of the outpout format (e.g.: "txt")
-	string outputDir;		      /// location of output file
-	string fsep;		          /// field separator char for text output format
-	string lsep;		          /// line separator char for text output format
-	Orientation orientation;	/// whether print by row or colums
-  string zipper;            /// name and path of the zipper executable
-	bool fielddesc;		        /// print field description if true
-	bool useAlternateName;    /// use field name followed by its occurence
-  string alternateNameFmt;  /// format to use when formatting alternate name
+    string name;		 	        /// name of the outpout format (e.g.: "txt")
+    string outputDir;		      /// location of output file
+    string fsep;		          /// field separator char for text output format
+    string lsep;		          /// line separator char for text output format
+    Orientation orientation;	/// whether print by row or colums
+    string zipper;            /// name and path of the zipper executable
+    bool fielddesc;		        /// print field description if true
+    bool useAlternateName;    /// use field name followed by its occurence
+    string alternateNameFmt;  /// format to use when formatting alternate name
+    ushort insertPool;            /// used to group INSERTs into a single transaction
 }
 alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 
@@ -144,6 +131,7 @@ public:
         (fdesc == "true") ? true : false,
         to!bool(xml.tag.attr.get("useAlternateName", "false")),
         xml.tag.attr.get("alternateNameFmt", "%s(%d)"),
+        to!ushort(xml.tag.attr.get("pool", "30")),
       );
 		};
 
