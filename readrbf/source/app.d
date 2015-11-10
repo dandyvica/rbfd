@@ -110,7 +110,7 @@ int main(string[] argv)
         // re-index each field index
         layout.each!(r => r.recalculateIndex);
 
-        // get alternate names
+        // build alternate names
         layout.each!(r => r.buildAlternateNames);
 
 		// create new writer to generate outputFileName matching the outputFormat
@@ -135,7 +135,6 @@ int main(string[] argv)
 				//writefln("%s:%s", r.name, r.meta.repeatingPattern);
 				if (r.meta.repeatingPattern.length != 0)
                     r.meta.repeatingPattern.each!(rp => r.findRepeatedFields(rp));
-//					r.findRepeatedFields(r.meta.repeatingPattern[0]);
 			}
 		}
 

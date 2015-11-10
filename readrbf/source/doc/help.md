@@ -49,7 +49,7 @@ configuration file rbf.xml.
 
 -o format
 : Name of the output file format. Possible values are:
-html, tag, box, csv, txt, xlsx, sqlite3, ident. Defaulted to txt
+html, tag, box, csv, txt, xlsx, sql, ident. Defaulted to txt
 if not specified. ident means the output file format is
 the same than the input one.
 

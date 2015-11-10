@@ -19,6 +19,7 @@ struct RecordMeta
 	bool skip;
 	string[][] repeatingPattern;
 	Record[] subRecord;
+	string ruler;
 }
 class Record : NamedItemsContainer!(Field, true, RecordMeta)
 {

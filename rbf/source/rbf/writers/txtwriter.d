@@ -4,6 +4,7 @@ pragma(msg, "========> Compiling module ", __MODULE__);
 import std.stdio;
 import std.file;
 import std.string;
+import std.conv;
 import std.exception;
 import std.algorithm;
 import std.variant;
@@ -23,99 +24,105 @@ class TXTWriter : Writer {
 
 private:
 	string _fmt;
-	size_t _lineLength;
 
 public:
 
+	/** 
+     * Prepare file name
+	 *
+	 * Params:
+	 * 	outputFileName = text file name
+	 *
+	 */
 	this(in string outputFileName)
 	{
 		super(outputFileName);
 	}
 
-	// preparation step beodre printing out records
-	override void prepare(Layout layout) {
-		// as seperator is known at that time, build formatting string
-		_fmt = "%%-*s%s".format(outputFeature.fsep);
-	}
+	/** 
+     * Prepare the string format used to write out data
+	 *
+	 * Params:
+	 * 	layout = Layout object
+	 *
+	 */
+    override void prepare(Layout layout) 
+    {
+        // as separator is known at that time, build formatting string
+        _fmt = "%%-*s%s".format(outputFeature.fsep);
 
+        // calculate all lengths in advance
+        ulong rulerLength;
+        foreach (rec; layout)
+        {
+            rulerLength = 0;
+
+            // length is depending whether we use name or alternateName
+            foreach (f; rec) 
+            {
+                f.cellLength1 = outputFeature.useAlternateName ? 
+                    max(f.length, f.context.alternateName.length) : max(f.length, f.name.length);
+
+                // ruler length is the sum of all length
+                rulerLength += f.cellLength1;
+            }
+
+            // set ruler characters
+            if (outputFeature.lsep != "")
+            {
+                rec.meta.ruler = to!string(outputFeature.lsep[0].repeat(rulerLength+rec.size));
+            }
+        }
+    }
+
+	/** 
+     * Write a record in the opened text file
+	 *
+	 * Params:
+	 * 	rec = Record object
+	 *
+	 */
 	override void write(Record rec)
 	{
-		// this
-		_lineLength = rec.size * outputFeature.fsep.length;
+        // print new header if this is a new record
+        if (_previousRecordName != rec.name) {
+            _fh.writeln();
 
-		// build alternate names if any
-		if (outputFeature.useAlternateName) {
-			foreach (f; rec) {
-				if (rec.size(f.name) > 1) {
-					// change names only for >1 occurences
-					f.context.alternateName =
-							outputFeature.alternateNameFmt.format(f.name, f.context.occurence+1);
+            // print out names or alternate names depending on chosen option
+            if (outputFeature.useAlternateName)
+                rec.each!(f => _write!"context.alternateName"(f));
+            else
+                rec.each!(f => _write!"name"(f));
 
-					// recalculate cell lengths
-					f.cellLength1 = max(f.cellLength1, f.context.alternateName.length);
-					f.cellLength2 = max(f.cellLength2, f.context.alternateName.length);
-				}
-				else
-					f.context.alternateName = f.name;
-			}
-		}
+            // print line separator if requested
+            if (outputFeature.lsep != "") {
+                _fh.writef("\n%s", rec.meta.ruler);
+            }
 
-		// now we can write out records
+            _fh.writeln();
+        }
 
-		// print new header if new record
-		if (_previousRecordName != rec.name) {
-			_fh.writeln();
+        // finally write out values
+        rec.each!(f => 	_write!"value"(f));
+        _fh.writeln();
 
-			// print out names or alternate names
-			if (outputFeature.useAlternateName)
-				rec.each!(f => _write!"context.alternateName"(f, true));
-			else
-				rec.each!(f => _write!"name"(f, true));
-
-			// print field descriptions if requested
-			if (outputFeature.fielddesc) {
-				_fh.writeln(); rec.each!(f => _write!"description"(f));
-			}
-
-			// print line separator if requested
-			if (outputFeature.lsep != "") {
-				// print out line separator
-				_fh.writef("\n%s", outputFeature.lsep[0].repeat(_calculateLineLength(rec)));
-			}
-
-			_fh.writeln();
-	  }
-
-		// finally write out values
-		rec.each!(f => 	_write!"value"(f));
-		_fh.writeln();
-
-		// save record name
-		_previousRecordName = rec.name;
+        // save record name
+        _previousRecordName = rec.name;
 	}
 
 private:
 
-	// print out each field
-	void _write(string member)(Field f, bool calculateLineLength = false) {
-		// calculate cell length depending on output seperator
-		auto cellLength = (outputFeature.fielddesc) ? f.cellLength2 : f.cellLength1;
-
-		// calculate line seperator length if any
-		if (calculateLineLength) _lineLength += cellLength;
-
+	/** 
+     * Generic writer for any subfield
+	 *
+	 * Params:
+	 * 	member = Field member name
+	 *  f = Field object
+     *
+	 */
+	void _write(string member)(Field f) {
 		// print out data
-        //_fh.writef("format=%s-%d-%d, value=<%s>", f.name, f.cellLength1, f.cellLength2, mixin("f." ~ member));
-	    _fh.writef(_fmt, cellLength, mixin("f." ~ member));
-	}
-
-	size_t _calculateLineLength(Record rec) {
-		auto lineLength = rec.size * outputFeature.fsep.length;
-		foreach (f; rec) {
-			auto cellLength = (outputFeature.fielddesc) ? f.cellLength2 : f.cellLength1;
-			lineLength += cellLength;
-		}
-		return lineLength;
+	    _fh.writef(_fmt, f.cellLength1, mixin("f." ~ member));
 	}
 
 }

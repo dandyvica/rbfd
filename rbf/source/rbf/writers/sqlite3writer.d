@@ -17,6 +17,8 @@ import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
 
+immutable sqlKeywords = import("sqlkeywords.txt");
+
 /*********************************************
  * in this case, each record is insert into a SQL table
  */
@@ -28,6 +30,7 @@ private:
     int _sqlCode;                                     /// sqlite3 API return code
     string[string] _insertStmt;                       /// list of pre-build INSERT statements
     typeof(outputFeature.insertPool) _trxCounter;     /// pool counter for grouping INSERTs
+    string[] _sqlKeywordsList;                        /// list of all reserved keywords
 
 	/**
  	 * as SQL table names can't start with a number, if it's the case, just as R in front
@@ -39,7 +42,11 @@ private:
 	 */
     string _buildTableName(string recordName)
     {
-        return recordName[0].isDigit ? "R" ~ recordName : recordName;
+        // is record name a reserved keywords?
+        if (_sqlKeywordsList.canFind(recordName) || recordName[0].isDigit)
+            return "R" ~ recordName;
+        else
+            return recordName;
     }
 
 
@@ -182,6 +189,10 @@ public:
 	 */
 	override void prepare(Layout layout) 
     {
+        // build the list of SQL reserved keywords: it's used to check whether a record name is a reserved keyword
+        _sqlKeywordsList = sqlKeywords.split('\n');
+        writefln("kwlist=%s",_sqlKeywordsList);
+
         // creation of all tables
         stderr.writeln("info: trying to create tables, SQL pool=%d".format(outputFeature.insertPool));
 

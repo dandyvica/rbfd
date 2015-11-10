@@ -19,12 +19,14 @@ import rbf.field;
 import rbf.nameditems;
 import rbf.recordfilter;
 
-struct RecordMeta {
+struct RecordMeta 
+{
 	string name;							     /// record name
 	string description;			       /// record description
 	bool   skip;							     /// do we skip this record?
 	string[][] repeatingPattern;
 	Record[] subRecord;
+    string ruler;               /// when using the text writer, length of the ruler for header vs. data
 }
 
 /***********************************
