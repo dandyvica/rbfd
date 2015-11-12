@@ -201,7 +201,7 @@ static if (Meta.length > 0) {
 	 An array of elements of type T
 	 */
 	ref TRETURN opIndex(TNAME name) {
-		enforce(name in this, MSG001.format(name));
+		enforce(name in this, MSG001.format(name, this.name));
 		return _contextMap(_map, name);
 	}
 

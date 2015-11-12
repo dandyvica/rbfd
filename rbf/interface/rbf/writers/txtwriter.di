@@ -20,9 +20,47 @@ class TXTWriter : Writer
 		string _fmt;
 		public 
 		{
-			this(in string outputFileName);
-			override void prepare(Layout layout);
-			override void write(Record rec);
+			this(in string outputFileName)
+			{
+				super(outputFileName);
+			}
+			override void prepare(Layout layout)
+			{
+				_fmt = "%%-*s%s".format(outputFeature.fsep);
+				ulong rulerLength;
+				foreach (rec; layout)
+				{
+					rulerLength = 0;
+					foreach (f; rec)
+					{
+						f.cellLength1 = outputFeature.useAlternateName ? max(f.length, f.context.alternateName.length) : max(f.length, f.name.length);
+						rulerLength += f.cellLength1;
+					}
+					if (outputFeature.lsep != "")
+					{
+						rec.meta.ruler = to!string(outputFeature.lsep[0].repeat(rulerLength + rec.size));
+					}
+				}
+			}
+			override void write(Record rec)
+			{
+				if (_previousRecordName != rec.name)
+				{
+					_fh.writeln();
+					if (outputFeature.useAlternateName)
+						rec.each!((f) => _write!"context.alternateName"(f));
+					else
+						rec.each!((f) => _write!"name"(f));
+					if (outputFeature.lsep != "")
+					{
+						_fh.writef("\x0a%s", rec.meta.ruler);
+					}
+					_fh.writeln();
+				}
+				rec.each!((f) => _write!"value"(f));
+				_fh.writeln();
+				_previousRecordName = rec.name;
+			}
 			private void _write(string member)(Field f)
 			{
 				_fh.writef(_fmt, f.cellLength1, mixin("f." ~ member));

@@ -160,7 +160,7 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				}
 				ref TRETURN opIndex(TNAME name)
 				{
-					enforce(name in this, MSG001.format(name));
+					enforce(name in this, MSG001.format(name, this.name));
 					return _contextMap(_map, name);
 				}
 				T[] opSlice(size_t i, size_t j)
