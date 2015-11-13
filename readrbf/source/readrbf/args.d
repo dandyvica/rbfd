@@ -140,6 +140,7 @@ public:
 
         mixin(GenInput!("Input file name (mandatory)"));
         inputFileName    = input.strip;
+        inputFileName    = inputFileName.replace("'","");
 
         mixin(GenInput!("Layout name (mandatory)"));
         inputLayout      = input.strip;

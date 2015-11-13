@@ -10,6 +10,7 @@ import std.array;
 import std.zip;
 import std.conv;
 
+import rbf.errormsg;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
@@ -40,6 +41,9 @@ private:
     {
 		// ch dir to XLSX directory
 		chdir(_xlsxDir);
+
+        // log
+        stderr.writeln(MSG011);
 
 		// create zip
 		auto result = std.process.execute([outputFeature.zipper, "-r", "../" ~ _xlsxFilename, "."]);
@@ -99,6 +103,9 @@ public:
 	{
 
 		super(excelFileName, false);
+
+        // log
+        stderr.writeln(MSG012);
 
 		// save file name
 		_xlsxFilename = std.path.baseName(excelFileName);

@@ -13,15 +13,7 @@ import rbf.layout;
 import rbf.writers.writer;
 class CSVWriter : Writer
 {
-	this(in string outputFileName)
-	{
-		super(outputFileName);
-	}
-	override void prepare(Layout layout)
-	{
-	}
-	override void write(Record rec)
-	{
-		_fh.write(join(rec.fieldValues, outputFeature.fsep), "\x0a");
-	}
+	this(in string outputFileName);
+	override void prepare(Layout layout);
+	override void write(Record rec);
 }

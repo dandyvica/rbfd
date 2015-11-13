@@ -8,7 +8,7 @@ readrbf -i file - l layout [-o format] [-f file] [-c] [-O] [--br] [--gf] [--gr] 
 
 # DESCRIPTION
 This program is aimed at reading a record-based file and converting it to
-a human-readable format. It reads its settings from the rbf.yaml configuration
+a human-readable format. It reads its settings from the rbf.xml configuration
 file located in the current directory or ~/.rbf directory (linux) or
 the %APPDATA%\\local\\rbf directory (Windows).
 

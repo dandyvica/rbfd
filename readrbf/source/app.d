@@ -9,6 +9,7 @@ import std.conv;
 import std.path;
 import std.traits;
 
+import rbf.errormsg;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
@@ -25,6 +26,7 @@ int main(string[] argv)
 	// number of records read
 	auto nbReadRecords = 0;
 	auto nbWrittenRecords = 0;
+	auto nbMatchedRecords = 0;
 
 
 	string[] conditions;
@@ -147,21 +149,22 @@ int main(string[] argv)
 			// record read is increasing
 			nbReadRecords++;
 
-			// do we filter out records?
-			if (opts.isRecordFilterFileSet || opts.isRecordFilterSet)
-			{
-				if (!rec.matchRecordFilter(opts.filteredRecords)) continue;
-			}
-
             // don't want a progress bar?
             if (opts.bProgressBar && nbReadRecords % 1000 == 0)
             {
                 if (reader.nbRecords != 0)
-                    stderr.writef("%d/%d records read so far (%.0f %%)\r",
-                            nbReadRecords, reader.nbRecords, to!float(nbReadRecords)/reader.nbRecords*100);
+                    stderr.writef("%d/%d records read so far (%.0f %%), %d matching record condition\r",
+                            nbReadRecords, reader.nbRecords, to!float(nbReadRecords)/reader.nbRecords*100, nbMatchedRecords);
                 else
                     stderr.writef("%d lines read so far\r",nbReadRecords);
             }
+
+			// do we filter out records?
+			if (opts.isRecordFilterFileSet || opts.isRecordFilterSet)
+			{
+				if (!rec.matchRecordFilter(opts.filteredRecords)) continue;
+                nbMatchedRecords++;
+			}
 
 			// don't want to write? Just loop
 			if (opts.bJustRead) continue;
@@ -188,12 +191,12 @@ int main(string[] argv)
 		// print out some stats
 		auto elapsedtime = Clock.currTime() - starttime;
 
-		stderr.writefln("\nLines: %d read, records: %d read, %d written\nElapsed time = %s",
-			reader.nbLinesRead, nbReadRecords, nbWrittenRecords, elapsedtime);
+        stderr.writeln();
+		stderr.writefln(MSG014, reader.nbLinesRead, nbReadRecords, nbWrittenRecords);
+		stderr.writefln(MSG015, elapsedtime);
 
 		if (!opts.bJustRead)
-				stderr.writefln("Created file %s, size = %d bytes",
-								opts.outputFileName, getSize(opts.outputFileName));
+				stderr.writefln(MSG013, opts.outputFileName, getSize(opts.outputFileName));
 	}
 	catch (Exception e) {
 		stderr.writeln(e.msg);

@@ -31,72 +31,13 @@ abstract class Writer
 			public 
 			{
 				OutputFeature outputFeature;
-				this(in string outputFileName, in bool create = true)
-				{
-					_outputFileName = outputFileName;
-					if (outputFileName != "")
-					{
-						_outputFileName = outputFileName;
-						if (create)
-							_fh = File(_outputFileName, "w");
-					}
-					else
-						_fh = stdout;
-				}
+				this(in string outputFileName, in bool create = true);
 				abstract void prepare(Layout layout);
 				abstract void write(Record rec);
-				void open()
-				{
-					_fh = File(_outputFileName, "w");
-				}
-				void close()
-				{
-					if (_outputFileName != "")
-						_fh.close();
-				}
+				void open();
+				void close();
 			}
 		}
 	}
 }
-Writer writerFactory(in string output, in string mode, Layout layout)
-{
-	switch (mode)
-	{
-		case "html":
-		{
-			return new HTMLWriter(output);
-		}
-		case "csv":
-		{
-			return new CSVWriter(output);
-		}
-		case "txt":
-		{
-			return new TXTWriter(output);
-		}
-		case "box":
-		{
-			return new BoxWriter(output);
-		}
-		case "xlsx":
-		{
-			return new XLSXWriter(output, layout);
-		}
-		case "sql":
-		{
-			return new Sqlite3Writer(output);
-		}
-		case "tag":
-		{
-			return new TAGWriter(output);
-		}
-		case "ident":
-		{
-			return new IdentWriter(output);
-		}
-		default:
-		{
-			throw new Exception("error: writer unknown mode <%s>".format(mode));
-		}
-	}
-}
+Writer writerFactory(in string output, in string mode, Layout layout);

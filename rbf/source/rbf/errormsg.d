@@ -11,3 +11,8 @@ immutable MSG007 = "error: lower index %d is out of bounds, upper bound = %d";
 immutable MSG008 = "error: upper index %d is out of bounds, upper bound = %d";
 immutable MSG009 = "error: lower index %d is higher than upper index %d";
 immutable MSG010 = "error: unable to create field, wrong number of csv data (%d, expected %d)";
+immutable MSG011 = "info: creating Excel file";
+immutable MSG012 = "info: creating Excel internal directory structure";
+immutable MSG013 = "info: created file %s, size = %d bytes";
+immutable MSG014 = "info: lines: %d read, records: %d read, %d written";
+immutable MSG015 = "info: elapsed time = %s";
