@@ -13,6 +13,7 @@ import std.range;
 
 import etc.c.sqlite3;
 
+import rbf.errormsg;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
@@ -236,7 +237,7 @@ private:
             }
             // conversion error catched
             catch (ConvException e) {
-                stderr.writeln("error: converting value <%s> to type <%s>, resetting to NULL\n".format(f.value, f.type.meta.type));
+                log.log(LogLevel.INFO, MSG020, f.value, f.type.meta.type);
                 // instead, use a NULL value
                 _sqlCode = sqlite3_bind_null(_compiledInsertStmt[rec.name], to!int(f.context.index+1));
             }
@@ -271,6 +272,7 @@ public:
             stderr.writefln("error: database create error: %s\n", sqlite3_errmsg(_db));
             throw new Exception("error: SQL error %d when opening file %d, SQL msg %s ".format(_sqlCode, databaseName, sqlite3_errmsg(_db)));
         }
+        log.log(LogLevel.INFO, MSG019, databaseName);
 	}
 
 	/** 
@@ -287,7 +289,7 @@ public:
         _sqlKeywordsList = array(_sqlKeywordsList.filter!(f => f != ""));
 
         // creation of all tables
-        stderr.writeln("info: creating tables, SQL pool=%d".format(outputFeature.insertPool));
+        log.log(LogLevel.INFO, MSG021, outputFeature.insertPool);
 
         // create all tables = one table per record
         foreach(rec; layout)
@@ -302,7 +304,7 @@ public:
             _prepareInsertCompiledStatement(rec);
             //_prepareInsertStatement(rec);
         }
-        stderr.writeln("info: %d tables created".format(layout.size));
+        log.log(LogLevel.INFO, MSG022, layout.size);
     }
 
 	/** 
@@ -316,9 +318,6 @@ public:
 	 */
 	override void write(Record rec)
 	{
-        //auto values = rec[].map!(f => _buildColumnWithinInsertStatement(f));
-        //auto stmt = _insertStmt[rec.name].format(join(values, ","));
-
         // make a transaction to group INSERTs
         if (_trxCounter == 0)
         {
@@ -328,7 +327,6 @@ public:
 
         // insert
         _bind(rec);
-        //_executeStmt(stmt);
         _sqlCode = sqlite3_step(_compiledInsertStmt[rec.name]);
         if (_sqlCode != SQLITE_DONE) 
         {

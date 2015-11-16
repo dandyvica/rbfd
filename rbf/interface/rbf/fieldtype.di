@@ -24,7 +24,6 @@ struct FieldTypeMeta
 	string stringType;
 	string pattern;
 	string format;
-	bool checkPattern;
 	string fmtPattern;
 	Conv preConv;
 	CmpFunc filterTestCallback;

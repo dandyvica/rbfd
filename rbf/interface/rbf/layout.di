@@ -11,6 +11,7 @@ import std.algorithm;
 import std.regex;
 import std.array;
 import std.path;
+import rbf.errormsg;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;

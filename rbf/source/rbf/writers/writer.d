@@ -8,6 +8,7 @@ import std.exception;
 import std.algorithm;
 import std.variant;
 
+import rbf.errormsg;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
@@ -55,7 +56,11 @@ public:
 
 		if (outputFileName != "") {
 			_outputFileName = outputFileName;
-			if (create) _fh = File(_outputFileName, "w");
+			if (create) 
+            {
+                _fh = File(_outputFileName, "w");
+                log.log(LogLevel.INFO, MSG019, outputFileName);
+            }
 		}
 		else
 			_fh = stdout;

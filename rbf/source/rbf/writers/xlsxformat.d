@@ -68,7 +68,7 @@ public:
   }
 
   void fill(string worksheetName) {
-    _fh.writefln(`<sheet name="%s" sheetId="%d" r:id="rId%d"/>`.format(worksheetName, ++sheetIndex, sheetIndex));
+    _fh.writefln(`<sheet name="%s" sheetId="%d" r:id="rId%d"/>`, worksheetName, ++sheetIndex, sheetIndex);
   }
 
   override void close() {
@@ -91,11 +91,11 @@ class Worksheet : XlsxEntity {
   void endRow() { _fh.writeln("</row>"); }
 
   void strCell(string cellValue) {
-    _fh.writefln(`<c t="inlineStr"><is><t>%s</t></is></c>`.format(cellValue));
+    _fh.writefln(`<c t="inlineStr"><is><t>%s</t></is></c>`, cellValue);
   }
 
   void numCell(string cellValue) {
-    _fh.writefln(`<c><v>%s</v></c>`.format(cellValue));
+    _fh.writefln(`<c><v>%s</v></c>`, cellValue);
   }
 
   override void close() {
@@ -139,7 +139,7 @@ public:
   }
 
   void fill(string worksheetName) {
-    _fh.writefln(`<Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/%s.xml"/>`.format(++sheetIndex, worksheetName));
+    _fh.writefln(`<Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/%s.xml"/>`, ++sheetIndex, worksheetName);
   }
 
   override void close() {

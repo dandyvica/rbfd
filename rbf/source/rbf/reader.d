@@ -15,6 +15,7 @@ import std.regex;
 import std.range;
 import std.algorithm;
 
+import rbf.errormsg;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
@@ -56,11 +57,15 @@ private:
 	/// size read
 	ulong _nbLinesRead;
 
+    ulong _currentLineNumber;
+
 	/// input file size
 	ulong _inputFileSize;
 
     /// guessed number of records (in case of a lauyout having reclength!=0)
     ulong _guessedRecordNumber;
+
+    bool _checkPattern;
 
 public:
 	/**
@@ -87,7 +92,7 @@ public:
 
 		// get file size and try to calculate number of records
 		_inputFileSize = getSize(rbFile);
-        if (layout.meta.length != 0) _guessedRecordNumber = _inputFileSize / layout.meta.length;
+        if (layout.meta.length != 0) _guessedRecordNumber = _inputFileSize / (layout.meta.length+1);
 
 		// set regex if any
 		if (layout.meta.ignoreLinePattern != "")
@@ -119,6 +124,7 @@ public:
 	/// return the file size of the input file in bytes
 	@property ulong inputFileSize() { return _inputFileSize; }
 
+	@property void checkPattern(bool check) { _checkPattern = check; }
 
 	Record _getRecordFromLine(char[] lineReadFromFile) {
 
@@ -140,7 +146,7 @@ public:
 
 		// record not found ? So loop
 		if (recordName !in _layout) {
-			writefln("error: record name <%s> not found!!", recordName);
+            log.log(LogLevel.WARNING, MSG018, _nbLinesRead, recordName);
 			return null;
 		}
 
@@ -154,6 +160,18 @@ public:
 		// is a mapper registered? so we need to call it
 		if (_mapper)
 			_mapper(_layout[recordName]);
+
+        // do we need to check field patterns?
+        if (_checkPattern)
+        {
+            foreach (f;  _layout[recordName])
+            {
+                if (f.value != "" && !f.matchPattern) 
+                {
+                    log.log(LogLevel.WARNING, MSG002, _nbLinesRead, recordName, f.name, f.value, f.type.meta.pattern);
+                }
+            }
+		}
 
 		// return to caller our record
 		return _layout[recordName];

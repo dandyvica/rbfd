@@ -49,9 +49,6 @@ private:
 	Regex!char _fieldPattern;					/// override filed type pattern by this
 	string _charPattern;							/// pattern as a string
 
-	// Variant _value;										/// the final value that is depending on the fieldtype
-	// Algebraic!(int, string, float) _value2;
-
 public:
 	/**
  	 * create a new field object
@@ -59,8 +56,8 @@ public:
 	 * Params:
 	 * 	name = name of the field
 	 *  description = a generally long description of the field
-	 *  length = length in bytes of the field. Should be >0
 	 *  ftype = FieldType object
+	 *  length = length in bytes of the field. Should be >0
 	 *
 	 */
 	this(in string name, in string description, FieldType type, in ulong length)
@@ -98,7 +95,8 @@ public:
 		this(f[0], f[1], new FieldType(f[2],f[3]), to!ulong(f[4]));
 	}
 	///
-	unittest {
+	unittest 
+    {
 		auto field1 = new Field("FIELD1;Field description;N;decimal;15");
 		assertThrown(new Field("FIELD1;Field description;N;decimal"));
 	}
@@ -114,7 +112,8 @@ public:
 	/// read/write property for field value
 	@property string value() { return _strValue; }
 	///
-	unittest {
+	unittest 
+    {
 		auto field1 = new Field("IDENTITY", "Person's name", new FieldType("S","string"), 30);
 		field1.value = "  John Doe   ";
 		assert(field1.value == "John Doe");
@@ -123,7 +122,8 @@ public:
 	/// convert value to type T
 	@property T value(T)() { return to!T(_strValue) * sign; }
 	///
-	unittest {
+	unittest 
+    {
 		auto field1 = new Field("AGE", "Person's age", new FieldType("N","decimal"), 3);
 		field1.value = "50";
 		assert(field1.value!int == 50);
@@ -148,32 +148,21 @@ public:
 		// 	writefln("_value2 == <%s>", _value2);
 		// }
 
-		// do we need to chek value?
-		if (type.meta.checkPattern) {
-			// writefln("field=%s, type=%s, value=<%s>, checkPattern=%s, pattern=%s, match=%s, empty?=%s",
-			// 	name, type.name, _strippedValue, type.extra.checkPattern, type.extra.pattern, matchPattern,
-			// 		matchAll(_rawValue.strip, regex(type.extra.pattern)).empty);
-			if (_strippedValue!= "" && !matchPattern) {
-				stderr.writefln(MSG002, this, _charPattern);
-			}
-		}
 
 	}
 	///
-	unittest {
+	unittest 
+    {
 		auto field1 = new Field("AGE", "Person's age", new FieldType("I","integer"), 3);
 		field1.value = "50";
 		assert(field1.value == "50");
-
-		// field1 = new Field("AGE", "Person's age", new FieldType("N","overpunchedInteger"), 10);
-		// field1.value = "  5{}";
-		// assert(field1.value == "500");
 	}
 
 	/// read property for field raw value. Raw value is not stripped
 	@property string rawValue() { return _rawValue; }
 	///
-	unittest {
+	unittest 
+    {
 		auto field1 = new Field("IDENTITY", "Person's name", new FieldType("CHAR","string"), 30);
 		field1.value = "       John Doe      ";
 		assert(field1.value == "John Doe");
@@ -187,14 +176,17 @@ public:
 	/**
 	 * return a string of Field attributes
 	 */
-	override string toString() {
-		with(context) {
+	override string toString() 
+    {
+		with(context) 
+        {
 			return(MSG003.format(name, description, length, type, lowerBound, upperBound, rawValue, value, offset, index));
 		}
 	}
 
 	/// useful for unit tests
-	bool opEquals(Tuple!(string,string,string,ulong) t) {
+	bool opEquals(Tuple!(string,string,string,ulong) t) 
+    {
 		return
 			name           == t[0] &&
 			description    == t[1] &&
@@ -202,14 +194,16 @@ public:
 			length         == t[3];
 	}
 	///
-	unittest {
+	unittest 
+    {
 		auto field1 = new Field("AGE", "Person's age", new FieldType("INT","integer"), 3);
 		assert(field1 == tuple("AGE", "Person's age", "INT", 3UL));
 	}
 
 	T opCast(T)() { return to!T(_strValue); }
 	///
-	unittest {
+	unittest 
+    {
 		auto field1 = new Field("AGE", "Person's age", new FieldType("I","integer"), 3);
 		field1.value = " 50";
 		assert(to!int(field1) == 50);
@@ -221,7 +215,8 @@ public:
 
 }
 ///
-unittest {
+unittest 
+{
 
 		writeln("========> testing ", __FILE__);
 

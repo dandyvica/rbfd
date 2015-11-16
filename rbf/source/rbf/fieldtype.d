@@ -60,7 +60,7 @@ struct FieldTypeMeta {
 	string stringType;
 	string pattern;
 	string format;
-	bool checkPattern;
+	//bool checkPattern;
 	string fmtPattern;
 	Conv preConv;								 /// conversion occruing before setting a field value
 	CmpFunc filterTestCallback; 	/// method to test whether a value matches a filter

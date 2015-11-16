@@ -52,6 +52,7 @@ public:
 	bool bCheckLayout;							/// if true, try to validate layouy by checking length
 	bool stdOutput;									/// if true, print to standard output instead of file
 	bool bBreakRecord;  						/// if true, break records into individual sub-records
+	bool bCheckPattern;  						/// if true, check if field values are matching pattern
 
 
 	ulong samples;									/// limit to n first lines (n == samples)
@@ -90,6 +91,7 @@ public:
                     "f" , &fieldFilterFile ,
                     "gf", &fieldFilter     ,
                     "gl", &lineFilter      ,
+                    "check", &bCheckPattern      ,
                     "r" , &recordFilterFile,
                     "gr", &recordFilter    ,
                     "v" , &bVerbose        ,
@@ -115,10 +117,13 @@ public:
 		}
 
 		// if filter file is specified, load conditions
-		if (recordFilterFile != "") {
-			enforce(exists(recordFilterFile), "error: field filter file %s not found".format(recordFilterFile));
+		if (recordFilterFile != "") 
+        {
+			enforce(exists(recordFilterFile), "error: record filter file %s not found".format(recordFilterFile));
 			filteredRecords = new RecordFilter(cast(string)std.file.read(recordFilterFile), "\n");
-		} else if (recordFilter != "") {
+		} 
+        else if (recordFilter != "") 
+        {
 			filteredRecords = new RecordFilter(recordFilter, ";");
 		}
 

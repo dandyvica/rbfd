@@ -24,7 +24,7 @@ void printMembers(T)(T v)
 {
 	foreach (member; FieldNameTuple!T)
 	{
-		mixin("stderr.writefln(\"%-50.50s : <%s>\", \"" ~ T.stringof ~ "." ~ member ~ "\", v." ~ member ~ ");");
+		mixin("log.log(LogLevel.INFO, \"%-50.50s : <%s>\", \"" ~ T.stringof ~ "." ~ member ~ "\", v." ~ member ~ ");");
 	}
 }
 
@@ -76,67 +76,78 @@ private:
 	OutputDir _outputDirectory;		/// list of all output formats
 
 public:
+
+    string logFileName;
+
 	/**
 	 * read the XML configuraimport rbf.xml file configuration file
 	 */
 	this(string xmlConfigFile = "") {
 
-		// define new container for layouts and formats
-		_layoutDirectory = new LayoutDir("layouts");
-		_outputDirectory = new OutputDir("outputs");
+        // define new container for layouts and formats
+        _layoutDirectory = new LayoutDir("layouts");
+        _outputDirectory = new OutputDir("outputs");
 
-    // settings file
-    string settingsFile;
+        // settings file
+        string settingsFile;
 
-    // if file name is passed, take it or otherwise try possible locations
-		settingsFile = (xmlConfigFile != "") ? xmlConfigFile : _getConfigFileName();
+        // if file name is passed, take it or otherwise try possible locations
+        settingsFile = (xmlConfigFile != "") ? xmlConfigFile : _getConfigFileName();
 
-		// get settings path
-		auto settingsFilePath = dirName(settingsFile) ~ "/";
+        // get settings path
+        auto settingsFilePath = dirName(settingsFile) ~ "/";
 
-		// ensure file exists
-		std.exception.enforce(exists(settingsFile), MSG004.format(settingsFile));
+        // ensure file exists
+        std.exception.enforce(exists(settingsFile), MSG004.format(settingsFile));
 
-    // open XML file and load it into a string
-		string s = cast(string)std.file.read(settingsFile);
+        // open XML file and load it into a string
+        string s = cast(string)std.file.read(settingsFile);
 
-		// create a new parser
-		auto xml = new DocumentParser(s);
+        // create a new parser
+        auto xml = new DocumentParser(s);
 
-    // read <layout> definition tag
-		xml.onStartTag["layout"] = (ElementParser xml)
-		{
-			// save layout metadata
-      this._layoutDirectory ~= SettingCore(
-        xml.tag.attr["name"],
-        xml.tag.attr["description"],
-        settingsFilePath ~ xml.tag.attr["file"],
-      );
-		};
+        // read <global> and <log> definition tag
+        xml.onStartTag["log"] = (ElementParser xml)
+        {
+            // save global config and create log handler
+            this.logFileName = xml.tag.attr.get("path", "./rbf.log");
+            log = Log(this.logFileName);
+        };
 
-    // read <output> definition tag
-		xml.onStartTag["output"] = (ElementParser xml)
-		{
-			// manage attributes
-			auto fdesc = xml.tag.attr.get("fdesc", "false");
+        // read <layout> definition tag
+        xml.onStartTag["layout"] = (ElementParser xml)
+        {
+            // save layout metadata
+            this._layoutDirectory ~= SettingCore(
+                    xml.tag.attr["name"],
+                    xml.tag.attr["description"],
+                    settingsFilePath ~ xml.tag.attr["file"],
+                    );
+        };
 
-			// save layout metadata
-      this._outputDirectory ~= OutputFeature(
-        xml.tag.attr["name"],
-        xml.tag.attr.get("outputDir", ""),
-        xml.tag.attr.get("fsep", "|"),
-        xml.tag.attr.get("lsep", ""),
-        to!Orientation(xml.tag.attr.get("orientation", "horizontal")),
-        xml.tag.attr.get("zipper", ""),
-        (fdesc == "true") ? true : false,
-        to!bool(xml.tag.attr.get("useAlternateName", "false")),
-        xml.tag.attr.get("alternateNameFmt", "%s(%d)"),
-        to!ushort(xml.tag.attr.get("pool", "30")),
-      );
-		};
+        // read <output> definition tag
+        xml.onStartTag["output"] = (ElementParser xml)
+        {
+            // manage attributes
+            auto fdesc = xml.tag.attr.get("fdesc", "false");
 
-    // real parsing
-		xml.parse();
+            // save layout metadata
+            this._outputDirectory ~= OutputFeature(
+                    xml.tag.attr["name"],
+                    xml.tag.attr.get("outputDir", ""),
+                    xml.tag.attr.get("fsep", "|"),
+                    xml.tag.attr.get("lsep", ""),
+                    to!Orientation(xml.tag.attr.get("orientation", "horizontal")),
+                    xml.tag.attr.get("zipper", ""),
+                    (fdesc == "true") ? true : false,
+                    to!bool(xml.tag.attr.get("useAlternateName", "false")),
+                    xml.tag.attr.get("alternateNameFmt", "%s(%d)"),
+                    to!ushort(xml.tag.attr.get("pool", "30")),
+                    );
+        };
+
+        // real parsing
+        xml.parse();
 
   }
 

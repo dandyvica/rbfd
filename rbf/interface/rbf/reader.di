@@ -9,6 +9,7 @@ import std.exception;
 import std.regex;
 import std.range;
 import std.algorithm;
+import rbf.errormsg;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
@@ -24,8 +25,10 @@ class Reader
 		Regex!char _lineRegex;
 		STRING_MAPPER _mapper;
 		ulong _nbLinesRead;
+		ulong _currentLineNumber;
 		ulong _inputFileSize;
 		ulong _guessedRecordNumber;
+		bool _checkPattern;
 		public 
 		{
 			this(string rbFile, Layout layout, MapperFunc recIndentifier = null);
@@ -36,6 +39,7 @@ class Reader
 			@property Layout layout();
 			@property ulong nbLinesRead();
 			@property ulong inputFileSize();
+			@property void checkPattern(bool check);
 			Record _getRecordFromLine(char[] lineReadFromFile);
 			struct Range
 			{

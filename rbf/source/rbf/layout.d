@@ -12,6 +12,7 @@ import std.regex;
 import std.array;
 import std.path;
 
+import rbf.errormsg;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
@@ -154,7 +155,7 @@ public:
 				// set extra features in any
 				ftype[ftName].meta.pattern      = attr.get("pattern", "");
 				ftype[ftName].meta.format       = attr.get("format", "");
-				ftype[ftName].meta.checkPattern = to!bool(attr.get("checkPattern", "false"));
+				//ftype[ftName].meta.checkPattern = to!bool(attr.get("checkPattern", "false"));
 
                 // preconv is set to overpunch if any
                 if (attr.get("preconv","") == "overpunch") ftype[ftName].meta.preConv = &overpunch;
@@ -204,6 +205,8 @@ public:
             // then recalculate all indexes as we deleted some fields
             //this.each!(r => r.recalculateIndex);
 		}
+
+        log.log(LogLevel.INFO, MSG023, xmlFile, this.size);
 	}
 	///
 	unittest {

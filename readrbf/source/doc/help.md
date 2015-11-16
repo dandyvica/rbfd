@@ -24,6 +24,9 @@ text presentation.
 -c
 : Validate layout structure.
 
+--check
+: check whether field patterns are matched
+
 -f file
 : Full path and name of a file to filter fields.
 

@@ -55,6 +55,8 @@ public:
     assert(cond._recordFitlerClause[1].scalar == "3");
   }
 
+  //@property auto recordClause() { return _recordFitlerClause; }
+
   /**
 	 * to loop with foreach loop on all clases
 	 *
