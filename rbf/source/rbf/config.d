@@ -149,6 +149,9 @@ public:
         // real parsing
         xml.parse();
 
+        // log info on configuration file
+        log.log(LogLevel.INFO, MSG027, settingsFile);
+
   }
 
 	@property LayoutDir layoutDir() { return _layoutDirectory; }
@@ -157,31 +160,31 @@ public:
 private:
   string _getConfigFileName() {
 
-    // settings file
-    string settingsFile;
+      // settings file
+      string settingsFile;
 
-    // test if env variable is set
-		auto rbfconf = environment.get("RBFCONF", "");
-    if (rbfconf != "") return rbfconf;
+      // test if env variable is set
+      auto rbfconf = environment.get("RBFCONF", "");
+      if (rbfconf != "") return rbfconf;
 
-    // otherwise, first possible location is current directory
-    if (exists(getcwd ~ xmlSettings)) {
-      settingsFile = getcwd ~ xmlSettings;
-    }
-    else {
-      // XML settings file location is OS-dependent
-      string _rbfhome;
-      version(linux) {
-        _rbfhome = environment["HOME"];
-        settingsFile = _rbfhome ~ "/" ~ xmlSettings;
+      // otherwise, first possible location is current directory
+      if (exists(getcwd ~ xmlSettings)) {
+          settingsFile = getcwd ~ xmlSettings;
       }
-      version(Win64) {
-        _rbfhome = environment["APPDATA"];
-         settingsFile = _rbfhome ~ xmlSettings;
+      else {
+          // XML settings file location is OS-dependent
+          string _rbfhome;
+          version(linux) {
+              _rbfhome = environment["HOME"];
+              settingsFile = _rbfhome ~ "/" ~ xmlSettings;
+          }
+          version(Win64) {
+              _rbfhome = environment["APPDATA"];
+              settingsFile = _rbfhome ~ xmlSettings;
+          }
       }
-    }
 
-    return settingsFile;
+      return settingsFile;
 
   }
 

@@ -7,9 +7,10 @@ import std.string;
 import std.regex;
 import std.algorithm;
 import std.exception;
+import rbf.field;
 static string overpunch(string s);
 alias CmpFunc = bool delegate(string, string, string);
-alias Conv = string function(string);
+alias Conv = valueType function(valueType);
 enum AtomicType 
 {
 	decimal,
@@ -35,7 +36,7 @@ class FieldType
 		FieldTypeMeta meta;
 		this(string nickName, string declaredType);
 		@property bool isNumeric();
-		bool isFieldFilterMatched(string lvalue, string op, string rvalue);
+		bool isFieldFilterMatched(valueType lvalue, string op, valueType rvalue);
 		static string testFilter(T)(string op)
 		{
 			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";

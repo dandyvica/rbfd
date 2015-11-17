@@ -28,15 +28,13 @@ int main(string[] argv)
 	auto nbWrittenRecords = 0;
 	auto nbMatchedRecords = 0;
 
-
-	string[] conditions;
-
     //---------------------------------------------------------------------------------
 	// need to known how much time spent
     //---------------------------------------------------------------------------------
 	auto starttime = Clock.currTime();
 
-	try {
+	try 
+    {
 
         //---------------------------------------------------------------------------------
 		// read XML properties from rbf.xml file
@@ -51,7 +49,8 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// check output formats
         //---------------------------------------------------------------------------------
-		if (opts.outputFormat !in settings.outputDir) {
+		if (opts.outputFormat !in settings.outputDir) 
+        {
 			throw new Exception(
 				"fatal: output format should be in the following list: %s".
 						format(settings.outputDir.names));
@@ -65,24 +64,30 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// layout syntax validation requested
         //---------------------------------------------------------------------------------
-		if (opts.bCheckLayout) {
+		if (opts.bCheckLayout) 
+        {
 			layout.validate;
 		}
 
         //---------------------------------------------------------------------------------
 		// need to get rid of some fields ?
         //---------------------------------------------------------------------------------
-		if (opts.isFieldFilterFileSet) {
+		if (opts.isFieldFilterFileSet) 
+        {
             //---------------------------------------------------------------------------------
 			// only keep specified fields
             //---------------------------------------------------------------------------------
 			layout.keepOnly(opts.filteredFields, "\n");
+            log.log(LogLevel.INFO, MSG026, layout.size);
 		}
-		if (opts.isFieldFilterSet) {
+        // list of records/fields given from the command line
+		if (opts.isFieldFilterSet) 
+        {
             //---------------------------------------------------------------------------------
 			// only keep specified fields
             //---------------------------------------------------------------------------------
 			layout.keepOnly(opts.filteredFields, ";");
+            log.log(LogLevel.INFO, MSG026, layout.size);
 		}
 
         //---------------------------------------------------------------------------------
@@ -100,12 +105,13 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// grep lines?
         //---------------------------------------------------------------------------------
-		if (opts.lineFilter != "") {
+		if (opts.lineFilter != "") 
+        {
 			reader.lineRegexPattern = opts.lineFilter;
 		}
 
         //---------------------------------------------------------------------------------
-		// verify record filter arguments
+		// verify record filter arguments: if field name is not found in layout, stop
         //---------------------------------------------------------------------------------
         if (opts.isRecordFilterFileSet || opts.isRecordFilterSet)
         {
@@ -121,13 +127,14 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// if verbose option is requested, print out what's possible
         //---------------------------------------------------------------------------------
-		if (opts.bVerbose) {
+		if (opts.bVerbose) 
+        {
             //---------------------------------------------------------------------------------
 			// print out field type meta info
             //---------------------------------------------------------------------------------
 			printMembers!(LayoutMeta)(layout.meta);
-			stderr.writeln;
-			foreach (t; layout.ftype) {
+			foreach (t; layout.ftype) 
+            {
 				printMembers!(FieldTypeMeta)(t.meta);
 			}
 			printMembers!(CommandLineOption)(opts);
@@ -139,12 +146,15 @@ int main(string[] argv)
             if (opts.bBreakRecord)
             {
                 foreach(r; layout) { 
-                    if (r.meta.repeatingPattern.length != 0) {
+                    if (r.meta.repeatingPattern.length != 0) 
+                    {
                         stderr.writefln("\nRecord %s", r.name);
-                        foreach(rp; r.meta.repeatingPattern) {
+                        foreach(rp; r.meta.repeatingPattern) 
+                        {
                             stderr.writefln("\tRepeating pattern: %s", rp);
                         }
-                        foreach(sr; r.meta.subRecord) {
+                        foreach(sr; r.meta.subRecord) 
+                        {
                             stderr.write("\t");
                             sr.each!(f => stderr.writef("%s(%d)-", f.name, f.context.index)); 
                             stderr.writeln();
@@ -186,7 +196,8 @@ int main(string[] argv)
 		if (opts.bBreakRecord)
 		{
 			layout.each!(r => r.identifyRepeatedFields);
-			foreach (r; layout) {
+			foreach (r; layout) 
+            {
 				//writefln("%s:%s", r.name, r.meta.repeatingPattern);
 				if (r.meta.repeatingPattern.length != 0)
                     r.meta.repeatingPattern.each!(rp => r.findRepeatedFields(rp));
@@ -206,7 +217,10 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// if samples is set, break if record count is reached
             //---------------------------------------------------------------------------------
-			if (opts.samples != 0 && nbReadRecords > opts.samples) break;
+			if (opts.samples != 0 && nbReadRecords > opts.samples) 
+            {
+                break;
+            }
 
             //---------------------------------------------------------------------------------
             // don't want a progress bar?
@@ -264,7 +278,8 @@ int main(string[] argv)
 
         stderr.writeln();
 		stderr.writefln(MSG014, reader.nbLinesRead, nbReadRecords, nbWrittenRecords);
-		stderr.writefln(MSG015, elapsedtime);
+		//stderr.writefln(MSG015, elapsedtime);
+		log.log(LogLevel.INFO, MSG015, elapsedtime);
 
 		if (!opts.bJustRead)
 				stderr.writefln(MSG013, opts.outputFileName, getSize(opts.outputFileName));
@@ -277,7 +292,8 @@ int main(string[] argv)
 
         if (seconds != 0) log.log(LogLevel.INFO, MSG017, to!float(nbReadRecords/seconds));
 	}
-	catch (Exception e) {
+	catch (Exception e) 
+    {
 		stderr.writeln(e.msg);
 		return 1;
 	}

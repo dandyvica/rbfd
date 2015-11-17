@@ -70,22 +70,22 @@ private:
 
 		// then create header (record name & record description)
 		_worksheetFile[rec.name].startRow();
-		_worksheetFile[rec.name].strCell(format("%s: %s", rec.name, rec.meta.description));
+		_worksheetFile[rec.name].strCell!string(format("%s: %s", rec.name, rec.meta.description));
 		_worksheetFile[rec.name].endRow();
 
 		// create field description row
 		_worksheetFile[rec.name].startRow();
-		rec.each!(f => _worksheetFile[rec.name].strCell(f.description));
+		rec.each!(f => _worksheetFile[rec.name].strCell!string(f.description));
 		_worksheetFile[rec.name].endRow();
 
 		// create field type, length row
 		_worksheetFile[rec.name].startRow();
-		rec.each!(f => _worksheetFile[rec.name].strCell(format("%s-%d", f.type.meta.name, f.length)));
+		rec.each!(f => _worksheetFile[rec.name].strCell!string(format("%s-%d", f.type.meta.name, f.length)));
 		_worksheetFile[rec.name].endRow();
 
 		// create field name
 		_worksheetFile[rec.name].startRow();
-		rec.each!(f => _worksheetFile[rec.name].strCell(format("%s", f.name)));
+		rec.each!(f => _worksheetFile[rec.name].strCell!string(format("%s", f.name)));
 		_worksheetFile[rec.name].endRow();
 	}
 
@@ -159,7 +159,7 @@ public:
         {
 			if (field.type.meta.stringType == "string")
 			{
-				_worksheetFile[record.name].strCell(field.value);
+				_worksheetFile[record.name].strCell!valueType(field.value);
 			}
 			else
 			{

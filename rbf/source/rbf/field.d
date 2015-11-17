@@ -16,15 +16,21 @@ import rbf.element;
 import rbf.fieldtype;
 
 /***********************************
+ * type used to hold values read from file
+ */
+//alias valueType = char[];
+alias valueType = string;
+
+/***********************************
  * These information are based on the context: a field within a record
  */
 struct ContextualInfo {
-	ulong index;					          /// index of the field within its parent record
-	ulong offset;					          /// offset of the field within its parent record from the first field
-	ulong occurence;								/// index of the field within all the fields having the same name
-	ulong lowerBound;				        /// when adding a field to a record, give
-	ulong upperBound;								/// absolute position within the line read
-	string alternateName;						///
+	ulong index;					/// index of the field within its parent record
+	ulong offset;					/// offset of the field within its parent record from the first field
+	ulong occurence;				/// index of the field within all the fields having the same name
+	ulong lowerBound;				/// when adding a field to a record, give
+	ulong upperBound;				/// absolute position within the line read
+	typeof(Field.name) alternateName;/// when the field appers more than once, this builds unique field name by adding its index
 }
 
 /******************************************************************************************************
@@ -33,21 +39,15 @@ struct ContextualInfo {
 class Field : Element!(string, ulong, ContextualInfo) {
 private:
 
-	FieldType _fieldType; 		        /// type of the field as defined in the XML layout
+	FieldType _fieldType; 		      /// type of the field as defined in the XML layout
 
-	string _rawValue;                 /// pristine value
-	string _strValue;				          /// store the string value of the field
+	valueType _rawValue;              /// pristine value
+	valueType _strValue;		      /// store the string value of the field
 
-	ulong _index;					            /// index of the field within its parent record
-	ulong _offset;					          /// offset of the field within its parent record from the first field
+	byte _valueSign = 1;			  /// sign of the scalar value if any
 
-	ulong _lowerBound;				        /// when adding a field to a record, give
-	ulong _upperBound;								/// absolute position within the line read
-
-	byte _valueSign = 1;			        /// sign of the scalar value if any
-
-	Regex!char _fieldPattern;					/// override filed type pattern by this
-	string _charPattern;							/// pattern as a string
+	Regex!char _fieldPattern;		  /// override field type pattern by this
+	string _charPattern;			  /// pattern as a string
 
 public:
 	/**
@@ -106,11 +106,11 @@ public:
 
 	/// write property for setting a new pattern for this field, hence
 	/// overriding the field type one
-	@property void pattern(string s) { _charPattern = s; _fieldPattern = regex(s); }
+	@property void pattern(in string s) { _charPattern = s; _fieldPattern = regex(s); }
 	bool matchPattern() { return !matchAll(_rawValue.strip, _fieldPattern).empty; }
 
 	/// read/write property for field value
-	@property string value() { return _strValue; }
+	@property auto value() { return _strValue; }
 	///
 	unittest 
     {
@@ -129,7 +129,7 @@ public:
 		assert(field1.value!int == 50);
 	}
 
-	@property void value(in string s)
+	@property void value(valueType s)
 	{
 		_rawValue = s;
 		auto _strippedValue = s.strip;
@@ -159,7 +159,7 @@ public:
 	}
 
 	/// read property for field raw value. Raw value is not stripped
-	@property string rawValue() { return _rawValue; }
+	@property auto rawValue() { return _rawValue; }
 	///
 	unittest 
     {
@@ -170,7 +170,7 @@ public:
 	}
 
 	/// read/write property for the sign field
-	@property byte sign() { return _valueSign; }
+	@property auto sign() { return _valueSign; }
 	@property void sign(byte new_sign) { _valueSign = new_sign; }
 
 	/**

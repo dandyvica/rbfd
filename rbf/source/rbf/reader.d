@@ -31,40 +31,16 @@ class Reader {
 
 private:
 
-	/// filename to read
-	immutable string _rbFile;
-
-	/// file handle when opened
-	//File _fh;
-
-	/// list of all records read from XML definition file
-	Layout _layout;
-
-	/// this function will identify a record name from the line read
-	MapperFunc _recordIdentifier;
-
-	/// regex ignore pattern: don't read those lines matching this regex
-	Regex!char _ignoreRegex;
-
+	immutable string _rbFile; /// filename to read
+	Layout _layout; /// list of all records read from XML definition file
+	MapperFunc _recordIdentifier; /// this function will identify a record name from the line read
+	Regex!char _ignoreRegex; /// regex ignore pattern: don't read those lines matching this regex
 	/// regex include pattern: read only those lines matching this regex
-	/// but previous one comes first
-	Regex!char _lineRegex;
-
-
-	/// mapper function
-	STRING_MAPPER _mapper;
-
-	/// size read
-	ulong _nbLinesRead;
-
-    ulong _currentLineNumber;
-
-	/// input file size
-	ulong _inputFileSize;
-
-    /// guessed number of records (in case of a lauyout having reclength!=0)
-    ulong _guessedRecordNumber;
-
+	Regex!char _lineRegex; /// but previous one comes first
+	STRING_MAPPER _mapper; /// mapper function
+	ulong _nbLinesRead; /// size read
+	ulong _inputFileSize; /// input file size
+    ulong _guessedRecordNumber; /// guessed number of records (in case of a lauyout having reclength!=0)
     bool _checkPattern;
 
 public:
@@ -107,8 +83,8 @@ public:
 	 * reader.ignoreRegexPattern("^#")		// ignore lines starting with #
 	 * -----------------------------
 	 */
-	@property void ignoreRegexPattern(string pattern) { _ignoreRegex = regex(pattern); }
-	@property void lineRegexPattern(string pattern)   { _lineRegex   = regex(pattern); }
+	@property void ignoreRegexPattern(in string pattern) { _ignoreRegex = regex(pattern); }
+	@property void lineRegexPattern(in string pattern)   { _lineRegex   = regex(pattern); }
 
 	@property ulong nbRecords()   { return _guessedRecordNumber; }
 
@@ -124,9 +100,10 @@ public:
 	/// return the file size of the input file in bytes
 	@property ulong inputFileSize() { return _inputFileSize; }
 
-	@property void checkPattern(bool check) { _checkPattern = check; }
+	@property void checkPattern(in bool check) { _checkPattern = check; }
 
-	Record _getRecordFromLine(char[] lineReadFromFile) {
+	Record _getRecordFromLine(in char[] lineReadFromFile) 
+    {
 
 		// get rid of \n
 		auto line = lineReadFromFile.idup;
@@ -179,7 +156,8 @@ public:
 	}
 
 	// inner structure for defining a range for our container
-	struct Range {
+	struct Range 
+    {
 		private:
 			File _fh;
 			ulong _nbChars = ulong.max;
@@ -190,11 +168,13 @@ public:
 		public:
 				// this constructor will be called from helper function []
 				// need to get access to the outer class this
-			this(string fileName, Reader outer) {
+			this(string fileName, Reader outer) 
+            {
 				_fh = File(fileName);
 				_outerThis = outer;
 
-				do {
+				do 
+                {
 					_nbChars = _fh.readln(_buffer);
 					if (_nbChars == 0) return;
 
@@ -207,14 +187,17 @@ public:
 
 			// because file pointer moves ahead, all logic is in this method
 			@property bool empty() { return _nbChars == 0; }
-			@property ref Record front() {
+			@property ref Record front() 
+            {
 				//writefln("rec=%s", rec.name);
 				return rec;
 			}
 			// does nothing because file pointer already move on
-			void popFront() {
+			void popFront() 
+            {
 
-				do {
+				do 
+                {
 					// read one line from file
 					_nbChars = _fh.readln(_buffer);
 
@@ -231,13 +214,13 @@ public:
 					rec = _outerThis._getRecordFromLine(_buffer);
 				} while (rec is null);
 
-
 			}
 
 	}
 
 	/// Return a range on the container
-	Range opSlice() {
+	Range opSlice() 
+    {
 		return Range(_rbFile, this);
 	}
 

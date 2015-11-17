@@ -102,50 +102,6 @@ private:
     }
 
 	/** 
-     * Build the SQL colunm statement used in SQL insert statement
-     * The statement is highly dependant of the field type
-     * For empty fields, we just use the SQL NULL value
-	 *
-	 * Params:
-	 * 	f = Field object
-	 *
-	 */
-    /*
-    string _buildColumnWithinInsertStatement(Field f)
-    {
-        string colStmt;                             // insert statement to build
-        string valueWithoutQuote = f.value;         // need to get rid a "
-        string netValue;                            // value without quote or control chars
-
-        // if empty, it means it's an SQL NULL value
-        if (f.value == "") return "NULL";
-
-        // test if " character is present in value. It causes SQL insert to fail
-        if (f.value.indexOf('"') != -1)
-        {
-            valueWithoutQuote = f.value.translate(['"': ' ']);
-            stderr.writefln("info: replacing quote within value: <%s>, field name=<%s>", valueWithoutQuote, f.name);
-        }
-
-        // delete any control chars in the value because it might occur sometimes
-        netValue = to!string(valueWithoutQuote.filter!(c => !isControl(c)));
-
-        final switch (f.type.meta.type)
-        {
-            case AtomicType.decimal:
-            case AtomicType.integer:
-            case AtomicType.date:
-                colStmt = netValue;
-                break;
-            case AtomicType.string:
-                colStmt = `"%s"`.format(netValue);
-
-                break;
-        }
-        return colStmt;
-    }*/
-
-	/** 
      * SQL statement execution. Throws an exception if an SQL error is returned
 	 *
 	 * Params:
@@ -158,22 +114,8 @@ private:
         if (_sqlCode != SQLITE_OK) 
         {
             stderr.writeln("error: statement <%s>, error code = <%d>, error msg <%s>".format(stmt, _sqlCode, fromStringz(sqlite3_errmsg(_db))));
-            //throw new Exception("error: SQL error %d, statement <%s>, error msg <%s>".format(_sqlCode, stmt, fromStringz(sqlite3_errmsg(_db))));
         }
     }
-
-	/** 
-     * Build INSERT statements in advance because it's only depending on record
-	 *
-	 * Params:
-	 * 	rec = Record object
-	 *
-	 */
-    /*
-    void _prepareInsertStatement(Record rec)
-    {
-        _insertStmt[rec.name] = "insert into %s values (%%s);".format(_buildTableName(rec.name));
-    }*/
 
 	/** 
      * Build INSERT statements in advance because it's only depending on record
@@ -186,19 +128,20 @@ private:
     {
         auto bind = array(repeat("?", rec.size));
         auto stmt = "insert into %s values (%s);".format(_buildTableName(rec.name), bind.join(","));
-        //writefln("bind=%s", stmt);
+        log.log(LogLevel.TRACE, MSG028, stmt);
 
         sqlite3_stmt *compiledStmt;
         _sqlCode = sqlite3_prepare_v2(_db, toStringz(stmt), to!int(stmt.length), &compiledStmt, null);
         if (_sqlCode != SQLITE_OK) 
         {
-            stderr.writeln("error: sqlite3_prepare_v2() API error, SQL error %d, error msg <%s>".format(_sqlCode, stmt, fromStringz(sqlite3_errmsg(_db))));
+            stderr.writefln(MSG029, _sqlCode, stmt, fromStringz(sqlite3_errmsg(_db)));
         }
         else
         {
             _compiledInsertStmt[rec.name] = compiledStmt;
         }
     }
+
 	/** 
      * Bind field values to each SQL INSERT variable
 	 *
@@ -264,7 +207,7 @@ public:
 	this(in string databaseName)
 	{
         // call root class but don't create the file
-		super(databaseName, false);
+		super(databaseName);
 
         _sqlCode = sqlite3_open(toStringz(databaseName), &_db);
         if(_sqlCode != SQLITE_OK)
@@ -284,6 +227,8 @@ public:
 	 */
 	override void prepare(Layout layout) 
     {
+        auto nbTables = 0;
+
         // build the list of SQL reserved keywords: it's used to check whether a record name is a reserved keyword
         _sqlKeywordsList = sqlKeywords.split('\n');
         _sqlKeywordsList = array(_sqlKeywordsList.filter!(f => f != ""));
@@ -294,17 +239,26 @@ public:
         // create all tables = one table per record
         foreach(rec; layout)
         {
+            // create only for kept records after any potential field filter
+            if (rec.meta.skip) continue;
+
             // build statement
             auto stmt = _buildCreateTableStatement(rec);
+            log.log(LogLevel.TRACE, MSG028, stmt);
 
             // execute statement
+            log.log(LogLevel.INFO, MSG025, rec.name);
             _executeStmt(stmt);
+
+            // one more table created
+            nbTables++;
 
             // prepare further INSERT statements
             _prepareInsertCompiledStatement(rec);
+            log.log(LogLevel.INFO, MSG025, rec.name);
             //_prepareInsertStatement(rec);
         }
-        log.log(LogLevel.INFO, MSG022, layout.size);
+        log.log(LogLevel.INFO, MSG022, nbTables);
     }
 
 	/** 

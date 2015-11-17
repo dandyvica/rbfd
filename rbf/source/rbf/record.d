@@ -21,23 +21,18 @@ import rbf.recordfilter;
 
 struct RecordMeta 
 {
-	string name;							     /// record name
-	string description;			       /// record description
-	bool   skip;							     /// do we skip this record?
+	string name;				 /// record name
+	string description;			 /// record description
+	bool   skip;		         /// do we skip this record?
 	string[][] repeatingPattern;
 	Record[] subRecord;
-    string ruler;               /// when using the text writer, length of the ruler for header vs. data
+    string ruler;                /// when using the text writer, length of the ruler for header vs. data
 }
 
 /***********************************
  * This record class represents a record as found in record-based files
  */
 class Record : NamedItemsContainer!(Field, true, RecordMeta) {
-
-// private:
-//
-// 	bool _keep = true;							/// true is we want to keep this record when
-// 																	/// looping using a reader
 
 public:
 	/**
@@ -64,16 +59,6 @@ public:
 			this.meta.description = description;
 	}
 
-	//
-    /*
-	this(Field[] list) {
-		this("new","");
-		list.each!(f => this ~= f);
-	}*/
-
-	//@property string description() { return meta.description; }
-
-
 	/**
 	 * sets record value from one string
 	 *
@@ -85,7 +70,7 @@ public:
 	 * record.value = "AAAAA0001000020DDDDDEEEEEFFFFFGGGGGHHHHHIIIIIJJJJJKKKKKLLLLLMMMMMNNNNN00010"
 	 * --------------
 	 */
-	@property void value(string s)
+	@property void value(valueType s)
 	{
 		// add or strip chars from string if string has not the same length as record
 		if (s.length < _length) {
@@ -126,7 +111,7 @@ public:
 	/**
 	 * return the list of all field values contained in the record
 	 */
-	@property string[] fieldValues()
+	@property auto fieldValues()
 	{
 		mixin(NamedItemsContainer!(Field,true).getMembersData("value"));
 	}
@@ -134,7 +119,7 @@ public:
 	/**
 	 * return the list of all field raw values contained in the record
 	 */
-	@property string[] fieldRawValues()
+	@property auto fieldRawValues()
 	{
 		mixin(NamedItemsContainer!(Field,true).getMembersData("rawValue"));
 	}
@@ -147,31 +132,16 @@ public:
 		mixin(NamedItemsContainer!(Field,true).getMembersData("description"));
 	}
 
-	string findByIndex(ulong i) {
-		foreach (f; this) {
+	string findByIndex(ulong i) 
+    {
+		foreach (f; this) 
+        {
 			if (f.context.index == i) return f.name;
 		}
 		return "";
 	}
 
-	/**
-	 * return the field successor in the container. null if the last one
-	 */
-	 /*Field succ(Field f) {
-		 if (f.context.index == size-1) return null;
-		 else return this[f.context.index+1];
-	 }*/
-
-	 /**
- 	 * return the field predecessor in the container. null if the last one
- 	 */
- 	 /*Field pred(Field f)
-	 {
- 		 if (f.context.index == 0) return null;
- 		 else return this[f.context.index-1];
- 	 }*/
-
-    void recalculateIndex() 
+    void recalculateIndex()
     {
         auto i=0;
         this.each!(f => f.context.index = i++);
@@ -207,7 +177,8 @@ public:
 		 // which means: find at least to successive tokens matching <i>
 		 // where i is a decimal digit
 		 string s;
-		 foreach(f; this) {
+		 foreach(f; this) 
+         {
 			 auto i = _map[f.name][0].context.index;
 			 s ~= "<%d>".format(i);
 		 }
@@ -217,7 +188,8 @@ public:
 		 auto match = matchAll(s, pattern);
 
 		 // we've matched here duplicated pattern
-		 foreach (m; match) {
+		 foreach (m; match) 
+         {
 				// our result is a list of indexes liek "<2><5><7>...".
 				// each number traces back to the field name
 				auto result = matchAll(m[1], r"<(\d+)>");
@@ -295,7 +267,7 @@ public:
 
 
 	/**
-	 * print out Record properties with all field and record data
+	 * print out Record properties with all fields and record data
 	 */
 	override string toString()
 	{
@@ -319,7 +291,8 @@ public:
 		foreach (RecordClause c; filter)
 		{
 			// field name not found: just return false
-			if (c.fieldName !in this) {
+			if (c.fieldName !in this) 
+            {
 				return false;
 			}
 
@@ -327,7 +300,8 @@ public:
 			bool condition = false;
 
 			//writefln("number of fields %s is %d",c.fieldName, this[c.fieldName].length);
-			foreach (Field field; this[c.fieldName]) {
+			foreach (Field field; this[c.fieldName]) 
+            {
 				// if one condition is false, then get out
 				//writefln("looking at field %s:%s", name, field.name);
 				condition |= field.type.isFieldFilterMatched(field.value, c.operator, c.scalar);

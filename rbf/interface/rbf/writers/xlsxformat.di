@@ -8,6 +8,7 @@ import std.exception;
 import std.algorithm;
 import std.array;
 import std.zip;
+import rbf.field;
 class XlsxEntity
 {
 	private 
@@ -45,8 +46,11 @@ class Worksheet : XlsxEntity
 	this(string path, string worksheetName);
 	void startRow();
 	void endRow();
-	void strCell(string cellValue);
-	void numCell(string cellValue);
+	void strCell(T)(T cellValue)
+	{
+		_fh.writefln("<c t=\"inlineStr\"><is><t>%s</t></is></c>", cellValue);
+	}
+	void numCell(valueType cellValue);
 	override void close();
 }
 class Rels : XlsxEntity

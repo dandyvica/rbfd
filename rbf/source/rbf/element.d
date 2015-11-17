@@ -13,11 +13,11 @@ import std.algorithm;
 class Element(T,U,Context...) {
 private:
 
-	T _name;					            		/// name of the element
+	immutable T _name;					    /// name of the element
 	immutable T _description;	  			/// description of the element
 	immutable U _length;		      		/// length (in bytes) of the element
-	 U _cellLength1; 									/// max(name,length)
-	 U _cellLength2; 									/// max(name,length,description)
+	U _cellLength1; 						/// max(name,length)
+	U _cellLength2; 						/// max(name,length,description)
 
 public:
 
@@ -60,7 +60,7 @@ public:
 	}
 
 	// copy an element with all its data
-	Element dup() {
+	Element dup() pure {
 		auto copied = new Element!(T,U,Context)(_name, _description, _length);
 		return copied;
 	}

@@ -9,6 +9,8 @@ import std.algorithm;
 import std.array;
 import std.zip;
 
+import rbf.field;
+
 class XlsxEntity {
 private:
 
@@ -90,11 +92,11 @@ class Worksheet : XlsxEntity {
   void startRow() { _fh.write("<row>"); }
   void endRow() { _fh.writeln("</row>"); }
 
-  void strCell(string cellValue) {
+  void strCell(T)(T cellValue) {
     _fh.writefln(`<c t="inlineStr"><is><t>%s</t></is></c>`, cellValue);
   }
 
-  void numCell(string cellValue) {
+  void numCell(valueType cellValue) {
     _fh.writefln(`<c><v>%s</v></c>`, cellValue);
   }
 

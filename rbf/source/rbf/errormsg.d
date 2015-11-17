@@ -7,6 +7,7 @@ import std.conv;
 import std.algorithm;
 import std.range;
 import std.datetime;
+import std.process;
 
 immutable MSG001 = "error: element name %s is not in container %s";
 immutable MSG002 = "line# <%d>, record <%s>, field <%s>, value <%s> is not matching expected pattern <%s>";
@@ -22,38 +23,48 @@ immutable MSG011 = "info: creating Excel file";
 immutable MSG012 = "info: creating Excel internal directory structure";
 immutable MSG013 = "\ninfo: created file %s, size = %d bytes";
 immutable MSG014 = "info: lines: %d read, records: %d read, %d written";
-immutable MSG015 = "info: elapsed time = %s";
+immutable MSG015 = "elapsed time = %s";
 immutable MSG016 = "opening input file <%s>, size = %d bytes";
 immutable MSG017 = "read rate = %.0f records per second";
 immutable MSG018 = "line# <%d>, record name <%s> not found";
 immutable MSG019 = "creating output file <%s>";
 immutable MSG020 = "conversion error, value <%s> to type <%s>, resetting to NULL";
 immutable MSG021 = "creating tables, SQL pool size = %d";
-immutable MSG022 = "%d tables created";
-immutable MSG023 = "layout <%s> read, %d records created";
+immutable MSG022 = "%d table(s) created";
+immutable MSG023 = "layout <%s> read, %d record(s) created";
 immutable MSG024 = "record filter error: field <%s> is not found in layout";
+immutable MSG025 = "creating table for record <%s>";
+immutable MSG026 = "field filter requested, layout has now <%d> records";
+immutable MSG027 = "configuration file is <%s>";
+immutable MSG028 = "built SQL statement: <%s>";
+immutable MSG029 = "error: sqlite3_prepare_v2() API error, SQL error %d, statement=<%s>, error msg <%s>";
 
 Log log;
 
-enum LogLevel { INFO, WARNING, ERROR, FATAL }
+enum LogLevel { TRACE, INFO, WARNING, ERROR, FATAL }
 
 struct Log 
 {
 private:
     File _logHandle;
+    string _trace;
 
 public:
     this(string logFileName)
     {
         _logHandle = File(logFileName, "a");
+        _trace = environment.get("RBF_TRACE", "");
     }
 
     void log(LogLevel, string, A...)(LogLevel level, string msg, A args)
     {
         auto now = to!DateTime(Clock.currTime);
-        _logHandle.writef("%s - %s ", now, to!string(level));
-        _logHandle.writefln(msg, args);
-        _logHandle.flush;
+        if (level != LogLevel.TRACE || _trace != "")
+        {
+            _logHandle.writef("%s - %s ", now, to!string(level));
+            _logHandle.writefln(msg, args);
+            _logHandle.flush;
+        }
     }
 
 

@@ -25,22 +25,21 @@ class Reader
 		Regex!char _lineRegex;
 		STRING_MAPPER _mapper;
 		ulong _nbLinesRead;
-		ulong _currentLineNumber;
 		ulong _inputFileSize;
 		ulong _guessedRecordNumber;
 		bool _checkPattern;
 		public 
 		{
 			this(string rbFile, Layout layout, MapperFunc recIndentifier = null);
-			@property void ignoreRegexPattern(string pattern);
-			@property void lineRegexPattern(string pattern);
+			@property void ignoreRegexPattern(in string pattern);
+			@property void lineRegexPattern(in string pattern);
 			@property ulong nbRecords();
 			@property void recordTransformer(STRING_MAPPER func);
 			@property Layout layout();
 			@property ulong nbLinesRead();
 			@property ulong inputFileSize();
-			@property void checkPattern(bool check);
-			Record _getRecordFromLine(char[] lineReadFromFile);
+			@property void checkPattern(in bool check);
+			Record _getRecordFromLine(in char[] lineReadFromFile);
 			struct Range
 			{
 				private 

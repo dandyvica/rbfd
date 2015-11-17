@@ -13,6 +13,7 @@ import std.variant;
 import rbf.errormsg;
 import rbf.element;
 import rbf.fieldtype;
+alias valueType = string;
 struct ContextualInfo
 {
 	ulong index;
@@ -20,19 +21,15 @@ struct ContextualInfo
 	ulong occurence;
 	ulong lowerBound;
 	ulong upperBound;
-	string alternateName;
+	typeof(Field.name) alternateName;
 }
 class Field : Element!(string, ulong, ContextualInfo)
 {
 	private 
 	{
 		FieldType _fieldType;
-		string _rawValue;
-		string _strValue;
-		ulong _index;
-		ulong _offset;
-		ulong _lowerBound;
-		ulong _upperBound;
+		valueType _rawValue;
+		valueType _strValue;
 		byte _valueSign = 1;
 		Regex!char _fieldPattern;
 		string _charPattern;
@@ -41,16 +38,25 @@ class Field : Element!(string, ulong, ContextualInfo)
 			this(in string name, in string description, FieldType type, in ulong length);
 			this(in string csvdata);
 			@property FieldType type();
-			@property void pattern(string s);
+			@property void pattern(in string s);
 			bool matchPattern();
-			@property string value();
+			auto @property value()
+			{
+				return _strValue;
+			}
 			@property T value(T)()
 			{
 				return to!T(_strValue) * sign;
 			}
-			@property void value(in string s);
-			@property string rawValue();
-			@property byte sign();
+			@property void value(valueType s);
+			auto @property rawValue()
+			{
+				return _rawValue;
+			}
+			auto @property sign()
+			{
+				return _valueSign;
+			}
 			@property void sign(byte new_sign);
 			override string toString();
 			bool opEquals(Tuple!(string, string, string, ulong) t);

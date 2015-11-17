@@ -206,6 +206,7 @@ public:
             //this.each!(r => r.recalculateIndex);
 		}
 
+        // log
         log.log(LogLevel.INFO, MSG023, xmlFile, this.size);
 	}
 	///
@@ -394,8 +395,10 @@ public:
 	/**
 	 * return true if field is in any record of layout
 	 */
-	bool isFieldInLayout(string fieldName) {
-		foreach (rec; this) {
+	bool isFieldInLayout(string fieldName)
+    {
+		foreach (rec; this) 
+        {
 				if (fieldName in rec) return true;
 		}
 		return false;

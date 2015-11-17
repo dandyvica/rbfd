@@ -18,6 +18,8 @@ import std.regex;
 import std.algorithm;
 import std.exception;
 
+import rbf.field;
+
 static string overpunch(string s) {
 	static string posTable = makeTrans("{ABCDEFGHI}", "01234567890");
 	static string negTable = makeTrans("JKLMNOPQR", "123456789");
@@ -36,8 +38,8 @@ static string overpunch(string s) {
 
 
 // filter matching method pointer
-alias CmpFunc = bool delegate(string,string,string);
-alias Conv = string function(string);
+alias CmpFunc = bool delegate(valueType,string,valueType);
+alias Conv = valueType function(valueType);
 
 /***********************************
  * all possible field types for a field
@@ -118,7 +120,7 @@ public:
 	}
 
 	/// test a filter
-	bool isFieldFilterMatched(string lvalue, string op, string rvalue) {
+	bool isFieldFilterMatched(valueType lvalue, string op, valueType rvalue) {
 		return meta.filterTestCallback(lvalue, op, rvalue);
 	}
 	///
