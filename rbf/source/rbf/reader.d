@@ -21,13 +21,13 @@ import rbf.record;
 import rbf.layout;
 
 // definition of useful aliases
-//alias GET_RECORD_FUNCTION = string delegate(string);   /// alias for a function pointer which identifies a record
 alias STRING_MAPPER = void function(Record);           /// alias to a delegate used to change field values
 
 /***********************************
  * record-base file reader used to loop on each record
  */
-class Reader {
+class Reader 
+{
 
 private:
 
@@ -107,14 +107,17 @@ public:
 
 		// get rid of \n
 		auto line = lineReadFromFile.idup;
+		//auto line = lineReadFromFile;
 
 		// if line is matching the ignore pattern, just loop
-		if (layout.meta.ignoreLinePattern != "" && matchFirst(line, _ignoreRegex)) {
+		if (layout.meta.ignoreLinePattern != "" && matchFirst(line, _ignoreRegex)) 
+        {
 			return null;
 		}
 
 		// if line is not matching the line pattern, just loop
-		if (!_lineRegex.empty && !matchFirst(line, _lineRegex)) {
+		if (!_lineRegex.empty && !matchFirst(line, _lineRegex)) 
+        {
 			return null;
 		}
 
@@ -122,7 +125,8 @@ public:
 		auto recordName = _recordIdentifier(line);
 
 		// record not found ? So loop
-		if (recordName !in _layout) {
+		if (recordName !in _layout) 
+        {
             log.log(LogLevel.WARNING, MSG018, _nbLinesRead, recordName);
 			return null;
 		}
@@ -155,68 +159,65 @@ public:
 
 	}
 
-	// inner structure for defining a range for our container
-	struct Range 
+    // inner structure for defining a range for our container
+    struct Range 
     {
-		private:
-			File _fh;
-			ulong _nbChars = ulong.max;
-			char[] _buffer;
-			Reader _outerThis;
-			Record rec;
+        private:
+            File _fh;
+            ulong _nbChars = ulong.max;
+            char[] _buffer;
+            Reader _outerThis;
+            Record rec;
 
-		public:
-				// this constructor will be called from helper function []
-				// need to get access to the outer class this
-			this(string fileName, Reader outer) 
+        public:
+            // this constructor will be called from helper function []
+            // need to get access to the outer class this
+            this(string fileName, Reader outer) 
             {
-				_fh = File(fileName);
-				_outerThis = outer;
+                _fh = File(fileName);
+                _outerThis = outer;
 
-				do 
+                do 
                 {
-					_nbChars = _fh.readln(_buffer);
-					if (_nbChars == 0) return;
+                    _nbChars = _fh.readln(_buffer);
+                    if (_nbChars == 0) return;
 
-					_outerThis._nbLinesRead++;
+                    _outerThis._nbLinesRead++;
 
-					rec = _outerThis._getRecordFromLine(_buffer);
-				} while (rec is null);
+                    rec = _outerThis._getRecordFromLine(_buffer);
+                } while (rec is null);
 
-			}
+            }
 
-			// because file pointer moves ahead, all logic is in this method
-			@property bool empty() { return _nbChars == 0; }
-			@property ref Record front() 
-            {
-				//writefln("rec=%s", rec.name);
-				return rec;
-			}
-			// does nothing because file pointer already move on
-			void popFront() 
+            // because file pointer moves ahead, all logic is in this method
+            @property bool empty() { return _nbChars == 0; }
+            @property ref Record front() { return rec; }
+            // does nothing because file pointer already move on
+            void popFront() 
             {
 
-				do 
+                do 
                 {
-					// read one line from file
-					_nbChars = _fh.readln(_buffer);
+                    // read one line from file
+                    _nbChars = _fh.readln(_buffer);
 
-					// if eof, just return
-					if (_nbChars == 0) return;
+                    // if eof, just return
+                    if (_nbChars == 0) return;
 
-					_outerThis._nbLinesRead++;
+                    _outerThis._nbLinesRead++;
 
-					// get rid of \n
-					_buffer = _buffer.stripRight('\n');
+                    // get rid of \n
+                    _buffer = _buffer.stripRight('\n');
 
-					// try to get a record from that line
-					// call outer class this
-					rec = _outerThis._getRecordFromLine(_buffer);
-				} while (rec is null);
+                    // try to get a record from that line
+                    // call outer class this
+                    rec = _outerThis._getRecordFromLine(_buffer);
 
-			}
+                } while (rec is null);
 
-	}
+            }
+
+    }
 
 	/// Return a range on the container
 	Range opSlice() 

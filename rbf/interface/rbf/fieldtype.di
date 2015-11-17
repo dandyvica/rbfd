@@ -7,9 +7,10 @@ import std.string;
 import std.regex;
 import std.algorithm;
 import std.exception;
+import rbf.errormsg;
 import rbf.field;
-static string overpunch(string s);
-alias CmpFunc = bool delegate(string, string, string);
+static valueType overpunch(valueType s);
+alias CmpFunc = bool delegate(const valueType, const string, const valueType);
 alias Conv = valueType function(valueType);
 enum AtomicType 
 {
@@ -41,7 +42,7 @@ class FieldType
 		{
 			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
 		}
-		bool matchFilter(T)(string lvalue, string operator, string rvalue)
+		bool matchFilter(T)(in valueType lvalue, in string operator, in valueType rvalue)
 		{
 			bool condition;
 			try
@@ -87,13 +88,13 @@ class FieldType
 					}
 					default:
 					{
-						throw new Exception("error: operator %s not supported".format(operator));
+						throw new Exception(MSG030.format(operator));
 					}
 				}
 			}
 			catch(ConvException e)
 			{
-				stderr.writeln("error: converting value %s %s %s to type %s".format(lvalue, operator, rvalue, T.stringof));
+				log.log(LogLevel.WARNING, lvalue, operator, rvalue, T.stringof);
 			}
 			return condition;
 		}

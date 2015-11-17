@@ -30,10 +30,10 @@ void printMembers(T)(T v)
 
 /// configuration file name
 version(linux) {
-immutable xmlSettings = ".rbf/rbf.xml";
+    immutable xmlSettings = ".rbf/rbf.xml";
 }
 version(Win64) {
-immutable xmlSettings = `\local\rbf\rbf.xml`;
+    immutable xmlSettings = `\local\rbf\rbf.xml`;
 }
 
 /*********************************************
@@ -52,16 +52,16 @@ struct SettingCore {
 alias LayoutDir = NamedItemsContainer!(SettingCore, false);
 
 struct OutputFeature {
-    string name;		 	        /// name of the outpout format (e.g.: "txt")
-    string outputDir;		      /// location of output file
-    string fsep;		          /// field separator char for text output format
-    string lsep;		          /// line separator char for text output format
-    Orientation orientation;	/// whether print by row or colums
+    string name;		 	  /// name of the outpout format (e.g.: "txt")
+    string outputDir;		  /// location of output file
+    string fsep;		      /// field separator char for text output format
+    string lsep;		      /// line separator char for text output format
+    Orientation orientation;  /// whether print by row or colums
     string zipper;            /// name and path of the zipper executable
-    bool fielddesc;		        /// print field description if true
+    bool fielddesc;		      /// print field description if true
     bool useAlternateName;    /// use field name followed by its occurence
     string alternateNameFmt;  /// format to use when formatting alternate name
-    ushort insertPool;            /// used to group INSERTs into a single transaction
+    ushort insertPool;        /// used to group INSERTs into a single transaction
 }
 alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 
@@ -168,17 +168,21 @@ private:
       if (rbfconf != "") return rbfconf;
 
       // otherwise, first possible location is current directory
-      if (exists(getcwd ~ xmlSettings)) {
+      if (exists(getcwd ~ xmlSettings)) 
+      {
           settingsFile = getcwd ~ xmlSettings;
       }
-      else {
+      else 
+      {
           // XML settings file location is OS-dependent
           string _rbfhome;
-          version(linux) {
+          version(linux) 
+          {
               _rbfhome = environment["HOME"];
               settingsFile = _rbfhome ~ "/" ~ xmlSettings;
           }
-          version(Win64) {
+          version(Win64) 
+          {
               _rbfhome = environment["APPDATA"];
               settingsFile = _rbfhome ~ xmlSettings;
           }

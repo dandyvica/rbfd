@@ -9,6 +9,7 @@ import std.range;
 import std.datetime;
 import std.process;
 
+// list of all error messages found in code
 immutable MSG001 = "error: element name %s is not in container %s";
 immutable MSG002 = "line# <%d>, record <%s>, field <%s>, value <%s> is not matching expected pattern <%s>";
 immutable MSG003 = "name=<%s>, description=<%s>, length=<%u>, type=<%s>, lower/upperBound=<%u:%u>, rawValue=<%s>, value=<%s>, offset=<%s>, index=<%s>";
@@ -38,11 +39,21 @@ immutable MSG026 = "field filter requested, layout has now <%d> records";
 immutable MSG027 = "configuration file is <%s>";
 immutable MSG028 = "built SQL statement: <%s>";
 immutable MSG029 = "error: sqlite3_prepare_v2() API error, SQL error %d, statement=<%s>, error msg <%s>";
+immutable MSG030 = "error: operator %s not supported";
+immutable MSG031 = "error: converting value %s %s %s to type %s";
+immutable MSG032 = "error: element name %s already in container";
+immutable MSG033 = "error: index %d is out of bounds for _list[]";
+immutable MSG034 = "record %s is not matching declared length (%d instead of %d)";
+immutable MSG035 = "layout %s validates!!";
 
+// global log variable
 Log log;
 
+// list of all possible values for log level
+// TRACE is enabled by setting the RBF_TRACE variable
 enum LogLevel { TRACE, INFO, WARNING, ERROR, FATAL }
 
+// simple log feature
 struct Log 
 {
 private:

@@ -30,8 +30,14 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 		@property string value();
 		@property string[] fieldNames();
 		@property string[] fieldAlternateNames();
-		@property string[] fieldValues();
-		@property string[] fieldRawValues();
+		auto @property fieldValues()
+		{
+			mixin(NamedItemsContainer!(Field, true).getMembersData("value"));
+		}
+		auto @property fieldRawValues()
+		{
+			mixin(NamedItemsContainer!(Field, true).getMembersData("rawValue"));
+		}
 		@property string[] fieldDescriptions();
 		string findByIndex(ulong i);
 		void recalculateIndex();

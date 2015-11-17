@@ -24,7 +24,8 @@ alias valueType = string;
 /***********************************
  * These information are based on the context: a field within a record
  */
-struct ContextualInfo {
+struct ContextualInfo 
+{
 	ulong index;					/// index of the field within its parent record
 	ulong offset;					/// offset of the field within its parent record from the first field
 	ulong occurence;				/// index of the field within all the fields having the same name
@@ -36,7 +37,8 @@ struct ContextualInfo {
 /******************************************************************************************************
  * This field class represents a field as found in record-based files
  */
-class Field : Element!(string, ulong, ContextualInfo) {
+class Field : Element!(string, ulong, ContextualInfo) 
+{
 private:
 
 	FieldType _fieldType; 		      /// type of the field as defined in the XML layout
@@ -74,6 +76,9 @@ public:
 		// set pattern from its type
 		_charPattern  = type.meta.pattern;
 		_fieldPattern = regex(_charPattern);
+
+        //_rawValue = new char[length];
+        //_strValue = new char[length];
 	}
 	///
 	unittest {
@@ -85,6 +90,9 @@ public:
 	 *
 	 * Params:
 	 * 	csvdata = string containing field data in CSV format
+     *
+     * Example:
+     * auto field1 = new Field("FIELD1;Field description;N;decimal;15");
 	 *
 	 */
 	this(in string csvdata)
@@ -135,19 +143,12 @@ public:
 		auto _strippedValue = s.strip;
 
 		// convert if field type requests it
-		if (type.meta.preConv) {
+		if (type.meta.preConv) 
+        {
 			_strValue = type.meta.preConv(s.strip);
 		}
 		else
 			_strValue = s.strip;
-		//_value = T.conv(_strValue);
-
-		// if (type.fieldType == AtomicType.integer) {
-		// 	writefln("_strValue == <%s>", _strValue);
-		// 	_value2 = to!int(_strValue);
-		// 	writefln("_value2 == <%s>", _value2);
-		// }
-
 
 	}
 	///

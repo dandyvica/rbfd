@@ -27,14 +27,16 @@ protected:
 
 	// first verify essential properties existence
 	// for .name: name is mandatory for T
-	static if (!__traits(hasMember, T, "name")) {
+	static if (!__traits(hasMember, T, "name")) 
+    {
 		pragma(msg, "error: %s class has no <%s> member".format(T.stringof, "name"));
 	}
 	else
 		alias TNAME   = typeof(T.name);				/// alias for name property type
 
 	// for .length: length is optional for T
-	static if (__traits(hasMember, T, "length")) {
+	static if (__traits(hasMember, T, "length")) 
+    {
 		alias TLENGTH = typeof(T.length);
 		TLENGTH _length;		/// current length of the container when adding elements
 	}
@@ -44,11 +46,13 @@ protected:
 	alias TMAP	  = T[][TNAME];
 
 	// useful type alias whether the container accepts duplcates or not
-	static if (allowDuplicates) {
+	static if (allowDuplicates) 
+    {
 		alias TRETURN = TLIST;
 		ref TRETURN _contextMap(T[][TNAME] map, TNAME name) { return map[name]; }
 	}
-	else {
+	else 
+    {
 		alias TRETURN = T;
 		ref TRETURN _contextMap(T[][TNAME] map, TNAME name) { return map[name][0]; }
 	}
@@ -58,25 +62,21 @@ protected:
 	TMAP _map;					/// and as several instance of the same field can exist,
 											/// need to keep track of all instances
 
-
-	//string _name;				/// container name
-	//string _description;/// container description
-
-	/// optional metadata
-
 public:
 static if (Meta.length > 0) {
 	Meta[0] meta;
 }
 
 	// inner structure for defining a range for our container
-	struct Range {
+	struct Range 
+    {
 		private TLIST items;
 
 		ulong head = 0;
 		ulong tail = 0;
 
-		this(TLIST list) {
+		this(TLIST list) 
+        {
 				items = list;
 				head = 0;
 				tail = list.length - 1;
@@ -99,7 +99,8 @@ static if (Meta.length > 0) {
 	preAllocSize = preallocation of the inner array
 
 	*/
-	this(string name = "") {
+	this(string name = "") 
+    {
 		_containerName = name;
 		_list.reserve(PRE_ALLOC_SIZE);
 	}
@@ -110,9 +111,11 @@ static if (Meta.length > 0) {
 	r = range
 
 	*/
-	this(Range)(Range r) {
+	this(Range)(Range r) 
+    {
 		this();
-		foreach (e; r) {
+		foreach (e; r) 
+        {
 			this ~= e;
 		}
 	}
@@ -134,15 +137,6 @@ static if (Meta.length > 0) {
 		@property TLENGTH length() { return _length; }
 	}
 
-/*
-	// get/set name of the container
-	@property string name() { return _name; }
-	@property void name(string name ) { _name = name; }
-
-	// get/set description of the container
-	@property string description() { return _description; }
-	@property void description(string description) { _description = description; }
-*/
 	//----------------------------------------------------------------------------
 	// useful mapper generation
 	//----------------------------------------------------------------------------
@@ -157,11 +151,12 @@ static if (Meta.length > 0) {
 	// add methods
 	//----------------------------------------------------------------------------
 	/// append a new element
-	void opOpAssign(string op)(T element) if (op == "~") {
+	void opOpAssign(string op)(T element) if (op == "~") 
+    {
 		// if no duplicates is allowed, need to test it
-		static if (!allowDuplicates) {
-			enforce(element.name !in _map,
-				"error: element name %s already in container".format(element.name));
+		static if (!allowDuplicates) 
+        {
+			enforce(element.name !in _map, MSG032.format(element.name));
 		}
 
 		// add element
@@ -186,8 +181,9 @@ static if (Meta.length > 0) {
 	 An element of type T
 
 	 */
-	T opIndex(size_t i) {
-		enforce(0 <= i && i < _list.length, "error: index %d is out of bounds for _list[]".format(i));
+	T opIndex(size_t i) 
+    {
+		enforce(0 <= i && i < _list.length, MSG033.format(i));
 		return _list[i];
 	}
 
@@ -227,7 +223,8 @@ static if (Meta.length > 0) {
 	}
 
 	/// Return a range on the container
-	Range opSlice() {
+	Range opSlice() 
+    {
 		return Range(_list);
 	}
 
@@ -240,46 +237,19 @@ static if (Meta.length > 0) {
 
 	*/
 	T get(TNAME name, ushort index = 0)
-  {
+    {
 		enforce(name in this, MSG001.format(name));
 		enforce(0 <= index && index < _map[name].length, MSG005.format(name,index));
 
-		static if (!allowDuplicates) {
+		static if (!allowDuplicates) 
+        {
 			enforce(index == 0, MSG006.format(index));
 		}
 
 		return _map[name][index];
 	}
 
-	/**
-	 * Get the value of element
-
-	 Params:
- 	 name = name of the element to retrieve
-
- 	 Returns:
- 	 value of the first element found
-
-	 */
-	// @property auto opDispatch(TNAME name)()
-	// {
-	// 	writefln("name=<%s>, this=<%s>, map=<%s>", name, __MODULE__, _map);
-	// 	return _map[name][0].value;
-	// }
-
-	/**
-	 * to match an element more easily
-	 */
-
-	// auto opDispatch(TNAME name)(ushort index) if (allowDuplicates)
-	// {
-	// 	//enforce(0 <= index && index < _fieldMap[fieldName].length, "field %s, index %d is out of bounds".format(fieldName,index));
-	// 	return _map[name][index].value;
-	// }
-
-
-
-  //----------------------------------------------------------------------------
+    //----------------------------------------------------------------------------
 	// remove methods
 	//----------------------------------------------------------------------------
 
@@ -289,7 +259,8 @@ static if (Meta.length > 0) {
 	name = name of the elements to remove
 
 	*/
-	void remove(TNAME name) {
+	void remove(TNAME name) 
+    {
 		// check if name if really in container
 		enforce(name in this, MSG001.format(name, this.name));
 
@@ -299,7 +270,8 @@ static if (Meta.length > 0) {
 	}
 
 	/// remove a single occurence of an element
-	void remove(TNAME name, size_t index) {
+	void remove(TNAME name, size_t index) 
+    {
 		enforce(name in this, MSG001.format(name));
 		enforce(0 <= index && index < _map[name].length, MSG005.format(name,index));
 
@@ -320,7 +292,8 @@ static if (Meta.length > 0) {
 	void remove(TNAME[] name) { name.each!(e => this.remove(e)); }
 
 	/// remove all elements not in the list i.e. keep only those fields in the list
-	void keepOnly(TNAME[] name) {
+	void keepOnly(TNAME[] name) 
+    {
 		// check that all element names are in container
 		name.each!(
 			e => enforce(e in this, MSG001.format(e, this.name))
@@ -338,18 +311,21 @@ static if (Meta.length > 0) {
 	// reduce methods
 	//----------------------------------------------------------------------------
 	/// Returns the sum of elements converted to type U
-	U sum(U)(TNAME name) {
+	U sum(U)(TNAME name) 
+    {
 		return _list.filter!(e => e.name == name).map!(e => to!U(e.value)).sum();
 	}
 
 	/// get the maximum of all elements converted to type U
-	U max(U)(TNAME name) {
+	U max(U)(TNAME name) 
+    {
 		auto values = _list.filter!(e => e.name == name).map!(e => to!U(e.value));
 		return values.reduce!(std.algorithm.comparison.max);
 	}
 
 	/// get the minimum of all elements converted to type U
-	U min(U)(TNAME name) {
+	U min(U)(TNAME name) 
+    {
 		auto values = _list.filter!(e => e.name == name).map!(e => to!U(e.value));
 		return values.reduce!(std.algorithm.comparison.min);
 	}
@@ -394,11 +370,6 @@ static if (Meta.length > 0) {
 	{
 		return names == list;
 	}
-
-	//----------------------------------------------------------------------------
-	// private methods
-	//----------------------------------------------------------------------------
-
 
 }
 ///

@@ -24,15 +24,16 @@ struct RecordMeta
 	string name;				 /// record name
 	string description;			 /// record description
 	bool   skip;		         /// do we skip this record?
-	string[][] repeatingPattern;
-	Record[] subRecord;
+	string[][] repeatingPattern; /// list of all fields which might be repeated within a record
+	Record[] subRecord;          /// list of all records matching those repeated fields
     string ruler;                /// when using the text writer, length of the ruler for header vs. data
 }
 
 /***********************************
  * This record class represents a record as found in record-based files
  */
-class Record : NamedItemsContainer!(Field, true, RecordMeta) {
+class Record : NamedItemsContainer!(Field, true, RecordMeta) 
+{
 
 public:
 	/**
@@ -73,10 +74,12 @@ public:
 	@property void value(valueType s)
 	{
 		// add or strip chars from string if string has not the same length as record
-		if (s.length < _length) {
+		if (s.length < _length) 
+        {
 			s = s.leftJustify(_length);
 		}
-		else if (s.length > _length) {
+		else if (s.length > _length) 
+        {
 			s = s[0.._length];
 		}
 
@@ -141,12 +144,19 @@ public:
 		return "";
 	}
 
+	/**
+	 * when deleting fields, we need to recalculate indexes
+	 */
     void recalculateIndex()
     {
         auto i=0;
         this.each!(f => f.context.index = i++);
     }
 
+	/**
+	 * when a field is repeated inside a record, we cannot call it by name.
+     * So we need to call it using its name and index
+	 */
     void buildAlternateNames()
     {
         foreach(f; this)
@@ -162,7 +172,6 @@ public:
             }
         }
     }
-
 
 
 	 void identifyRepeatedFields()
@@ -211,9 +220,7 @@ public:
 
 			foreach (i; indexOfFirstField)
 			{
-                //stderr.writefln("%s-%s(%d..%d)", name, this[i].name, i, i+l);
 				if (i+l > size) break;
-                //stderr.writefln("after: %s-%s(%d..%d)", name, this[i].name, i, i+l);
 
 				// create new record
                 // record name is based on field names
@@ -303,7 +310,6 @@ public:
 			foreach (Field field; this[c.fieldName]) 
             {
 				// if one condition is false, then get out
-				//writefln("looking at field %s:%s", name, field.name);
 				condition |= field.type.isFieldFilterMatched(field.value, c.operator, c.scalar);
 			}
 

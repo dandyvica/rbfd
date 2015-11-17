@@ -18,12 +18,13 @@ import rbf.field;
 import rbf.record;
 import rbf.nameditems;
 
-version(unittest) {
+version(unittest) 
+{
 	immutable test_file = "./test/world_data.xml";
 }
 
 /// useful alias for defining mapper
-alias MapperFunc = string delegate(string);
+alias MapperFunc = string delegate(valueType);
 
 /// enum used to match Layout constructor: either from file or string
 enum LayoutSource { L_FILE, L_STRING }
@@ -37,7 +38,8 @@ mixin template LayoutCore()
 	string file;									/// layout XML file with path
 }
 
-struct LayoutMeta {
+struct LayoutMeta 
+{
 	mixin LayoutCore;							/// basic data
 	ulong length;									/// optional layout length
 	string layoutVersion;					/// layout version found in XML file
@@ -50,11 +52,13 @@ struct LayoutMeta {
 /***********************************
  * This class build the list of records and fields from an XML definition file
  */
-class Layout : NamedItemsContainer!(Record, false, LayoutMeta) {
+class Layout : NamedItemsContainer!(Record, false, LayoutMeta) 
+{
 
 private:
 
-	void _extractMapper(string mapper) {
+	void _extractMapper(string mapper) 
+    {
 		// regexes to catch mapper data
 		auto r1 = regex(r"(\d+)\.\.(\d+)");
 		auto r2 = regex(r"(\d+)\.\.(\d+)\s*,\s*(\d+)\.\.(\d+)");
@@ -68,13 +72,13 @@ private:
 		{
 			// constant function == 0 order function
 			case 0:
-				meta.mapper = (string x) => m.captures[2];
+				meta.mapper = (valueType x) => m.captures[2];
 				break;
 
 			// 1-order function
 			case 1:
 				auto m1 = matchAll(m.captures[2], r1);
-				meta.mapper = (string x) => x[
+				meta.mapper = (valueType x) => x[
 					to!size_t(m1.captures[1]) .. to!size_t(m1.captures[2])
 				];
 				break;
@@ -82,7 +86,7 @@ private:
 			// 2-order function
 			case 2:
 				auto m2 = matchAll(m.captures[2], r2);
-				meta.mapper = (string x) =>
+				meta.mapper = (valueType x) =>
 					x[to!size_t(m2.captures[1]) .. to!size_t(m2.captures[2])] ~
 					x[to!size_t(m2.captures[3]) .. to!size_t(m2.captures[4])];
 				break;
@@ -131,12 +135,14 @@ public:
 
 		// build skip list if any
 		auto fields = xml.tag.attr.get("skipField","");
-		if (fields != "") {
+		if (fields != "") 
+        {
 			meta.skipField = array(fields.split(',').map!(e => e.strip));
 		}
 
 		// build mapper if any
-		if ("mapper" !in xml.tag.attr || xml.tag.attr["mapper"] == "") {
+		if ("mapper" !in xml.tag.attr || xml.tag.attr["mapper"] == "") 
+        {
 			throw new Exception("error: mapper function is not defined in layout");
 		}
 		_extractMapper(xml.tag.attr["mapper"]);
@@ -146,7 +152,8 @@ public:
 		xml.onStartTag["fieldtype"] = (ElementParser xml)
 		{
 			// save field type base on its name
-			with(xml.tag) {
+			with(xml.tag) 
+            {
 				auto ftName = attr["name"];
 
 				// store new type
@@ -179,7 +186,8 @@ public:
 			auto type = xml.tag.attr["type"];
 
 			// check whether type is defined
-			if (type !in ftype) {
+			if (type !in ftype) 
+            {
 				throw new Exception("error: type %s is not defined!!".format(type));
 			}
 
@@ -199,11 +207,9 @@ public:
 		xml.parse();
 
 		// if any, delete skipped fields from layout
-		if (meta.skipField != []) {
+		if (meta.skipField != []) 
+        {
 			this.removeFromAllRecords(meta.skipField);
-
-            // then recalculate all indexes as we deleted some fields
-            //this.each!(r => r.recalculateIndex);
 		}
 
         // log
@@ -242,7 +248,8 @@ public:
 	 *	recordMap = associate array (key=record name, value=array of field names)
 	 *
 	 */
-	void keepOnly(string[][string] recordMap) {
+	void keepOnly(string[][string] recordMap) 
+    {
 			// recordMap contains a list of fields to keep in each record
 			// the key of recordMap is a record name
 			// for all those records, keep only those fields provided
@@ -287,7 +294,8 @@ public:
 	 * Params:
 	 *
 	 */
-	void keepOnly(string list, string separator) {
+	void keepOnly(string list, string separator) 
+    {
 			// list contains a list of records:fields to keep in each record
 			// each record:field list is separator by separator variable
 			string[][string] recordMap;
@@ -352,7 +360,8 @@ public:
 	 * Params:
 	 *	fieldList = list of fields to get rid of in each record
 	 */
-	void removeFromAllRecords(string[] fieldList) {
+	void removeFromAllRecords(string[] fieldList) 
+    {
 		// check first if all fields are in layout
 		fieldList.each!(
 			name => enforce(isFieldInLayout(name), "error: field %s in not in layout %s".format(name, meta.file))
@@ -380,16 +389,17 @@ public:
 	 * validate syntax: check if record length is matching file length
 	 * is not in the record, just loop
 	 */
-	void validate() {
+	void validate() 
+    {
 		bool validates = true;
 		foreach (rec; this) {
 			if (rec.length != meta.length) {
 				validates = false;
-				stderr.writefln("Warning: record %s is not matching declared length (%d instead of %d)",
-					rec.name, rec.length, _length);
+                log.log(LogLevel.WARNING, MSG034, rec.name, rec.length, _length);
 			}
 		}
-		if (validates) stderr.writefln("Info: layout %s validates!!", meta.file);
+		if (validates) 
+                log.log(LogLevel.WARNING, MSG035, meta.file);
 	}
 
 	/**

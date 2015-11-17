@@ -18,19 +18,23 @@ import std.regex;
 import std.algorithm;
 import std.exception;
 
+import rbf.errormsg;
 import rbf.field;
 
-static string overpunch(string s) {
+static valueType overpunch(valueType s) 
+{
 	static string posTable = makeTrans("{ABCDEFGHI}", "01234567890");
 	static string negTable = makeTrans("JKLMNOPQR", "123456789");
 
-	string trans = s;
+	auto trans = s;
 
 	// found {ABCDEFGHI} in s: need to translate
-	if (s.indexOfAny("{ABCDEFGHI}") != -1) {
+	if (s.indexOfAny("{ABCDEFGHI}") != -1) 
+    {
 		trans = translate(s, posTable);
 	}
-	else if (s.indexOfAny("JKLMNOPQR") != -1) {
+	else if (s.indexOfAny("JKLMNOPQR") != -1) 
+    {
 		trans = "-" ~ translate(s, negTable);
 	}
 	return trans;
@@ -38,7 +42,7 @@ static string overpunch(string s) {
 
 
 // filter matching method pointer
-alias CmpFunc = bool delegate(valueType,string,valueType);
+alias CmpFunc = bool delegate(const valueType,const string,const valueType);
 alias Conv = valueType function(valueType);
 
 /***********************************
@@ -90,7 +94,7 @@ public:
 		with(meta) {
 			stringType = declaredType;
 			type       = to!AtomicType(stringType);
-			name			 = nickName;
+			name	   = nickName;
 
 			final switch (type)
 			{
@@ -114,12 +118,15 @@ public:
 		}
 	}
 
-	//
-	@property bool isNumeric() {
+	// numeric fields might lead to different types in SQL or Excel. So
+    // we need such a method to test if a field type is numeric
+	@property bool isNumeric() 
+    {
 		return meta.type == AtomicType.decimal || meta.type == AtomicType.integer;
 	}
 
-	/// test a filter
+	/// test a record filter. Basically it tests whether a value is matching
+    /// a result
 	bool isFieldFilterMatched(valueType lvalue, string op, valueType rvalue) {
 		return meta.filterTestCallback(lvalue, op, rvalue);
 	}
@@ -136,14 +143,12 @@ public:
 	}
 
 	// templated tester for testing a value against a filter and an operator
-	static string testFilter(T)(string op) {
-		/*
-		static if (is(T == string))
-			return "condition = (lvalue" ~ op ~ "rvalue);";
-		else*/
-			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
+	static string testFilter(T)(string op) 
+    {
+		return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
 	}
-	bool matchFilter(T)(string lvalue, string operator, string rvalue) {
+	bool matchFilter(T)(in valueType lvalue, in string operator, in valueType rvalue) 
+    {
 		bool condition;
 
 		try {
@@ -170,11 +175,13 @@ public:
 						break;
 				}
 				default:
-					throw new Exception("error: operator %s not supported".format(operator));
+					throw new Exception(MSG030.format(operator));
 			}
 		}
-		catch (ConvException e) {
-			stderr.writeln("error: converting value %s %s %s to type %s".format(lvalue, operator, rvalue, T.stringof));
+		catch (ConvException e) 
+        {
+            log.log(LogLevel.WARNING, lvalue, operator, rvalue, T.stringof); 
+			//stderr.writeln("error: converting value %s %s %s to type %s".format(lvalue, operator, rvalue, T.stringof));
 		}
 
 		return condition;

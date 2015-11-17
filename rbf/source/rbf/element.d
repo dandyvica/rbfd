@@ -10,7 +10,8 @@ import std.algorithm;
 /***********************************
  * This is the core data for representing field data in record-based files
  */
-class Element(T,U,Context...) {
+class Element(T,U,Context...) 
+{
 private:
 
 	immutable T _name;					    /// name of the element
@@ -22,7 +23,8 @@ private:
 public:
 
 	// any additional contextual information
-	static if (Context.length > 0) {
+	static if (Context.length > 0) 
+    {
 		Context[0] context;
 	}
 
@@ -60,7 +62,8 @@ public:
 	}
 
 	// copy an element with all its data
-	Element dup() pure {
+	Element dup() pure 
+    {
 		auto copied = new Element!(T,U,Context)(_name, _description, _length);
 		return copied;
 	}
@@ -104,7 +107,8 @@ public:
 	/**
 	 * return a string of Field attributes
 	 */
-	override string toString() {
+	override string toString() 
+    {
 		return("name=<%s>, description=<%s>, length=<%u>".format(name, description, length));
 	}
 

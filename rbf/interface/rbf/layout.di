@@ -20,7 +20,7 @@ version (unittest)
 {
 	immutable test_file = "./test/world_data.xml";
 }
-alias MapperFunc = string delegate(string);
+alias MapperFunc = string delegate(valueType);
 enum LayoutSource 
 {
 	L_FILE,

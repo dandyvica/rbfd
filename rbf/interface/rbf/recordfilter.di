@@ -6,11 +6,12 @@ import std.string;
 import std.algorithm;
 import std.regex;
 import std.exception;
+import rbf.field;
 struct RecordClause
 {
 	string fieldName;
 	string operator;
-	string scalar;
+	valueType scalar;
 }
 class RecordFilter
 {

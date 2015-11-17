@@ -142,7 +142,7 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				{
 					static if (!allowDuplicates)
 					{
-						enforce(!(element.name in _map), "error: element name %s already in container".format(element.name));
+						enforce(!(element.name in _map), MSG032.format(element.name));
 					}
 
 					_list ~= element;
@@ -155,7 +155,7 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				}
 				T opIndex(size_t i)
 				{
-					enforce(0 <= i && i < _list.length, "error: index %d is out of bounds for _list[]".format(i));
+					enforce(0 <= i && i < _list.length, MSG033.format(i));
 					return _list[i];
 				}
 				ref TRETURN opIndex(TNAME name)
