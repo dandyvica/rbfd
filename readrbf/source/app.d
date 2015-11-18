@@ -8,6 +8,7 @@ import std.range;
 import std.conv;
 import std.path;
 import std.traits;
+import std.concurrency;
 
 import rbf.errormsg;
 import rbf.fieldtype;
@@ -27,6 +28,8 @@ int main(string[] argv)
 	auto nbReadRecords = 0;
 	auto nbWrittenRecords = 0;
 	auto nbMatchedRecords = 0;
+
+    //auto tid = spawn(&spawnedFunction);
 
     //---------------------------------------------------------------------------------
 	// need to known how much time spent
@@ -303,3 +306,24 @@ int main(string[] argv)
 
 }
 
+
+
+
+
+// test
+void spawnedFunction()
+{
+    int result=0;
+
+    while (result != 1)
+    {
+        receive(
+                (Field f) { writefln("Received field <%s>", f.name); },
+                (string recName) { writefln("Received record <%s>", recName); },
+                (int i) { 
+                    writefln("Received i=%d, ending thread", i); 
+                    result = i;
+                },
+               );
+    }
+}

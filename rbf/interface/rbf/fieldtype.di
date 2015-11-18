@@ -8,10 +8,10 @@ import std.regex;
 import std.algorithm;
 import std.exception;
 import rbf.errormsg;
-import rbf.field;
-static valueType overpunch(valueType s);
-alias CmpFunc = bool delegate(const valueType, const string, const valueType);
-alias Conv = valueType function(valueType);
+import rbf.field : TVALUE;
+static TVALUE overpunch(TVALUE s);
+alias CmpFunc = bool delegate(const TVALUE, const string, const TVALUE);
+alias Conv = TVALUE function(TVALUE);
 enum AtomicType 
 {
 	decimal,
@@ -37,12 +37,12 @@ class FieldType
 		FieldTypeMeta meta;
 		this(string nickName, string declaredType);
 		@property bool isNumeric();
-		bool isFieldFilterMatched(valueType lvalue, string op, valueType rvalue);
+		bool isFieldFilterMatched(TVALUE lvalue, string op, TVALUE rvalue);
 		static string testFilter(T)(string op)
 		{
 			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
 		}
-		bool matchFilter(T)(in valueType lvalue, in string operator, in valueType rvalue)
+		bool matchFilter(T)(in TVALUE lvalue, in string operator, in TVALUE rvalue)
 		{
 			bool condition;
 			try

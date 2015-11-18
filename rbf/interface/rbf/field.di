@@ -13,7 +13,7 @@ import std.variant;
 import rbf.errormsg;
 import rbf.element;
 import rbf.fieldtype;
-alias valueType = string;
+alias TVALUE = string;
 struct ContextualInfo
 {
 	ulong index;
@@ -28,8 +28,8 @@ class Field : Element!(string, ulong, ContextualInfo)
 	private 
 	{
 		FieldType _fieldType;
-		valueType _rawValue;
-		valueType _strValue;
+		TVALUE _rawValue;
+		TVALUE _strValue;
 		byte _valueSign = 1;
 		Regex!char _fieldPattern;
 		string _charPattern;
@@ -48,7 +48,7 @@ class Field : Element!(string, ulong, ContextualInfo)
 			{
 				return to!T(_strValue) * sign;
 			}
-			@property void value(valueType s);
+			@property void value(TVALUE s);
 			auto @property rawValue()
 			{
 				return _rawValue;
@@ -57,7 +57,7 @@ class Field : Element!(string, ulong, ContextualInfo)
 			{
 				return _valueSign;
 			}
-			@property void sign(byte new_sign);
+			@property void sign(in byte new_sign);
 			override string toString();
 			bool opEquals(Tuple!(string, string, string, ulong) t);
 			T opCast(T)()

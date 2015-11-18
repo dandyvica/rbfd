@@ -26,7 +26,7 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 	public 
 	{
 		this(in string name, in string description);
-		@property void value(valueType s);
+		@property void value(TVALUE s);
 		@property string value();
 		@property string[] fieldNames();
 		@property string[] fieldAlternateNames();
@@ -39,7 +39,7 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 			mixin(NamedItemsContainer!(Field, true).getMembersData("rawValue"));
 		}
 		@property string[] fieldDescriptions();
-		string findByIndex(ulong i);
+		string findByIndex(in ulong i);
 		void recalculateIndex();
 		void buildAlternateNames();
 		void identifyRepeatedFields();

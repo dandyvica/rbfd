@@ -24,7 +24,7 @@ version(unittest)
 }
 
 /// useful alias for defining mapper
-alias MapperFunc = string delegate(valueType);
+alias MapperFunc = string delegate(TVALUE);
 
 /// enum used to match Layout constructor: either from file or string
 enum LayoutSource { L_FILE, L_STRING }
@@ -72,13 +72,13 @@ private:
 		{
 			// constant function == 0 order function
 			case 0:
-				meta.mapper = (valueType x) => m.captures[2];
+				meta.mapper = (TVALUE x) => m.captures[2];
 				break;
 
 			// 1-order function
 			case 1:
 				auto m1 = matchAll(m.captures[2], r1);
-				meta.mapper = (valueType x) => x[
+				meta.mapper = (TVALUE x) => x[
 					to!size_t(m1.captures[1]) .. to!size_t(m1.captures[2])
 				];
 				break;
@@ -86,13 +86,13 @@ private:
 			// 2-order function
 			case 2:
 				auto m2 = matchAll(m.captures[2], r2);
-				meta.mapper = (valueType x) =>
+				meta.mapper = (TVALUE x) =>
 					x[to!size_t(m2.captures[1]) .. to!size_t(m2.captures[2])] ~
 					x[to!size_t(m2.captures[3]) .. to!size_t(m2.captures[4])];
 				break;
 
 			default:
-				throw new Exception("error: unknown mapper lambda <%d> in layout <%s>".format(funcType, meta.file));
+				throw new Exception(MSG036.format(funcType, meta.file));
 		}
 	}
 
@@ -109,7 +109,7 @@ public:
 	this(string xmlFile)
 	{
 		// check for XML file existence
-		enforce(exists(xmlFile), "XML definition file %s not found".format(xmlFile));
+		enforce(exists(xmlFile), MSG037.format(xmlFile));
 
 		// save meta
 		meta.file = xmlFile;
@@ -122,7 +122,7 @@ public:
 		super(baseName(xmlFile));
 
 		/// to save the record name when we find a <record> tag
-		string recName = "";
+		string recName;
 
 		// create a new parser
 		auto xml = new DocumentParser(xmlData);
@@ -143,7 +143,7 @@ public:
 		// build mapper if any
 		if ("mapper" !in xml.tag.attr || xml.tag.attr["mapper"] == "") 
         {
-			throw new Exception("error: mapper function is not defined in layout");
+			throw new Exception(MSG038);
 		}
 		_extractMapper(xml.tag.attr["mapper"]);
 		meta.mapperDefinition = xml.tag.attr["mapper"];
@@ -162,7 +162,6 @@ public:
 				// set extra features in any
 				ftype[ftName].meta.pattern      = attr.get("pattern", "");
 				ftype[ftName].meta.format       = attr.get("format", "");
-				//ftype[ftName].meta.checkPattern = to!bool(attr.get("checkPattern", "false"));
 
                 // preconv is set to overpunch if any
                 if (attr.get("preconv","") == "overpunch") ftype[ftName].meta.preConv = &overpunch;
@@ -253,7 +252,8 @@ public:
 			// recordMap contains a list of fields to keep in each record
 			// the key of recordMap is a record name
 			// for all those records, keep only those fields provided
-			foreach (e; recordMap.byKeyValue) {
+			foreach (e; recordMap.byKeyValue) 
+            {
 				//writefln("key=%s, value=%s", e.key, e.value);
 
 				// "*" means keep all fields for this record
@@ -294,7 +294,7 @@ public:
 	 * Params:
 	 *
 	 */
-	void keepOnly(string list, string separator) 
+	void keepOnly(in string list, in string separator) 
     {
 			// list contains a list of records:fields to keep in each record
 			// each record:field list is separator by separator variable

@@ -159,7 +159,7 @@ public:
         {
 			if (field.type.meta.stringType == "string")
 			{
-				_worksheetFile[record.name].strCell!valueType(field.value);
+				_worksheetFile[record.name].strCell!TVALUE(field.value);
 			}
 			else
 			{

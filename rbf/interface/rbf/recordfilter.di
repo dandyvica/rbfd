@@ -11,7 +11,7 @@ struct RecordClause
 {
 	string fieldName;
 	string operator;
-	valueType scalar;
+	TVALUE scalar;
 }
 class RecordFilter
 {

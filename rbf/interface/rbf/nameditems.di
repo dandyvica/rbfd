@@ -11,7 +11,7 @@ import std.range;
 import std.typecons;
 import std.exception;
 import rbf.errormsg;
-immutable uint PRE_ALLOC_SIZE = 30;
+immutable uint PRE_ALLOC_SIZE = 300;
 class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 {
 	private 

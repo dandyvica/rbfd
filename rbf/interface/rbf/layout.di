@@ -20,7 +20,7 @@ version (unittest)
 {
 	immutable test_file = "./test/world_data.xml";
 }
-alias MapperFunc = string delegate(valueType);
+alias MapperFunc = string delegate(TVALUE);
 enum LayoutSource 
 {
 	L_FILE,
@@ -53,7 +53,7 @@ class Layout : NamedItemsContainer!(Record, false, LayoutMeta)
 			this(string xmlFile);
 			override string toString();
 			void keepOnly(string[][string] recordMap);
-			void keepOnly(string list, string separator);
+			void keepOnly(in string list, in string separator);
 			void removeFromAllRecords(string[] fieldList);
 			void validate();
 			bool isFieldInLayout(string fieldName);

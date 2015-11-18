@@ -45,6 +45,9 @@ immutable MSG032 = "error: element name %s already in container";
 immutable MSG033 = "error: index %d is out of bounds for _list[]";
 immutable MSG034 = "record %s is not matching declared length (%d instead of %d)";
 immutable MSG035 = "layout %s validates!!";
+immutable MSG036 = "error: unknown mapper lambda <%d> in layout <%s>";
+immutable MSG037 = "error: XML definition file <%s> not found";
+immutable MSG038 = "error: mapper function is not defined in layout";
 
 // global log variable
 Log log;

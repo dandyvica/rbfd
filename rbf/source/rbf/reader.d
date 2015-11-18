@@ -175,6 +175,7 @@ public:
             this(string fileName, Reader outer) 
             {
                 _fh = File(fileName);
+                //_fh.setvbuf(65536);
                 _outerThis = outer;
 
                 do 

@@ -14,7 +14,7 @@ struct RecordClause
 {
   string fieldName;   /// field name of the clause (e.g.: FIELD)
   string operator;    /// operator in the clause (e.g.: ==)
-  valueType scalar;      /// value to match for (e.g.: "this is my field")
+  TVALUE scalar;      /// value to match for (e.g.: "this is my field")
 }
 
 class RecordFilter 

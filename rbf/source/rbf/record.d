@@ -71,7 +71,7 @@ public:
 	 * record.value = "AAAAA0001000020DDDDDEEEEEFFFFFGGGGGHHHHHIIIIIJJJJJKKKKKLLLLLMMMMMNNNNN00010"
 	 * --------------
 	 */
-	@property void value(valueType s)
+	@property void value(TVALUE s)
 	{
 		// add or strip chars from string if string has not the same length as record
 		if (s.length < _length) 
@@ -135,7 +135,7 @@ public:
 		mixin(NamedItemsContainer!(Field,true).getMembersData("description"));
 	}
 
-	string findByIndex(ulong i) 
+	string findByIndex(in ulong i)
     {
 		foreach (f; this) 
         {
@@ -167,74 +167,70 @@ public:
                 auto i=1;
                 foreach(f1; list)
                 {
-                    f1.context.alternateName = f1.name ~ to!string(i++);
+                    //f1.context.alternateName = f1.name ~ to!string(i++);
+                    f1.context.alternateName = "%s%d".format(f1.name, i++);
                 }
             }
         }
     }
 
 
-	 void identifyRepeatedFields()
-	 {
+    void identifyRepeatedFields()
+    {
+        // build our string to search for: each field is replaced by
+        // pattern <i> where i is the first field index
+        // it allows to easily search using regex: ((<\d+>)+?)\1+
+        // which means: find at least to successive tokens matching <i>
+        // where i is a decimal digit
+        string s;
+        foreach(f; this) 
+        {
+            auto i = _map[f.name][0].context.index;
+            s ~= "<%d>".format(i);
+        }
 
-		 // get field names
-		 auto fields = this.names;
+        // real pattern matching here
+        auto pattern = ctRegex!(r"((<\d+>)+?)\1+");
+        auto match = matchAll(s, pattern);
 
-		 // build our string to search for: each field is replaced by
- 		 // pattern <i> where i is the first field index
-		 // it allows to easily search using regex: ((<\d+>)+?)\1+
-		 // which means: find at least to successive tokens matching <i>
-		 // where i is a decimal digit
-		 string s;
-		 foreach(f; this) 
-         {
-			 auto i = _map[f.name][0].context.index;
-			 s ~= "<%d>".format(i);
-		 }
+        // we've matched here duplicated pattern
+        foreach (m; match) 
+        {
+            // our result is a list of indexes liek "<2><5><7>...".
+            // each number traces back to the field name
+            auto result = matchAll(m[1], r"<(\d+)>");
+            auto a = array(result.map!(r => findByIndex(to!ulong(r[1]))));
+            meta.repeatingPattern ~= a;
+        }
 
-		 // real pattern matching here
-		 auto pattern = ctRegex!(r"((<\d+>)+?)\1+");
-		 auto match = matchAll(s, pattern);
-
-		 // we've matched here duplicated pattern
-		 foreach (m; match) 
-         {
-				// our result is a list of indexes liek "<2><5><7>...".
-				// each number traces back to the field name
-				auto result = matchAll(m[1], r"<(\d+)>");
-				auto a = array(result.map!(r => findByIndex(to!ulong(r[1]))));
-				meta.repeatingPattern ~= a;
-		 }
-
-	 }
+    }
 
 
- 	 /**
-  	 * try to match fields whose names are repeated
-  	 */
-	 void findRepeatedFields(string[] fieldList)
-	 {
+    /**
+     * try to match fields whose names are repeated
+     */
+    void findRepeatedFields(string[] fieldList)
+    {
+        auto indexOfFirstField = array(this[fieldList[0]].map!(f => f.context.index));
+        immutable l = fieldList.length;
 
-			auto indexOfFirstField = array(this[fieldList[0]].map!(f => f.context.index));
-			auto l = fieldList.length;
+        foreach (i; indexOfFirstField)
+        {
+            if (i+l > size) break;
 
-			foreach (i; indexOfFirstField)
-			{
-				if (i+l > size) break;
+            // create new record
+            // record name is based on field names
+            auto recName = join(fieldList, ";");
+            meta.subRecord ~= new Record(recName, "subRecord");
 
-				// create new record
-                // record name is based on field names
-                auto recName = join(fieldList, ";");
-				meta.subRecord ~= new Record(recName, "subRecord");
+            auto a = this[i..i+l];
+            if (array(this[i..i+l].map!(f => f.name)) == fieldList)
+            {
+                meta.subRecord[$-1] ~= a;
+            }
+        }
 
-				auto a = this[i..i+l];
-				if (array(this[i..i+l].map!(f => f.name)) == fieldList)
-				{
-				 	meta.subRecord[$-1] ~= a;
-				}
-			}
-
-	 }
+    }
 
 
 	/**
@@ -284,7 +280,7 @@ public:
 			s ~= field.toString();
 			s ~= "\n";
 		}
-		return(s );
+		return(s);
 	}
 
 	/**
@@ -293,7 +289,6 @@ public:
 	 */
 	bool matchRecordFilter(RecordFilter filter)
 	{
-		//writefln("=======> %s",filter);
 		// now for each filter, just check it out
 		foreach (RecordClause c; filter)
 		{

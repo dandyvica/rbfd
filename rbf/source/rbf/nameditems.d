@@ -13,7 +13,7 @@ import std.exception;
 
 import rbf.errormsg;
 
-immutable uint PRE_ALLOC_SIZE = 30;
+immutable uint PRE_ALLOC_SIZE = 300;
 
 /***********************************
  * Generic container for field-like objects
@@ -63,9 +63,10 @@ protected:
 											/// need to keep track of all instances
 
 public:
-static if (Meta.length > 0) {
-	Meta[0] meta;
-}
+    static if (Meta.length > 0) 
+    {
+        Meta[0] meta;
+    }
 
 	// inner structure for defining a range for our container
 	struct Range 

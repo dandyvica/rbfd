@@ -19,9 +19,9 @@ import std.algorithm;
 import std.exception;
 
 import rbf.errormsg;
-import rbf.field;
+import rbf.field: TVALUE;
 
-static valueType overpunch(valueType s) 
+static TVALUE overpunch(TVALUE s) 
 {
 	static string posTable = makeTrans("{ABCDEFGHI}", "01234567890");
 	static string negTable = makeTrans("JKLMNOPQR", "123456789");
@@ -42,8 +42,8 @@ static valueType overpunch(valueType s)
 
 
 // filter matching method pointer
-alias CmpFunc = bool delegate(const valueType,const string,const valueType);
-alias Conv = valueType function(valueType);
+alias CmpFunc = bool delegate(const TVALUE,const string,const TVALUE);
+alias Conv = TVALUE function(TVALUE);
 
 /***********************************
  * all possible field types for a field
@@ -127,7 +127,7 @@ public:
 
 	/// test a record filter. Basically it tests whether a value is matching
     /// a result
-	bool isFieldFilterMatched(valueType lvalue, string op, valueType rvalue) {
+	bool isFieldFilterMatched(TVALUE lvalue, string op, TVALUE rvalue) {
 		return meta.filterTestCallback(lvalue, op, rvalue);
 	}
 	///
@@ -147,7 +147,7 @@ public:
     {
 		return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
 	}
-	bool matchFilter(T)(in valueType lvalue, in string operator, in valueType rvalue) 
+	bool matchFilter(T)(in TVALUE lvalue, in string operator, in TVALUE rvalue) 
     {
 		bool condition;
 

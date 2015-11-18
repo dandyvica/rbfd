@@ -96,7 +96,7 @@ class Worksheet : XlsxEntity {
     _fh.writefln(`<c t="inlineStr"><is><t>%s</t></is></c>`, cellValue);
   }
 
-  void numCell(valueType cellValue) {
+  void numCell(TVALUE cellValue) {
     _fh.writefln(`<c><v>%s</v></c>`, cellValue);
   }
 

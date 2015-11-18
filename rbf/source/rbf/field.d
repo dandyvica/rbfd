@@ -18,8 +18,8 @@ import rbf.fieldtype;
 /***********************************
  * type used to hold values read from file
  */
-//alias valueType = char[];
-alias valueType = string;
+//alias TVALUE = char[];
+alias TVALUE = string;
 
 /***********************************
  * These information are based on the context: a field within a record
@@ -43,8 +43,8 @@ private:
 
 	FieldType _fieldType; 		      /// type of the field as defined in the XML layout
 
-	valueType _rawValue;              /// pristine value
-	valueType _strValue;		      /// store the string value of the field
+	TVALUE _rawValue;                 /// pristine value
+	TVALUE _strValue;		          /// store the string value of the field
 
 	byte _valueSign = 1;			  /// sign of the scalar value if any
 
@@ -137,10 +137,9 @@ public:
 		assert(field1.value!int == 50);
 	}
 
-	@property void value(valueType s)
+	@property void value(TVALUE s)
 	{
 		_rawValue = s;
-		auto _strippedValue = s.strip;
 
 		// convert if field type requests it
 		if (type.meta.preConv) 
@@ -149,7 +148,6 @@ public:
 		}
 		else
 			_strValue = s.strip;
-
 	}
 	///
 	unittest 
@@ -172,7 +170,7 @@ public:
 
 	/// read/write property for the sign field
 	@property auto sign() { return _valueSign; }
-	@property void sign(byte new_sign) { _valueSign = new_sign; }
+	@property void sign(in byte new_sign) { _valueSign = new_sign; }
 
 	/**
 	 * return a string of Field attributes
@@ -186,7 +184,7 @@ public:
 	}
 
 	/// useful for unit tests
-	bool opEquals(Tuple!(string,string,string,ulong) t) 
+	bool opEquals(Tuple!(string,string,string,ulong) t)
     {
 		return
 			name           == t[0] &&
