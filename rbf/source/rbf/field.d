@@ -20,6 +20,7 @@ import rbf.fieldtype;
  */
 //alias TVALUE = char[];
 alias TVALUE = string;
+pragma(msg, "========> TVALUE = ", TVALUE.stringof);
 
 /***********************************
  * These information are based on the context: a field within a record

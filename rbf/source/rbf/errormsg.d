@@ -48,6 +48,8 @@ immutable MSG035 = "layout %s validates!!";
 immutable MSG036 = "error: unknown mapper lambda <%d> in layout <%s>";
 immutable MSG037 = "error: XML definition file <%s> not found";
 immutable MSG038 = "error: mapper function is not defined in layout";
+immutable MSG039 = "option break records requested";
+immutable MSG040 = "record <%s>, repeating pattern <%s>";
 
 // global log variable
 Log log;

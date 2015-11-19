@@ -26,27 +26,24 @@ version(unittest)
 /// useful alias for defining mapper
 alias MapperFunc = string delegate(TVALUE);
 
-/// enum used to match Layout constructor: either from file or string
-enum LayoutSource { L_FILE, L_STRING }
-
 /// layout and config classes share core same data. So this mixin is useful
 /// for boilerplate
 mixin template LayoutCore()
 {
 	string name;									/// layout moniker
-	string description;						/// layout description
+	string description;						        /// layout description
 	string file;									/// layout XML file with path
 }
 
 struct LayoutMeta 
 {
 	mixin LayoutCore;							/// basic data
-	ulong length;									/// optional layout length
-	string layoutVersion;					/// layout version found in XML file
-	string ignoreLinePattern;     /// in some case, we need to get rid of some lines
-	string[] skipField;						/// field names to systematically skip
-	MapperFunc mapper;						/// function which identifies a record name from a string
-	string mapperDefinition;			/// as defined in the XML file
+	ulong length;							    /// optional layout length
+	string layoutVersion;					    /// layout version found in XML file
+	string ignoreLinePattern;                   /// in some case, we need to get rid of some lines
+	string[] skipField;						    /// field names to systematically skip
+	MapperFunc mapper;						    /// function which identifies a record name from a string
+	string mapperDefinition;			        /// as defined in the XML file
 }
 
 /***********************************
@@ -127,26 +124,30 @@ public:
 		// create a new parser
 		auto xml = new DocumentParser(xmlData);
 
-		// save metadata of the structure
-		meta.length            = to!ulong(xml.tag.attr.get("reclength", "0"));
-		meta.layoutVersion     = xml.tag.attr.get("version", "");
-		meta.ignoreLinePattern = xml.tag.attr.get("ignoreLine", "");
-		meta.description       = xml.tag.attr.get("description","");
+		// read <meta> definitions and keep types
+		xml.onStartTag["meta"] = (ElementParser xml)
+		{
+            // save metadata of the structure
+            meta.length            = to!ulong(xml.tag.attr.get("reclength", "0"));
+            meta.layoutVersion     = xml.tag.attr.get("version", "");
+            meta.ignoreLinePattern = xml.tag.attr.get("ignoreLine", "");
+            meta.description       = xml.tag.attr.get("description","");
 
-		// build skip list if any
-		auto fields = xml.tag.attr.get("skipField","");
-		if (fields != "") 
-        {
-			meta.skipField = array(fields.split(',').map!(e => e.strip));
-		}
+            // build skip list if any
+            auto fields = xml.tag.attr.get("skipField","");
+            if (fields != "") 
+            {
+                meta.skipField = array(fields.split(',').map!(e => e.strip));
+            }
 
-		// build mapper if any
-		if ("mapper" !in xml.tag.attr || xml.tag.attr["mapper"] == "") 
-        {
-			throw new Exception(MSG038);
-		}
-		_extractMapper(xml.tag.attr["mapper"]);
-		meta.mapperDefinition = xml.tag.attr["mapper"];
+            // build mapper if any
+            if ("mapper" !in xml.tag.attr || xml.tag.attr["mapper"] == "") 
+            {
+                throw new Exception(MSG038);
+            }
+            _extractMapper(xml.tag.attr["mapper"]);
+            meta.mapperDefinition = xml.tag.attr["mapper"];
+        };
 
 		// read <fieldtype> definitions and keep types
 		xml.onStartTag["fieldtype"] = (ElementParser xml)
@@ -232,11 +233,10 @@ public:
 	 * record definition for all records found
 	 *
 	 */
-	override string toString() {
+	override string toString() 
+    {
 		string s;
-		foreach (rec; this) {
-			s ~= rec.toString;
-		}
+		foreach (rec; this) { s ~= rec.toString; }
 		return s;
 	}
 
@@ -254,8 +254,6 @@ public:
 			// for all those records, keep only those fields provided
 			foreach (e; recordMap.byKeyValue) 
             {
-				//writefln("key=%s, value=%s", e.key, e.value);
-
 				// "*" means keep all fields for this record
 				if (e.value[0] == "*") continue;
 
@@ -307,7 +305,8 @@ public:
 			// possibly remove empty data
 			auto recAndFields = list.split(separator).remove!(e => e == "");
 
-			foreach (e; recAndFields) {
+			foreach (e; recAndFields) 
+            {
 				auto data = e.split(":");
 				auto recName = data[0].strip;
 
@@ -315,12 +314,14 @@ public:
 				auto fieldList = array(data[1].split(",").map!(e => e.strip));
 
 				// look up each field
-				foreach (f; fieldList) {
+				foreach (f; fieldList) 
+                {
 					// calculated field?
 					auto m = matchAll(f, reg);
 
 					// match? then field is a "fake" field
-					if (!m.empty) {
+					if (!m.empty) 
+                    {
 						//writeln(m);
 						auto underlyingFieldName = m.captures[2];
 						auto underlyingFieldType = this[recName][underlyingFieldName][0].type;
@@ -418,16 +419,6 @@ public:
 ///
 unittest {
 	writeln("========> testing ", __FILE__);
-
-	// auto l = new Layout(`<rbfile version="1.0" mapper="type:0 map:FOO"></rbfile>`, LayoutSource.L_STRING);
-	// assert(l.meta.mapper("ABCDEF") == "FOO");
-	//
-	// l = new Layout(`<rbfile version="1.0" mapper="type:1 map:0..2"></rbfile>`, LayoutSource.L_STRING);
-	// assert(l.meta.mapper("ABCDEF") == "AB");
-	//
-	// l = new Layout(`<rbfile	version="1.0" mapper="type:2 map:0..2,2..4"></rbfile>`, LayoutSource.L_STRING);
-	// assert(l.meta.mapper("ABCDEF") == "ABCD");
-
 
 	auto l = new Layout(test_file);
 

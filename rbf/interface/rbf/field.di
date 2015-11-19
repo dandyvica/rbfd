@@ -14,6 +14,7 @@ import rbf.errormsg;
 import rbf.element;
 import rbf.fieldtype;
 alias TVALUE = string;
+pragma (msg, "========> TVALUE = ", TVALUE.stringof);
 struct ContextualInfo
 {
 	ulong index;

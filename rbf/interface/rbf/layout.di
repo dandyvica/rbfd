@@ -21,11 +21,6 @@ version (unittest)
 	immutable test_file = "./test/world_data.xml";
 }
 alias MapperFunc = string delegate(TVALUE);
-enum LayoutSource 
-{
-	L_FILE,
-	L_STRING,
-}
 template LayoutCore()
 {
 	string name;

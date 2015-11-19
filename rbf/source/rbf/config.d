@@ -29,10 +29,12 @@ void printMembers(T)(T v)
 }
 
 /// configuration file name
-version(linux) {
+version(linux) 
+{
     immutable xmlSettings = ".rbf/rbf.xml";
 }
-version(Win64) {
+version(Win64) 
+{
     immutable xmlSettings = `\local\rbf\rbf.xml`;
 }
 
@@ -82,7 +84,8 @@ public:
 	/**
 	 * read the XML configuraimport rbf.xml file configuration file
 	 */
-	this(string xmlConfigFile = "") {
+	this(string xmlConfigFile = "") 
+    {
 
         // define new container for layouts and formats
         _layoutDirectory = new LayoutDir("layouts");

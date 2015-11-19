@@ -143,18 +143,18 @@ int main(string[] argv)
 			printMembers!(CommandLineOption)(opts);
 			printMembers!(OutputFeature)(settings.outputDir[opts.outputFormat]);
 
-            //---------------------------------------------------------------------------------
-            // print out repeated fields if any
-            //---------------------------------------------------------------------------------
+            /*
             if (opts.bBreakRecord)
             {
-                foreach(r; layout) { 
+                foreach(r; layout) 
+                { 
                     if (r.meta.repeatingPattern.length != 0) 
                     {
-                        stderr.writefln("\nRecord %s", r.name);
+                        //stderr.writefln("\nRecord %s", r.name);
                         foreach(rp; r.meta.repeatingPattern) 
                         {
-                            stderr.writefln("\tRepeating pattern: %s", rp);
+                            //stderr.writefln("\tRepeating pattern: %s", rp);
+                            log.log(LogLevel.INFO, MSG040, r.name, rp);
                         }
                         foreach(sr; r.meta.subRecord) 
                         {
@@ -165,6 +165,7 @@ int main(string[] argv)
                     }
                 }
             }
+            */
 		}
 
         //---------------------------------------------------------------------------------
@@ -198,12 +199,16 @@ int main(string[] argv)
 		// break records?
 		if (opts.bBreakRecord)
 		{
+            log.log(LogLevel.INFO, MSG039);
 			layout.each!(r => r.identifyRepeatedFields);
-			foreach (r; layout) 
+			foreach (rec; layout) 
             {
 				//writefln("%s:%s", r.name, r.meta.repeatingPattern);
-				if (r.meta.repeatingPattern.length != 0)
-                    r.meta.repeatingPattern.each!(rp => r.findRepeatedFields(rp));
+				if (rec.meta.repeatingPattern.length != 0)
+                {
+                    rec.meta.repeatingPattern.each!(rp => rec.findRepeatedFields(rp));
+                    rec.meta.repeatingPattern.each!(rp => log.log(LogLevel.INFO, MSG040, rec.name, rp));
+                }
 			}
 		}
 
