@@ -90,9 +90,13 @@ public:
 	/**
 	 * value of a record is the concatenation of all field raw values
 	 */
-	@property string value()
+	@property string rawValue()
 	{
 		return fieldRawValues.join("");
+	}
+	@property string value()
+	{
+		return fieldValues.join("");
 	}
 
 	/**

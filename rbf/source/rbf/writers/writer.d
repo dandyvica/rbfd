@@ -21,25 +21,29 @@ import rbf.writers.htmlwriter;
 import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
 import rbf.writers.sqlite3writer;
+import rbf.writers.xmlwriter;
 
+
+enum OutputFormat { box, csv, html, ident, sql, tag, txt, xlsx, xml }
 
 /*********************************************
  * writer class for writing to various ouput
  * formats
  */
-abstract class Writer {
+abstract class Writer 
+{
 private:
 
-	string _outputFileName; 			// name of the file we want to create
+	string _outputFileName; 		/// name of the file we want to create
 
 package:
 
-	File _fh; 										/// file handle on output file if any
+	File _fh; 						/// file handle on output file if any
 	string _previousRecordName;		/// sometimes, we need to keep track of the previous record written
 
 public:
 
-	OutputFeature outputFeature;  /// specifics data for chosen output format
+	OutputFeature outputFeature;    /// specifics data for chosen output format
 
 
 	/**
@@ -54,7 +58,8 @@ public:
 		// we might use standard output. So need to check out
 		_outputFileName = outputFileName;
 
-		if (outputFileName != "") {
+		if (outputFileName != "") 
+        {
 			_outputFileName = outputFileName;
 			if (create) 
             {
@@ -71,10 +76,12 @@ public:
 	abstract void write(Record rec);
 	//abstract void write(Field rec);
 
-	void open() {
+	void open() 
+    {
 		_fh = File(_outputFileName, "w");
 	}
-	void close() {
+	void close() 
+    {
 		// close handle if not stdout
 		if (_outputFileName != "") _fh.close();
 	}
@@ -85,19 +92,20 @@ public:
  * factory method for creating object matching
  * desired format
  */
-Writer writerFactory(in string output, in string mode, Layout layout)
+Writer writerFactory(in string output, in OutputFormat fmt, Layout layout)
 {
-	switch(mode)
+	final switch(fmt)
 	{
-		case "html"  : return new HTMLWriter(output);
-		case "csv"   : return new CSVWriter(output);
-		case "txt"   : return new TXTWriter(output);
-		case "box"   : return new BoxWriter(output);
-		case "xlsx"  : return new XLSXWriter(output, layout);
-		case "sql"   : return new Sqlite3Writer(output);
-		case "tag"   : return new TAGWriter(output);
-		case "ident" : return new IdentWriter(output);
-		default:
-			throw new Exception("error: writer unknown mode <%s>".format(mode));
+		case OutputFormat.box   : return new BoxWriter(output);
+		case OutputFormat.csv   : return new CSVWriter(output);
+		case OutputFormat.html  : return new HTMLWriter(output);
+		case OutputFormat.ident : return new IdentWriter(output);
+		case OutputFormat.sql   : return new Sqlite3Writer(output);
+		case OutputFormat.tag   : return new TAGWriter(output);
+		case OutputFormat.txt   : return new TXTWriter(output);
+		case OutputFormat.xlsx  : return new XLSXWriter(output, layout);
+		case OutputFormat.xml   : return new XmlWriter(output);
+		//default:
+		//	throw new Exception("error: writer unknown mode <%s>".format(mode));
 	}
 }

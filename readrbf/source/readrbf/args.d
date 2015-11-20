@@ -10,8 +10,11 @@ import std.algorithm;
 import std.path;
 import std.exception;
 import std.traits;
+import std.conv;
 
+import rbf.errormsg;
 import rbf.recordfilter;
+import rbf.writers.writer : OutputFormat;
 
 immutable helpString = import("help.txt");
 immutable IAformat = "%-50.50s : ";
@@ -24,42 +27,39 @@ template GenInput(string input)
 
 
 
-
 /***********************************
  * This class is holding command line arguments
  */
 struct CommandLineOption {
 
 public:
-	string inputFileName;						/// input file name to parse
-	string inputLayout;							/// input file layout
-	string outputFormat = "txt";		/// output format HTML, TXT, ...
-	string outputFileName;					/// name of the final converted file
+	string inputFileName;			                	/// input file name to parse
+	string inputLayout;					                /// input file layout
+	OutputFormat outputFormat = OutputFormat.txt;		/// output format HTML, TXT, ...
+	string outputFileName;		                		/// name of the final converted file
 
-	string fieldFilterFile;					/// if any, name of the field filter file
-	string fieldFilter;							/// if any, list of records/fields to filter out
-	string recordFilterFile;				/// if any, name of the record filter file
-	string recordFilter;						/// if any, name of the record filter file
-	RecordFilter filteredRecords;   /// if any, list of clauses to filter records
-	string filteredFields;					/// if nay list of fields to filter out
+	string fieldFilterFile;			                	/// if any, name of the field filter file
+	string fieldFilter;					                /// if any, list of records/fields to filter out
+	string recordFilterFile;			                /// if any, name of the record filter file
+	string recordFilter;				                /// if any, name of the record filter file
+	RecordFilter filteredRecords;                       /// if any, list of clauses to filter records
+	string filteredFields;				                /// if nay list of fields to filter out
 
+	string lineFilter;					                /// if any, define a regex to match lines
+	bool bVerbose;						                /// if true, print out lots of data
+	bool bJustRead;						                /// if true, don't write data
+	bool bProgressBar;                                  /// print out read record progress bar
+	bool bCheckLayout;					                /// if true, try to validate layouy by checking length
+	bool stdOutput;						                /// if true, print to standard output instead of file
+	bool bBreakRecord;  			                    /// if true, break records into individual sub-records
+	bool bCheckPattern;  				                /// if true, check if field values are matching pattern
 
-	string lineFilter;							/// if any, define a regex to match lines
-
-	bool bVerbose;									/// if true, print out lots of data
-	bool bJustRead;									/// if true, don't write data
-	bool bProgressBar;
-	bool bCheckLayout;							/// if true, try to validate layouy by checking length
-	bool stdOutput;									/// if true, print to standard output instead of file
-	bool bBreakRecord;  						/// if true, break records into individual sub-records
-	bool bCheckPattern;  						/// if true, check if field values are matching pattern
-
-
-	ulong samples;									/// limit to n first lines (n == samples)
+	ulong samples;					                    /// limit to n first lines (n == samples)
 
 
 
 
+auto possibleValues = [ EnumMembers!OutputFormat ];
 
 public:
 /***********************************
@@ -102,15 +102,30 @@ public:
                     "br", &bBreakRecord
                 );
             }
+            catch (ConvException e) 
+            {
+                stderr.writefln(MSG043, possibleValues);
+                core.stdc.stdlib.exit(2);
+            }
             catch (Exception e) {
                 _printHelp(e.msg);
+            }
+        }
+
+        // break record option is not compatible with some output formats
+        if (bBreakRecord)
+        {
+            if (outputFormat != OutputFormat.txt && outputFormat != OutputFormat.box)
+            {
+                stderr.writefln(MSG044);
+                core.stdc.stdlib.exit(3);
             }
         }
 
 		// if no output file name specified, then use input file name and
 		// append the suffix
 		if (fieldFilterFile != "") {
-			enforce(exists(fieldFilterFile), "error: field filter file %s not found".format(fieldFilterFile));
+			enforce(exists(fieldFilterFile), MSG041.format(fieldFilterFile));
 			filteredFields = cast(string)std.file.read(fieldFilterFile);
 		} else if (fieldFilter != "") {
 			filteredFields = fieldFilter;
@@ -119,7 +134,7 @@ public:
 		// if filter file is specified, load conditions
 		if (recordFilterFile != "") 
         {
-			enforce(exists(recordFilterFile), "error: record filter file %s not found".format(recordFilterFile));
+			enforce(exists(recordFilterFile), MSG042.format(recordFilterFile));
 			filteredRecords = new RecordFilter(cast(string)std.file.read(recordFilterFile), "\n");
 		} 
         else if (recordFilter != "") 
@@ -128,10 +143,14 @@ public:
 		}
 
 		// build output file name
-        if (outputFormat == "sql") 
+        if (outputFormat == OutputFormat.sql) 
+        {
             outputFileName = baseName(inputFileName) ~ ".db";
+        }
         else
-            outputFileName = baseName(inputFileName) ~ "." ~ outputFormat;
+        {
+            outputFileName = baseName(inputFileName) ~ "." ~ to!string(outputFormat);
+        }
 	}
 
 	@property bool isFieldFilterFileSet()  { return fieldFilterFile != ""; }
@@ -150,8 +169,23 @@ public:
         mixin(GenInput!("Layout name (mandatory)"));
         inputLayout      = input.strip;
 
-        mixin(GenInput!("Output format (optional but default: txt)"));
-        outputFormat     = (input.strip == "") ? "txt" : input.strip;
+        mixin(GenInput!("Output format (optional but defaulted to: txt)"));
+        if (input.strip == "")
+        {
+            outputFormat = OutputFormat.txt;
+        }
+        else
+        {
+            try
+            {
+                outputFormat = to!OutputFormat(input.strip);
+            }
+            catch (ConvException e) 
+            {
+                stderr.writefln(MSG043, possibleValues);
+                core.stdc.stdlib.exit(2);
+            }
+        }
 
         mixin(GenInput!("Field filter file (optional)"));
         fieldFilterFile  = input.strip;

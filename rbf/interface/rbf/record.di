@@ -27,6 +27,7 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 	{
 		this(in string name, in string description);
 		@property void value(TVALUE s);
+		@property string rawValue();
 		@property string value();
 		@property string[] fieldNames();
 		@property string[] fieldAlternateNames();

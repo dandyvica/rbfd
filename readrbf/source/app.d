@@ -52,7 +52,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// check output formats
         //---------------------------------------------------------------------------------
-		if (opts.outputFormat !in settings.outputDir) 
+		if (to!string(opts.outputFormat) !in settings.outputDir) 
         {
 			throw new Exception(
 				"fatal: output format should be in the following list: %s".
@@ -143,29 +143,6 @@ int main(string[] argv)
 			printMembers!(CommandLineOption)(opts);
 			printMembers!(OutputFeature)(settings.outputDir[opts.outputFormat]);
 
-            /*
-            if (opts.bBreakRecord)
-            {
-                foreach(r; layout) 
-                { 
-                    if (r.meta.repeatingPattern.length != 0) 
-                    {
-                        //stderr.writefln("\nRecord %s", r.name);
-                        foreach(rp; r.meta.repeatingPattern) 
-                        {
-                            //stderr.writefln("\tRepeating pattern: %s", rp);
-                            log.log(LogLevel.INFO, MSG040, r.name, rp);
-                        }
-                        foreach(sr; r.meta.subRecord) 
-                        {
-                            stderr.write("\t");
-                            sr.each!(f => stderr.writef("%s(%d)-", f.name, f.context.index)); 
-                            stderr.writeln();
-                        }
-                    }
-                }
-            }
-            */
 		}
 
         //---------------------------------------------------------------------------------
@@ -203,7 +180,6 @@ int main(string[] argv)
 			layout.each!(r => r.identifyRepeatedFields);
 			foreach (rec; layout) 
             {
-				//writefln("%s:%s", r.name, r.meta.repeatingPattern);
 				if (rec.meta.repeatingPattern.length != 0)
                 {
                     rec.meta.repeatingPattern.each!(rp => rec.findRepeatedFields(rp));
@@ -269,6 +245,8 @@ int main(string[] argv)
 			{
 				foreach(subRec; rec.meta.subRecord)
 				{
+                    // don't write empty records (this might occur for sub records)
+                    if (subRec.value == "") continue;
 					writer.write(subRec);
 				}
 			}

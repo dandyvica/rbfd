@@ -28,7 +28,7 @@ class IdentWriter : Writer {
 
 	override void write(Record rec)
 	{
-		_fh.writeln(rec.value);
+		_fh.writeln(rec.rawValue);
 	}
 
 }

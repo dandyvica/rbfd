@@ -20,6 +20,19 @@ import rbf.writers.htmlwriter;
 import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
 import rbf.writers.sqlite3writer;
+import rbf.writers.xmlwriter;
+enum OutputFormat 
+{
+	box,
+	csv,
+	html,
+	ident,
+	sql,
+	tag,
+	txt,
+	xlsx,
+	xml,
+}
 abstract class Writer
 {
 	private 
@@ -41,4 +54,4 @@ abstract class Writer
 		}
 	}
 }
-Writer writerFactory(in string output, in string mode, Layout layout);
+Writer writerFactory(in string output, in OutputFormat fmt, Layout layout);

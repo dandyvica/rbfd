@@ -29,7 +29,7 @@ immutable MSG016 = "opening input file <%s>, size = %d bytes";
 immutable MSG017 = "read rate = %.0f records per second";
 immutable MSG018 = "line# <%d>, record name <%s> not found";
 immutable MSG019 = "creating output file <%s>";
-immutable MSG020 = "conversion error, value <%s> to type <%s>, resetting to NULL";
+immutable MSG020 = "conversion error, field <%s> value <%s> to type <%s>, resetting to NULL";
 immutable MSG021 = "creating tables, SQL pool size = %d";
 immutable MSG022 = "%d table(s) created";
 immutable MSG023 = "layout <%s> read, %d record(s) created";
@@ -50,6 +50,11 @@ immutable MSG037 = "error: XML definition file <%s> not found";
 immutable MSG038 = "error: mapper function is not defined in layout";
 immutable MSG039 = "option break records requested";
 immutable MSG040 = "record <%s>, repeating pattern <%s>";
+immutable MSG041 = "error: field filter file %s not found";
+immutable MSG042 = "error: record filter file %s not found";
+immutable MSG043 = "error: unknown output mode. Should be in the following list: %s";
+immutable MSG044 = "error: break record options is only compatible with txt/box output formats";
+		//	throw new Exception("error: writer unknown mode <%s>".format(mode));
 
 // global log variable
 Log log;

@@ -180,7 +180,7 @@ private:
             }
             // conversion error catched
             catch (ConvException e) {
-                log.log(LogLevel.INFO, MSG020, f.value, f.type.meta.type);
+                log.log(LogLevel.INFO, MSG020, f.name, f.value, f.type.meta.type);
                 // instead, use a NULL value
                 _sqlCode = sqlite3_bind_null(_compiledInsertStmt[rec.name], to!int(f.context.index+1));
             }
