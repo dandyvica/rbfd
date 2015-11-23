@@ -212,10 +212,9 @@ public:
         _sqlCode = sqlite3_open(toStringz(databaseName), &_db);
         if(_sqlCode != SQLITE_OK)
         {
-            stderr.writefln("error: database create error: %s\n", sqlite3_errmsg(_db));
-            throw new Exception("error: SQL error %d when opening file %d, SQL msg %s ".format(_sqlCode, databaseName, sqlite3_errmsg(_db)));
+            log.log(LogLevel.FATAL, MSG047, sqlite3_errmsg(_db));
+            throw new Exception(MSG048.format(_sqlCode, databaseName, sqlite3_errmsg(_db)));
         }
-        log.log(LogLevel.INFO, MSG019, databaseName);
 	}
 
 	/** 
@@ -255,8 +254,6 @@ public:
 
             // prepare further INSERT statements
             _prepareInsertCompiledStatement(rec);
-            log.log(LogLevel.INFO, MSG025, rec.name);
-            //_prepareInsertStatement(rec);
         }
         log.log(LogLevel.INFO, MSG022, nbTables);
     }
@@ -284,7 +281,7 @@ public:
         _sqlCode = sqlite3_step(_compiledInsertStmt[rec.name]);
         if (_sqlCode != SQLITE_DONE) 
         {
-            stderr.writeln("error: INSERT statement, error code = <%d>, error msg <%s>".format(_sqlCode, fromStringz(sqlite3_errmsg(_db))));
+            stderr.writeln(MSG046.format(_sqlCode, fromStringz(sqlite3_errmsg(_db))));
         }
         else
         {

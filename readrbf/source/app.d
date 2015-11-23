@@ -50,9 +50,19 @@ int main(string[] argv)
 		auto opts = CommandLineOption(argv);
 
         //---------------------------------------------------------------------------------
+		// output format is an enum but should match the string in rbf.xml config file
+        //---------------------------------------------------------------------------------
+        auto outputFormat = to!string(opts.outputFormat);
+
+        //---------------------------------------------------------------------------------
+		// output format is an enum but should match the string in rbf.xml config file
+        //---------------------------------------------------------------------------------
+        opts.outputFileName = baseName(opts.inputFileName) ~ "." ~ settings.outputDir[outputFormat].outputExtension;
+
+        //---------------------------------------------------------------------------------
 		// check output formats
         //---------------------------------------------------------------------------------
-		if (to!string(opts.outputFormat) !in settings.outputDir) 
+		if (outputFormat !in settings.outputDir) 
         {
 			throw new Exception(
 				"fatal: output format should be in the following list: %s".
@@ -141,7 +151,7 @@ int main(string[] argv)
 				printMembers!(FieldTypeMeta)(t.meta);
 			}
 			printMembers!(CommandLineOption)(opts);
-			printMembers!(OutputFeature)(settings.outputDir[opts.outputFormat]);
+			printMembers!(OutputFeature)(settings.outputDir[outputFormat]);
 
 		}
 
@@ -160,17 +170,17 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		Writer writer;
 		auto outputFileName = buildNormalizedPath(
-				settings.outputDir[opts.outputFormat].outputDir,
+				settings.outputDir[outputFormat].outputDir,
 				opts.outputFileName
 		);
 
 		auto output = (opts.stdOutput) ? "" :outputFileName;
-		writer = writerFactory(output, opts.outputFormat, layout);
+		writer = writerFactory(output, opts.outputFormat);
 
         //---------------------------------------------------------------------------------
 		// set writer features read in config and process preliminary steps
         //---------------------------------------------------------------------------------
-		writer.outputFeature = settings.outputDir[opts.outputFormat];
+		writer.outputFeature = settings.outputDir[outputFormat];
 		writer.prepare(layout);
 
 		// break records?

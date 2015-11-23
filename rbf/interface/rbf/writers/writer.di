@@ -12,7 +12,6 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.config;
-import rbf.writers.xlsxwriter;
 import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
 import rbf.writers.boxwriter;
@@ -21,6 +20,8 @@ import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
 import rbf.writers.sqlite3writer;
 import rbf.writers.xmlwriter;
+import rbf.writers.xlsxwriter;
+import rbf.writers.xlsx2writer;
 enum OutputFormat 
 {
 	box,
@@ -30,7 +31,8 @@ enum OutputFormat
 	sql,
 	tag,
 	txt,
-	xlsx,
+	excel1,
+	excel2,
 	xml,
 }
 abstract class Writer
@@ -54,4 +56,4 @@ abstract class Writer
 		}
 	}
 }
-Writer writerFactory(in string output, in OutputFormat fmt, Layout layout);
+Writer writerFactory(in string output, in OutputFormat fmt);

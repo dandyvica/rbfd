@@ -255,7 +255,7 @@ public:
 			foreach (e; recordMap.byKeyValue) 
             {
 				// "*" means keep all fields for this record
-				if (e.value[0] == "*") continue;
+				if (e.value.length == 0 || e.value[0] == "*")  continue;
 
 				// otherwise, keep only those records provided
 				this[e.key].keepOnly(e.value);

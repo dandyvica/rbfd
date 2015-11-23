@@ -42,8 +42,8 @@ public:
 	// verify pre-conditions
 	{
 		// check arguments
-		enforce(length > 0, "field length should be > 0");
 		enforce(name != "", "field name should not be empty!");
+		enforce(length > 0, "field length should be > 0");
 
 		// just copy what is passed to constructor
 		_name        = name;

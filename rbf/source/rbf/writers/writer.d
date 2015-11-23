@@ -13,7 +13,6 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.config;
-import rbf.writers.xlsxwriter;
 import rbf.writers.csvwriter;
 import rbf.writers.txtwriter;
 import rbf.writers.boxwriter;
@@ -22,9 +21,11 @@ import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
 import rbf.writers.sqlite3writer;
 import rbf.writers.xmlwriter;
+import rbf.writers.xlsxwriter;
+import rbf.writers.xlsx2writer;
 
 
-enum OutputFormat { box, csv, html, ident, sql, tag, txt, xlsx, xml }
+enum OutputFormat { box, csv, html, ident, sql, tag, txt, excel1, excel2, xml }
 
 /*********************************************
  * writer class for writing to various ouput
@@ -92,7 +93,7 @@ public:
  * factory method for creating object matching
  * desired format
  */
-Writer writerFactory(in string output, in OutputFormat fmt, Layout layout)
+Writer writerFactory(in string output, in OutputFormat fmt)
 {
 	final switch(fmt)
 	{
@@ -103,9 +104,8 @@ Writer writerFactory(in string output, in OutputFormat fmt, Layout layout)
 		case OutputFormat.sql   : return new Sqlite3Writer(output);
 		case OutputFormat.tag   : return new TAGWriter(output);
 		case OutputFormat.txt   : return new TXTWriter(output);
-		case OutputFormat.xlsx  : return new XLSXWriter(output, layout);
+		case OutputFormat.excel1: return new XLSXWriter(output);
+		case OutputFormat.excel2: return new XLSX2Writer(output);
 		case OutputFormat.xml   : return new XmlWriter(output);
-		//default:
-		//	throw new Exception("error: writer unknown mode <%s>".format(mode));
 	}
 }

@@ -10,7 +10,7 @@ import std.datetime;
 import std.process;
 
 // list of all error messages found in code
-immutable MSG001 = "error: element name %s is not in container %s";
+immutable MSG001 = "error: element name %s is not in record/container %s";
 immutable MSG002 = "line# <%d>, record <%s>, field <%s>, value <%s> is not matching expected pattern <%s>";
 immutable MSG003 = "name=<%s>, description=<%s>, length=<%u>, type=<%s>, lower/upperBound=<%u:%u>, rawValue=<%s>, value=<%s>, offset=<%s>, index=<%s>";
 immutable MSG004 = "error: settings file <%s> not found";
@@ -54,6 +54,11 @@ immutable MSG041 = "error: field filter file %s not found";
 immutable MSG042 = "error: record filter file %s not found";
 immutable MSG043 = "error: unknown output mode. Should be in the following list: %s";
 immutable MSG044 = "error: break record options is only compatible with txt/box output formats";
+immutable MSG045 = "zip command failed, rc = <%d>";
+immutable MSG046 = "error: INSERT statement, error code = <%d>, error msg <%s>";
+immutable MSG047 = "error: database create error: %s";
+immutable MSG048 = "error: SQL error %d when opening file %d, SQL msg %s";
+immutable MSG049 = "worksheet name = <%s>";
 		//	throw new Exception("error: writer unknown mode <%s>".format(mode));
 
 // global log variable

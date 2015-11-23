@@ -339,7 +339,8 @@ public:
 	{
 		int result = 0;
 
-		foreach (TNAME name; sort(_map.keys)) {
+		foreach (TNAME name; sort(_map.keys)) 
+        {
 				result = dg(_contextMap(_map, name));
 				if (result)
 					break;

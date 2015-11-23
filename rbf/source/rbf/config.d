@@ -54,7 +54,7 @@ struct SettingCore {
 alias LayoutDir = NamedItemsContainer!(SettingCore, false);
 
 struct OutputFeature {
-    string name;		 	  /// name of the outpout format (e.g.: "txt")
+    string name;		      /// name of the output format (e.g.: "txt")
     string outputDir;		  /// location of output file
     string fsep;		      /// field separator char for text output format
     string lsep;		      /// line separator char for text output format
@@ -64,6 +64,7 @@ struct OutputFeature {
     bool useAlternateName;    /// use field name followed by its occurence
     string alternateNameFmt;  /// format to use when formatting alternate name
     ushort insertPool;        /// used to group INSERTs into a single transaction
+    string outputExtension;   /// file extension specific to output format
 }
 alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 
@@ -146,6 +147,7 @@ public:
                     to!bool(xml.tag.attr.get("useAlternateName", "false")),
                     xml.tag.attr.get("alternateNameFmt", "%s(%d)"),
                     to!ushort(xml.tag.attr.get("pool", "30")),
+                    xml.tag.attr.get("extension", to!string(xml.tag.attr["name"])),
                     );
         };
 

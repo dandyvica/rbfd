@@ -1,4 +1,4 @@
-module rbf.writers.xlsxwriter;
+module rbf.writers.xlsx2writer;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
@@ -9,6 +9,7 @@ import std.algorithm;
 import std.array;
 import std.zip;
 import std.conv;
+import std.path;
 
 import rbf.errormsg;
 import rbf.fieldtype;
@@ -18,22 +19,19 @@ import rbf.layout;
 import rbf.writers.writer;
 import rbf.writers.xlsxformat;
 
-class XLSXWriter : Writer 
-{
+class XLSX2Writer : Writer {
 private:
 
 	string _xlsxFilename;	/// Excel worksheet file name
+	string _xlsxSheetName;	/// Excel worksheet only sheet name
 	string _xlsxDir;		/// directory used to gather all Excel files
-	string[] _worksheets;   /// list of worksheets for the Excel file
 
     /// list of all objects used when creating particular type of an Excel underlying file
-	ContentTypes _contentTypesFile;
-	Workbook _workbookFile;
-	Rels _relsFile;
-	WorkbookRels _workbookRelsFile;
-	Worksheet[string]	_worksheetFile;
-
-	bool[string] _createdWorksheet;  /// true as soon as a sheet is created
+    ContentTypes _contentTypesFile;
+    Workbook _workbookFile;
+    Rels _relsFile;
+    WorkbookRels _workbookRelsFile;
+    Worksheet	_worksheetFile;
 
 	/** 
      * Creation of a zip file (xlsx = zip file) from all created files
@@ -50,45 +48,11 @@ private:
 		// create zip
 		auto result = std.process.execute([outputFeature.zipper, "-r", "../" ~ _xlsxFilename, "."]);
 		if (result.status != 0)
-			throw new Exception("zip command failed:\n", result.output);
+			throw new Exception(MSG045.format(result.output));
 
 		// now it's time to remove all files
 		chdir("..");
 		rmdirRecurse(_xlsxDir);
-	}
-
-	/** 
-     * Create a worksheet with headers
-	 *
-	 * Params:
-	 *  rec = Record object
-     *
-	 */
-	void _create_worksheet(Record rec) 
-    {
-		// and also create sheets. We need an assoc. array to keep track
-		// of link between records and sheets
-		_worksheetFile[rec.name] = new Worksheet(_xlsxDir, rec.name);
-
-		// then create header (record name & record description)
-		_worksheetFile[rec.name].startRow();
-		_worksheetFile[rec.name].strCell!string(format("%s: %s", rec.name, rec.meta.description));
-		_worksheetFile[rec.name].endRow();
-
-		// create field description row
-		_worksheetFile[rec.name].startRow();
-		rec.each!(f => _worksheetFile[rec.name].strCell!string(f.description));
-		_worksheetFile[rec.name].endRow();
-
-		// create field type, length row
-		_worksheetFile[rec.name].startRow();
-		rec.each!(f => _worksheetFile[rec.name].strCell!string(format("%s-%d", f.type.meta.name, f.length)));
-		_worksheetFile[rec.name].endRow();
-
-		// create field name
-		_worksheetFile[rec.name].startRow();
-		rec.each!(f => _worksheetFile[rec.name].strCell!string(format("%s", f.name)));
-		_worksheetFile[rec.name].endRow();
 	}
 
 public:
@@ -98,7 +62,6 @@ public:
 	 *
 	 * Params:
 	 * 	excelFileName = xlsx file name
-	 *  layout = Layout object
      *
 	 */
 	this(string excelFileName)
@@ -110,7 +73,11 @@ public:
         stderr.writeln(MSG012);
 
 		// save file name
-		_xlsxFilename = std.path.baseName(excelFileName);
+		_xlsxFilename = baseName(excelFileName);
+
+        // and buld sheet name
+        _xlsxSheetName = stripExtension(_xlsxFilename);
+        log.log(LogLevel.INFO, MSG049, _xlsxSheetName);
 
 		// create a unique XLSX directory structure
 		_xlsxDir = "./%s.%d".format(_xlsxFilename, std.datetime.Clock.currStdTime());
@@ -129,9 +96,14 @@ public:
 		// not this one
 		_relsFile = new Rels(_xlsxDir);
 
+		// and also create sheets. We need an assoc. array to keep track
+		// of link between records and sheets
+		_worksheetFile = new Worksheet(_xlsxDir, _xlsxSheetName);
 	}
 
-	override void prepare(Layout layout) {}
+	override void prepare(Layout layout) 
+    {
+    }
 
 	/** 
      * Insert a row into an Excel worksheet
@@ -145,15 +117,8 @@ public:
 		// don't keep this record?
 		if (record.meta.skip) return;
 
-		// worksheet exist?
-		if (record.name !in _createdWorksheet) 
-        {
-			_createdWorksheet[record.name] = true;
-			_create_worksheet(record);
-		}
-
 		// new excel row
-		_worksheetFile[record.name].startRow();
+		_worksheetFile.startRow();
 
 		// for each record, just write data to worksheet
 		// depending on its type, an Excel cell doesn't contain the same XML
@@ -161,22 +126,22 @@ public:
         {
 			if (field.type.meta.stringType == "string")
 			{
-				_worksheetFile[record.name].strCell!TVALUE(field.value);
+				_worksheetFile.strCell!TVALUE(field.value);
 			}
             /*
 			else if (field.type.meta.stringType == "date")
 			{
-				_worksheetFile[record.name].dateCell(field.value);
+				_worksheetFile.dateCell(field.value);
 			}
             */
 			else
 			{
-				_worksheetFile[record.name].numCell(field.value);
+				_worksheetFile.numCell(field.value);
 			}
 		}
 
 		// end up row
-		_worksheetFile[record.name].endRow();
+		_worksheetFile.endRow();
 	}
 
 	/** 
@@ -186,22 +151,16 @@ public:
 	override void close()
 	{
 		// gracefully end all xlsx files
-		foreach (recName; sort(_worksheetFile.keys)) 
-        {
-			// fill metadata with record name
-			_contentTypesFile.fill(recName);
-			_workbookFile.fill(recName);
-			_workbookRelsFile.fill(recName);
-
-			// close sheet file
-			_worksheetFile[recName].close;
-		}
+        _contentTypesFile.fill(_xlsxSheetName);
+        _workbookFile.fill(_xlsxSheetName);
+        _workbookRelsFile.fill(_xlsxSheetName);
 
 		// gracefully end all xlsx files
 		_contentTypesFile.close;
 		_workbookFile.close;
 		_workbookRelsFile.close;
 		_relsFile.close;
+		_worksheetFile.close;
 
 		// finally create zip
 		_create_zip();

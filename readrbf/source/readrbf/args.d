@@ -124,10 +124,12 @@ public:
 
 		// if no output file name specified, then use input file name and
 		// append the suffix
-		if (fieldFilterFile != "") {
+		if (fieldFilterFile != "") 
+        {
 			enforce(exists(fieldFilterFile), MSG041.format(fieldFilterFile));
 			filteredFields = cast(string)std.file.read(fieldFilterFile);
-		} else if (fieldFilter != "") {
+		} else if (fieldFilter != "") 
+        {
 			filteredFields = fieldFilter;
 		}
 
@@ -142,15 +144,6 @@ public:
 			filteredRecords = new RecordFilter(recordFilter, ";");
 		}
 
-		// build output file name
-        if (outputFormat == OutputFormat.sql) 
-        {
-            outputFileName = baseName(inputFileName) ~ ".db";
-        }
-        else
-        {
-            outputFileName = baseName(inputFileName) ~ "." ~ to!string(outputFormat);
-        }
 	}
 
 	@property bool isFieldFilterFileSet()  { return fieldFilterFile != ""; }

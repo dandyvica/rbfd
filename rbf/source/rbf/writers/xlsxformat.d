@@ -100,6 +100,10 @@ class Worksheet : XlsxEntity {
     _fh.writefln(`<c><v>%s</v></c>`, cellValue);
   }
 
+  void dateCell(TVALUE cellValue) {
+    _fh.writefln(`<c t="d"><is><t>%s</t></is></c>`, cellValue);
+  }
+
   override void close() {
     _fh.writeln("</sheetData></worksheet>");
     XlsxEntity.close;

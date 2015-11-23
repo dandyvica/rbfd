@@ -33,7 +33,7 @@ class XLSXWriter : Writer
 		void _create_worksheet(Record rec);
 		public 
 		{
-			this(string excelFileName, Layout layout);
+			this(string excelFileName);
 			override void prepare(Layout layout);
 			override void write(Record record);
 			override void close();
