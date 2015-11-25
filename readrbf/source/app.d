@@ -286,6 +286,12 @@ int main(string[] argv)
 		if (!opts.bJustRead)
 				stderr.writefln(MSG013, opts.outputFileName, getSize(opts.outputFileName));
 
+        // if we wasked for checking formats, print out number of bad checks
+        if (opts.bCheckPattern)
+        {
+            stderr.writefln(MSG053, reader.nbBadCheck);
+        }
+
         //---------------------------------------------------------------------------------
 		// and some logs
         //---------------------------------------------------------------------------------

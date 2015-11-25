@@ -42,6 +42,7 @@ private:
 	ulong _inputFileSize; /// input file size
     ulong _guessedRecordNumber; /// guessed number of records (in case of a lauyout having reclength!=0)
     bool _checkPattern;
+    ulong _nbBadCheck;
 
 public:
 	/**
@@ -100,6 +101,8 @@ public:
 	/// return the file size of the input file in bytes
 	@property ulong inputFileSize() { return _inputFileSize; }
 
+	@property ulong nbBadCheck() { return _nbBadCheck; }
+
 	@property void checkPattern(in bool check) { _checkPattern = check; }
 
 	Record _getRecordFromLine(in char[] lineReadFromFile) 
@@ -153,6 +156,7 @@ public:
                 if (f.value != "" && !f.matchPattern) 
                 {
                     log.log(LogLevel.WARNING, MSG002, _nbLinesRead, recordName, f.name, f.value, f.type.meta.pattern);
+                    _nbBadCheck++;
                 }
             }
 		}

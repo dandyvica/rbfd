@@ -27,83 +27,39 @@ void spawnedFunction()
     f.close;
 }
 
+string buildRegex(string s)
+{
+    auto r = "%s.*\\n".format(s);
+    return r;
+}
+
 void main(string[] argv)
 {
 
-    /*
     File fh = File(argv[1], "r");
 
-    if (argv[2] == "thread") 
-    {
-        auto tid = spawn(&spawnedFunction);
-        writeln("thread version");
-        foreach (string line; lines(fh))
-        {
-            send(tid, line);
-        }
+    auto txhs = buildRegex("TXHS");
+    auto txrs = buildRegex("TXRS");
+    auto txcs = buildRegex("TXCS");
+    auto txws = buildRegex("TXWS");
 
-        send(tid,1);
-    }
-    else 
-    {
-        File f = File("toto.txt", "w");
-        writeln("no-thread version");
-        foreach (string line; lines(fh))
-        {
-            f.write(line);
-        }
-        f.close;
-    }
-    */
+    auto fmt = "(%s)((%s)((?:%s)+)((?:%s)*))+".format(txhs, txrs, txcs, txws);
 
-//    File fh = File(argv[1], "r");
-//    auto r = regex(r"(FL.*\n){1}(LG.*\n(SG.*\n){1,4}){1,4}");
+    auto r = regex(fmt, "m");
 
-    /*
     foreach (ubyte[] buffer; fh.byChunk(4096))
     {
-        /*
-        auto m = matchAll(cast(char[])buffer, r);
-        foreach (c; m) {
-            foreach (c1; c) {
-            writefln("<%s>", c1);
-            }
-        }
-        foreach (line; splitter(cast(char[])buffer, "\n"))
+        auto s = cast(char[])buffer;
+        auto m = matchAll(s, r);
+        if (!m.empty)
         {
-            writeln(line);
+            writefln("<%s>", m.captures[1].strip);
+            writefln("<%s>", m.captures[2].strip);
+            writefln("<%s>", m.captures[3].strip);
+            writefln("<%s>", m.captures[4].strip);
+            writeln("******************************");
         }
     }
-*/
 
-    /*
-    auto line = new char[4096];
-    auto i = 0;
- 
-    foreach (char ub; fh.byChunk(4096).joiner)
-    {
-        if (ub == '\n')
-        {
-            writefln("%.*s", i, line);
-            i = 0;
-        }
-        else 
-            line[i++] = ub;
-    }
-    */
-
-    char[] a;
-    a = new char[100];
-
-    a = "this is a simple test         ".dup;
-    writefln("a = %x %s", &a, a);
-    auto b = a;
-    writefln("b = %x %s", &b, b);
-    auto c = a.dup;
-    writefln("c = %x %s", &c, c);
-    auto d = a.strip;
-    writefln("d = %x <%s>", &d, d);
-
-
-//    fh.close;
+    fh.close;
 }

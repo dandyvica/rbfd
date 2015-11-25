@@ -62,6 +62,7 @@ immutable MSG049 = "worksheet name = <%s>";
 immutable MSG050 = "starting conversion, nbCpus = %d";
 immutable MSG051 = "error: input file <%s> not found";
 immutable MSG052 = "sqlite3 lib version <%s>";
+immutable MSG053 = "info: number of bad formatted fields: <%d>";
 		//	throw new Exception("error: writer unknown mode <%s>".format(mode));
 
 // global log variable

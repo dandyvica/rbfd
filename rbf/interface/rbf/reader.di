@@ -28,6 +28,7 @@ class Reader
 		ulong _inputFileSize;
 		ulong _guessedRecordNumber;
 		bool _checkPattern;
+		ulong _nbBadCheck;
 		public 
 		{
 			this(string rbFile, Layout layout, MapperFunc recIndentifier = null);
@@ -38,6 +39,7 @@ class Reader
 			@property Layout layout();
 			@property ulong nbLinesRead();
 			@property ulong inputFileSize();
+			@property ulong nbBadCheck();
 			@property void checkPattern(in bool check);
 			Record _getRecordFromLine(in char[] lineReadFromFile);
 			struct Range
