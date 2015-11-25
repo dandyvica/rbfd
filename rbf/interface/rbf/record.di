@@ -20,6 +20,7 @@ struct RecordMeta
 	string[][] repeatingPattern;
 	Record[] subRecord;
 	string ruler;
+	ulong sourceLineNumber;
 }
 class Record : NamedItemsContainer!(Field, true, RecordMeta)
 {

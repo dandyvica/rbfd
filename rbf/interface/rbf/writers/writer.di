@@ -20,7 +20,7 @@ import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
 import rbf.writers.sqlite3writer;
 import rbf.writers.xmlwriter;
-import rbf.writers.xlsxwriter;
+import rbf.writers.xlsx1writer;
 import rbf.writers.xlsx2writer;
 enum OutputFormat 
 {

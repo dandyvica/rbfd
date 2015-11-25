@@ -9,6 +9,7 @@ import std.conv;
 import std.path;
 import std.traits;
 import std.concurrency;
+import std.parallelism;
 
 import rbf.errormsg;
 import rbf.fieldtype;
@@ -48,6 +49,11 @@ int main(string[] argv)
 		// manage arguments passed from the command line
         //---------------------------------------------------------------------------------
 		auto opts = CommandLineOption(argv);
+
+        //---------------------------------------------------------------------------------
+		// start logging data
+        //---------------------------------------------------------------------------------
+        log.log(LogLevel.INFO, MSG050, totalCPUs);
 
         //---------------------------------------------------------------------------------
 		// output format is an enum but should match the string in rbf.xml config file

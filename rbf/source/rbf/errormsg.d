@@ -29,7 +29,7 @@ immutable MSG016 = "opening input file <%s>, size = %d bytes";
 immutable MSG017 = "read rate = %.0f records per second";
 immutable MSG018 = "line# <%d>, record name <%s> not found";
 immutable MSG019 = "creating output file <%s>";
-immutable MSG020 = "conversion error, field <%s> value <%s> to type <%s>, resetting to NULL";
+immutable MSG020 = "conversion error, line# <%d>, record <%s>, field <%s> value <%s> to type <%s>, resetting to NULL";
 immutable MSG021 = "creating tables, SQL pool size = %d";
 immutable MSG022 = "%d table(s) created";
 immutable MSG023 = "layout <%s> read, %d record(s) created";
@@ -59,6 +59,9 @@ immutable MSG046 = "error: INSERT statement, error code = <%d>, error msg <%s>";
 immutable MSG047 = "error: database create error: %s";
 immutable MSG048 = "error: SQL error %d when opening file %d, SQL msg %s";
 immutable MSG049 = "worksheet name = <%s>";
+immutable MSG050 = "starting conversion, nbCpus = %d";
+immutable MSG051 = "error: input file <%s> not found";
+immutable MSG052 = "sqlite3 lib version <%s>";
 		//	throw new Exception("error: writer unknown mode <%s>".format(mode));
 
 // global log variable

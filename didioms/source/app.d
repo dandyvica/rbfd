@@ -56,7 +56,7 @@ void main(string[] argv)
     }
     */
 
-    File fh = File(argv[1], "r");
+//    File fh = File(argv[1], "r");
 //    auto r = regex(r"(FL.*\n){1}(LG.*\n(SG.*\n){1,4}){1,4}");
 
     /*
@@ -76,6 +76,7 @@ void main(string[] argv)
     }
 */
 
+    /*
     auto line = new char[4096];
     auto i = 0;
  
@@ -89,6 +90,20 @@ void main(string[] argv)
         else 
             line[i++] = ub;
     }
+    */
 
-    fh.close;
+    char[] a;
+    a = new char[100];
+
+    a = "this is a simple test         ".dup;
+    writefln("a = %x %s", &a, a);
+    auto b = a;
+    writefln("b = %x %s", &b, b);
+    auto c = a.dup;
+    writefln("c = %x %s", &c, c);
+    auto d = a.strip;
+    writefln("d = %x <%s>", &d, d);
+
+
+//    fh.close;
 }

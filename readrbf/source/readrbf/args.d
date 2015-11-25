@@ -89,11 +89,11 @@ public:
                     "o" , &outputFormat    ,
                     "O" , &stdOutput       ,
                     "f" , &fieldFilterFile ,
-                    "gf", &fieldFilter     ,
-                    "gl", &lineFilter      ,
-                    "check", &bCheckPattern      ,
+                    "ff", &fieldFilter     ,
+                    "fl", &lineFilter      ,
+                    "check", &bCheckPattern,
                     "r" , &recordFilterFile,
-                    "gr", &recordFilter    ,
+                    "fr", &recordFilter    ,
                     "v" , &bVerbose        ,
                     "s" , &samples         ,
                     "b" , &bJustRead       ,
@@ -198,7 +198,7 @@ public:
 
     void _printHelp(string msg="")
     {
-        writeln(helpString);
+        writeln(helpString.format(possibleValues));
         writefln("\nCompiled on %s with %s version %d\n", __DATE__, __VENDOR__, __VERSION__);
         if (msg != "") stderr.writefln("error: %s", msg);
         core.stdc.stdlib.exit(1);

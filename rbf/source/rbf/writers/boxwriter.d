@@ -112,13 +112,13 @@ unittest {
 	auto layout = new Layout("./test/world_data.xml");
 	auto reader = new Reader("./test/world.data", layout);
 
-	auto writer = writerFactory("./test/world_data.txt", "box", layout);
+	auto writer = writerFactory("./test/world_data.txt", OutputFormat.box);
 	writer.outputFeature.fsep             = "!";
 	writer.outputFeature.fielddesc        = true;
 	writer.outputFeature.lsep             = "$";
 	writer.outputFeature.useAlternateName = true;
 
-	writer.prepare;
+	writer.prepare(layout);
 
 	foreach (rec; reader) { writer.write(rec); }
 

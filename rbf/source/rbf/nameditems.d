@@ -60,7 +60,7 @@ protected:
 	/// these are the core container store
 	TLIST _list;				/// track all fields within a dynamic array
 	TMAP _map;					/// and as several instance of the same field can exist,
-											/// need to keep track of all instances
+								/// need to keep track of all instances
 
 public:
     static if (Meta.length > 0) 

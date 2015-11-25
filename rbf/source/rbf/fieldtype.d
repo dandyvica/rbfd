@@ -172,6 +172,7 @@ public:
 						break;
 					case "!~":
 						condition = matchAll(lvalue, regex(rvalue)).empty;
+                        //writefln("<%s> %s <%s> = %s", lvalue, operator, rvalue, condition);
 						break;
 				}
 				default:

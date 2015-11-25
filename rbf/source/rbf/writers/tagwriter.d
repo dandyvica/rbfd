@@ -47,7 +47,7 @@ unittest {
 	auto layout = new Layout("./test/world_data.xml");
 	auto reader = new Reader("./test/world.data", layout);
 
-	auto writer = writerFactory("./test/world_data.tag", "tag", layout);
+	auto writer = writerFactory("./test/world_data.tag", OutputFormat.tag);
 	writer.outputFeature.fsep = " ";
 
 	foreach (rec; reader) { writer.write(rec); }

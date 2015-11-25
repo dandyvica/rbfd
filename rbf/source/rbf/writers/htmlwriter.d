@@ -134,8 +134,8 @@ unittest {
 	auto layout = new Layout("./test/world_data.xml");
 	auto reader = new Reader("./test/world.data", layout);
 
-	auto writer = writerFactory("./test/world_data.html", "html", layout);
-	writer.prepare;
+	auto writer = writerFactory("./test/world_data.html", OutputFormat.html);
+	writer.prepare(layout);
 	foreach (rec; reader) { writer.write(rec); }
 
 	writer.close();

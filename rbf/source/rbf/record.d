@@ -27,6 +27,7 @@ struct RecordMeta
 	string[][] repeatingPattern; /// list of all fields which might be repeated within a record
 	Record[] subRecord;          /// list of all records matching those repeated fields
     string ruler;                /// when using the text writer, length of the ruler for header vs. data
+    ulong sourceLineNumber;      /// line number where this record is found
 }
 
 /***********************************

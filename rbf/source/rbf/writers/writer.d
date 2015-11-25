@@ -21,7 +21,7 @@ import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
 import rbf.writers.sqlite3writer;
 import rbf.writers.xmlwriter;
-import rbf.writers.xlsxwriter;
+import rbf.writers.xlsx1writer;
 import rbf.writers.xlsx2writer;
 
 
@@ -104,7 +104,7 @@ Writer writerFactory(in string output, in OutputFormat fmt)
 		case OutputFormat.sql   : return new Sqlite3Writer(output);
 		case OutputFormat.tag   : return new TAGWriter(output);
 		case OutputFormat.txt   : return new TXTWriter(output);
-		case OutputFormat.excel1: return new XLSXWriter(output);
+		case OutputFormat.excel1: return new XLSX1Writer(output);
 		case OutputFormat.excel2: return new XLSX2Writer(output);
 		case OutputFormat.xml   : return new XmlWriter(output);
 	}

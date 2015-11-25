@@ -4,13 +4,13 @@
 readrbf - read a record-based file and convert it to a known format
 
 # SYNOPSIS
-readrbf -i file - l layout [-o format] [-f file] [-c] [-O] [--br] [--gf] [--gr] [-r file] [-s n] [-v] [-p] [-h]
+readrbf -i file - l layout [-o format] [-f file] [-c] [-O] [--br] [--ff] [--fl] [--fr] [-r file] [-s n] [-v] [-p] [-h]
 
 # DESCRIPTION
 This program is aimed at reading a record-based file and converting it to
 a human-readable format. It reads its settings from the rbf.xml configuration
 file located in the current directory or ~/.rbf directory (linux) or
-the %APPDATA%\\local\\rbf directory (Windows).
+the %%APPDATA%%\\local\\rbf directory (Windows).
 
 # OPTIONS
 
@@ -30,15 +30,15 @@ text presentation.
 -f file
 : Full path and name of a file to filter fields.
 
---gf records/fields list
-: Grep fields: only write selected records/fields.
+--ff records/fields list
+: filter fields: only write selected records/fields.
 
---gl pattern
-: Grep lines: only select lines matching the regex pattern. NB if
-"--gf" is also specified, this --gl comes first.
+--fl pattern
+: Filter lines: only select lines matching the regex pattern. NB if
+"--ff" is also specified, this --fl comes first.
 
---gr condition
-: Grep records: include records matching condition.
+--fr condition
+: Filter records: only include records matching condition.
 
 -h
 : Print this help.
@@ -52,7 +52,7 @@ configuration file rbf.xml.
 
 -o format
 : Name of the output file format. Possible values are:
-html, tag, box, csv, txt, xlsx, sql, ident. Defaulted to txt
+%s. Defaulted to txt
 if not specified. ident means the output file format is
 the same than the input one.
 

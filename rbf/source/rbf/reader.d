@@ -55,7 +55,7 @@ public:
 	this(string rbFile, Layout layout, MapperFunc recIndentifier = null)
 	{
 		// check arguments
-		enforce(exists(rbFile), "error: file %s not found".format(rbFile));
+		enforce(exists(rbFile), MSG051.format(rbFile));
 
 		// save file name and opens file for reading
 		_rbFile = rbFile;
@@ -133,6 +133,9 @@ public:
 
 		// do we keep this record?
 		if (_layout[recordName].meta.skip) return null;
+
+        // keep track of original line number
+        _layout[recordName].meta.sourceLineNumber = _nbLinesRead;
 
 		// now we can safely save our values
 		// set record value (and fields)

@@ -131,7 +131,7 @@ private:
         log.log(LogLevel.TRACE, MSG028, stmt);
 
         sqlite3_stmt *compiledStmt;
-        _sqlCode = sqlite3_prepare_v2(_db, toStringz(stmt), to!int(stmt.length), &compiledStmt, null);
+        _sqlCode = sqlite3_prepare_v2(_db, toStringz(stmt), to!int(stmt.length+1), &compiledStmt, null);
         if (_sqlCode != SQLITE_OK) 
         {
             stderr.writefln(MSG029, _sqlCode, stmt, fromStringz(sqlite3_errmsg(_db)));
@@ -171,16 +171,16 @@ private:
                         _sqlCode = sqlite3_bind_int(_compiledInsertStmt[rec.name], to!int(f.context.index+1), to!int(f.value));
                         break;
                     case AtomicType.date:
-                        _sqlCode = sqlite3_bind_text(_compiledInsertStmt[rec.name], to!int(f.context.index+1), toStringz(f.value), -1, SQLITE_STATIC);
+                        _sqlCode = sqlite3_bind_text(_compiledInsertStmt[rec.name], to!int(f.context.index+1), toStringz(f.value), -1, SQLITE_TRANSIENT);
                         break;
                     case AtomicType.string:
-                        _sqlCode = sqlite3_bind_text(_compiledInsertStmt[rec.name], to!int(f.context.index+1), toStringz(f.value), -1, SQLITE_STATIC);
+                        _sqlCode = sqlite3_bind_text(_compiledInsertStmt[rec.name], to!int(f.context.index+1), toStringz(f.value), -1, SQLITE_TRANSIENT);
                         break;
                 }
             }
             // conversion error catched
             catch (ConvException e) {
-                log.log(LogLevel.INFO, MSG020, f.name, f.value, f.type.meta.type);
+                log.log(LogLevel.INFO, MSG020, rec.meta.sourceLineNumber, rec.name, f.name, f.value, f.type.meta.type);
                 // instead, use a NULL value
                 _sqlCode = sqlite3_bind_null(_compiledInsertStmt[rec.name], to!int(f.context.index+1));
             }
@@ -208,6 +208,7 @@ public:
 	{
         // call root class but don't create the file
 		super(databaseName);
+        log.log(LogLevel.INFO, MSG052, fromStringz(sqlite3_libversion()));
 
         _sqlCode = sqlite3_open(toStringz(databaseName), &_db);
         if(_sqlCode != SQLITE_OK)
@@ -276,9 +277,12 @@ public:
             _executeStmt("BEGIN IMMEDIATE TRANSACTION");
         }
 
-        // insert
+        // bind varibles to values
         _bind(rec);
+
+        // execute INSERT
         _sqlCode = sqlite3_step(_compiledInsertStmt[rec.name]);
+        log.log(LogLevel.TRACE, "%s", _compiledInsertStmt[rec.name]);
         if (_sqlCode != SQLITE_DONE) 
         {
             stderr.writeln(MSG046.format(_sqlCode, fromStringz(sqlite3_errmsg(_db))));
@@ -287,6 +291,10 @@ public:
         {
             sqlite3_reset(_compiledInsertStmt[rec.name]);
         }
+
+        //sqlite3_reset(_compiledInsertStmt[rec.name]);
+        // it's time to clear bindings
+        sqlite3_clear_bindings(_compiledInsertStmt[rec.name]);
         
         // TRX one more
         _trxCounter++;

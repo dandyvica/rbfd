@@ -1,4 +1,4 @@
-module rbf.writers.xlsxwriter;
+module rbf.writers.xlsx1writer;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
@@ -18,7 +18,7 @@ import rbf.layout;
 import rbf.writers.writer;
 import rbf.writers.xlsxformat;
 
-class XLSXWriter : Writer 
+class XLSX1Writer : Writer 
 {
 private:
 
@@ -218,7 +218,7 @@ unittest {
 	auto layout = new Layout("./test/world_data.xml");
 	auto reader = new Reader("./test/world.data", layout);
 
-	auto writer = writerFactory("./test/world_data.xlsx", "xlsx", layout);
+	auto writer = writerFactory("./test/world_data.xlsx", OutputFormat.excel1);
 	writer.outputFeature.zipper = "/usr/bin/zip";
 
 	foreach (rec; reader) { writer.write(rec); }
