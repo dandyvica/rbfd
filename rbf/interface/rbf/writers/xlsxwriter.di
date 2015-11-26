@@ -9,6 +9,7 @@ import std.algorithm;
 import std.array;
 import std.zip;
 import std.conv;
+import std.xml;
 import rbf.errormsg;
 import rbf.fieldtype;
 import rbf.field;
@@ -18,24 +19,20 @@ import rbf.writers.writer;
 import rbf.writers.xlsxformat;
 class XLSXWriter : Writer
 {
-	private 
+	package 
 	{
 		string _xlsxFilename;
 		string _xlsxDir;
-		string[] _worksheets;
 		ContentTypes _contentTypesFile;
 		Workbook _workbookFile;
 		Rels _relsFile;
 		WorkbookRels _workbookRelsFile;
-		Worksheet[string] _worksheetFile;
-		bool[string] _createdWorksheet;
-		void _create_zip();
-		void _create_worksheet(Record rec);
+		void _createZip();
+		void _writeRecordToWorksheet(Record record, Worksheet worksheetFile);
 		public 
 		{
 			this(string excelFileName);
 			override void prepare(Layout layout);
-			override void write(Record record);
 			override void close();
 		}
 	}

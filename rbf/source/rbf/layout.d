@@ -13,6 +13,7 @@ import std.array;
 import std.path;
 
 import rbf.errormsg;
+import rbf.log;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
@@ -128,7 +129,8 @@ public:
 		xml.onStartTag["meta"] = (ElementParser xml)
 		{
             // save metadata of the structure
-            meta.length            = to!ulong(xml.tag.attr.get("reclength", "0"));
+            auto recLength         = xml.tag.attr.get("reclength", "0");
+            meta.length            = (recLength != "") ? to!ulong(recLength) : 0;
             meta.layoutVersion     = xml.tag.attr.get("version", "");
             meta.ignoreLinePattern = xml.tag.attr.get("ignoreLine", "");
             meta.description       = xml.tag.attr.get("description","");
@@ -198,6 +200,9 @@ public:
 					ftype[xml.tag.attr["type"]],
 					to!uint(xml.tag.attr["length"])
 			);
+
+            // if a specific pattern defined for this field?
+            if ("pattern" in xml.tag.attr) field.pattern = xml.tag.attr["pattern"];
 
 			// add field to our record
 			this[recName] ~= field;
@@ -365,14 +370,16 @@ public:
     {
 		// check first if all fields are in layout
 		fieldList.each!(
-			name => enforce(isFieldInLayout(name), "error: field %s in not in layout %s".format(name, meta.file))
+			name => enforce(isFieldInLayout(name), MSG054.format(name, meta.file))
 		);
 
 		// a field might not belong to a record. As the remove() method from container
 		// is checking field existence, need to check if each field is in the considered
 		// record.
-		foreach (rec; this) {
-			foreach (name; fieldList) {
+		foreach (rec; this) 
+        {
+			foreach (name; fieldList) 
+            {
 				if (name in rec) rec.remove(name);
 			}
 		}
@@ -393,8 +400,10 @@ public:
 	void validate() 
     {
 		bool validates = true;
-		foreach (rec; this) {
-			if (rec.length != meta.length) {
+		foreach (rec; this) 
+        {
+			if (rec.length != meta.length) 
+            {
 				validates = false;
                 log.log(LogLevel.WARNING, MSG034, rec.name, rec.length, _length);
 			}

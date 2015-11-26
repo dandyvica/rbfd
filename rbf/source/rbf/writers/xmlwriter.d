@@ -10,6 +10,7 @@ import std.path;
 import std.xml;
 
 import rbf.errormsg;
+import rbf.log;
 import rbf.field;
 import rbf.record;
 import rbf.layout;

@@ -40,6 +40,7 @@ class Field : Element!(string, ulong, ContextualInfo)
 			this(in string csvdata);
 			@property FieldType type();
 			@property void pattern(in string s);
+			@property string pattern();
 			bool matchPattern();
 			auto @property value()
 			{
@@ -60,6 +61,10 @@ class Field : Element!(string, ulong, ContextualInfo)
 			}
 			@property void sign(in byte new_sign);
 			override string toString();
+			auto contextualInfo()
+			{
+				return "name=<%s>, alternateName=<%s>, index=<%d>, offset=<%d>".format(name, context.alternateName, context.index + 1, context.offset + 1);
+			}
 			bool opEquals(Tuple!(string, string, string, ulong) t);
 			T opCast(T)()
 			{

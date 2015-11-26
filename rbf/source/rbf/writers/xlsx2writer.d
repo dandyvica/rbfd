@@ -12,48 +12,20 @@ import std.conv;
 import std.path;
 
 import rbf.errormsg;
+import rbf.log;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
 import rbf.writers.xlsxformat;
+import rbf.writers.xlsxwriter;
 
-class XLSX2Writer : Writer {
+class XLSX2Writer : XLSXWriter {
 private:
 
-	string _xlsxFilename;	/// Excel worksheet file name
-	string _xlsxSheetName;	/// Excel worksheet only sheet name
-	string _xlsxDir;		/// directory used to gather all Excel files
-
-    /// list of all objects used when creating particular type of an Excel underlying file
-    ContentTypes _contentTypesFile;
-    Workbook _workbookFile;
-    Rels _relsFile;
-    WorkbookRels _workbookRelsFile;
-    Worksheet	_worksheetFile;
-
-	/** 
-     * Creation of a zip file (xlsx = zip file) from all created files
-     *
-	 */
-	void _create_zip() 
-    {
-		// ch dir to XLSX directory
-		chdir(_xlsxDir);
-
-        // log
-        stderr.writeln(MSG011);
-
-		// create zip
-		auto result = std.process.execute([outputFeature.zipper, "-r", "../" ~ _xlsxFilename, "."]);
-		if (result.status != 0)
-			throw new Exception(MSG045.format(result.output));
-
-		// now it's time to remove all files
-		chdir("..");
-		rmdirRecurse(_xlsxDir);
-	}
+	string _xlsxSheetName;	  /// Excel worksheet only sheet name
+    Worksheet _worksheetFile; /// Excel worksheet
 
 public:
 
@@ -66,35 +38,11 @@ public:
 	 */
 	this(string excelFileName)
 	{
+        // create Excel directory structure
+		super(excelFileName);
 
-		super(excelFileName, false);
-
-        // log
-        stderr.writeln(MSG012);
-
-		// save file name
-		_xlsxFilename = baseName(excelFileName);
-
-        // and buld sheet name
-        _xlsxSheetName = stripExtension(_xlsxFilename);
-        log.log(LogLevel.INFO, MSG049, _xlsxSheetName);
-
-		// create a unique XLSX directory structure
-		_xlsxDir = "./%s.%d".format(_xlsxFilename, std.datetime.Clock.currStdTime());
-		mkdir(_xlsxDir);
-		mkdir(_xlsxDir ~ "/_rels");
-		mkdir(_xlsxDir ~ "/xl");
-		mkdir(_xlsxDir ~ "/xl/_rels");
-		mkdir(_xlsxDir ~ "/xl/worksheets");
-
-		// create xlsx files contained in an Excel file
-		// those ones contain sheet names
-		_contentTypesFile = new ContentTypes(_xlsxDir);
-		_workbookFile     = new Workbook(_xlsxDir);
-		_workbookRelsFile = new WorkbookRels(_xlsxDir);
-
-		// not this one
-		_relsFile = new Rels(_xlsxDir);
+        // only a single sheet name here
+        _xlsxSheetName = _xlsxFilename.stripExtension;
 
 		// and also create sheets. We need an assoc. array to keep track
 		// of link between records and sheets
@@ -115,33 +63,10 @@ public:
 	override void write(Record record)
 	{
 		// don't keep this record?
-		if (record.meta.skip) return;
+		//if (record.meta.skip) return;
 
-		// new excel row
-		_worksheetFile.startRow();
-
-		// for each record, just write data to worksheet
-		// depending on its type, an Excel cell doesn't contain the same XML
-		foreach (field; record) 
-        {
-			if (field.type.meta.stringType == "string")
-			{
-				_worksheetFile.strCell!TVALUE(field.value);
-			}
-            /*
-			else if (field.type.meta.stringType == "date")
-			{
-				_worksheetFile.dateCell(field.value);
-			}
-            */
-			else
-			{
-				_worksheetFile.numCell(field.value);
-			}
-		}
-
-		// end up row
-		_worksheetFile.endRow();
+        // write record to worksheet
+        _writeRecordToWorksheet(record, _worksheetFile);
 	}
 
 	/** 
@@ -155,15 +80,11 @@ public:
         _workbookFile.fill(_xlsxSheetName);
         _workbookRelsFile.fill(_xlsxSheetName);
 
-		// gracefully end all xlsx files
-		_contentTypesFile.close;
-		_workbookFile.close;
-		_workbookRelsFile.close;
-		_relsFile.close;
+        // close main worksheet file
 		_worksheetFile.close;
 
-		// finally create zip
-		_create_zip();
+		// close all files and create ZIP
+		super.close;
 	}
 
 }

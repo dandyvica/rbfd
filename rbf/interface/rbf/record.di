@@ -41,6 +41,7 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 			mixin(NamedItemsContainer!(Field, true).getMembersData("rawValue"));
 		}
 		@property string[] fieldDescriptions();
+		@property TVALUE concat(string name);
 		string findByIndex(in ulong i);
 		void recalculateIndex();
 		void buildAlternateNames();

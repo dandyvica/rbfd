@@ -63,44 +63,4 @@ immutable MSG050 = "starting conversion, nbCpus = %d";
 immutable MSG051 = "error: input file <%s> not found";
 immutable MSG052 = "sqlite3 lib version <%s>";
 immutable MSG053 = "info: number of bad formatted fields: <%d>";
-		//	throw new Exception("error: writer unknown mode <%s>".format(mode));
-
-// global log variable
-Log log;
-
-// list of all possible values for log level
-// TRACE is enabled by setting the RBF_TRACE variable
-enum LogLevel { TRACE, INFO, WARNING, ERROR, FATAL }
-
-// simple log feature
-struct Log 
-{
-private:
-    File _logHandle;
-    string _trace;
-
-public:
-    this(string logFileName)
-    {
-        _logHandle = File(logFileName, "a");
-        _trace = environment.get("RBF_TRACE", "");
-    }
-
-    void log(LogLevel, string, A...)(LogLevel level, string msg, A args)
-    {
-        auto now = to!DateTime(Clock.currTime);
-        if (level != LogLevel.TRACE || _trace != "")
-        {
-            _logHandle.writef("%s - %s ", now, to!string(level));
-            _logHandle.writefln(msg, args);
-            _logHandle.flush;
-        }
-    }
-
-
-    ~this() 
-    {
-        _logHandle.close;
-    }
-}
-
+immutable MSG054 = "error: field %s in not in layout %s";

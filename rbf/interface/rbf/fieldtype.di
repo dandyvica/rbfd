@@ -8,6 +8,7 @@ import std.regex;
 import std.algorithm;
 import std.exception;
 import rbf.errormsg;
+import rbf.log;
 import rbf.field : TVALUE;
 static TVALUE overpunch(TVALUE s);
 alias CmpFunc = bool delegate(const TVALUE, const string, const TVALUE);

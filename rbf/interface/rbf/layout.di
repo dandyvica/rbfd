@@ -12,6 +12,7 @@ import std.regex;
 import std.array;
 import std.path;
 import rbf.errormsg;
+import rbf.log;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;

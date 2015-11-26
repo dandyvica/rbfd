@@ -12,6 +12,7 @@ import std.concurrency;
 import std.parallelism;
 
 import rbf.errormsg;
+import rbf.log;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;

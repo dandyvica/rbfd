@@ -16,6 +16,7 @@ import std.range;
 import std.algorithm;
 
 import rbf.errormsg;
+import rbf.log;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
@@ -155,7 +156,7 @@ public:
             {
                 if (f.value != "" && !f.matchPattern) 
                 {
-                    log.log(LogLevel.WARNING, MSG002, _nbLinesRead, recordName, f.name, f.value, f.type.meta.pattern);
+                    log.log(LogLevel.WARNING, MSG002, _nbLinesRead, recordName, f.contextualInfo, f.value, f.pattern);
                     _nbBadCheck++;
                 }
             }

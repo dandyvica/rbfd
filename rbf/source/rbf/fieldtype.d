@@ -19,6 +19,7 @@ import std.algorithm;
 import std.exception;
 
 import rbf.errormsg;
+import rbf.log;
 import rbf.field: TVALUE;
 
 static TVALUE overpunch(TVALUE s) 

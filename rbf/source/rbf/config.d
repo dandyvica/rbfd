@@ -16,6 +16,7 @@ import std.regex;
 import std.traits;
 
 import rbf.errormsg;
+import rbf.log;
 import rbf.nameditems;
 import rbf.layout;
 

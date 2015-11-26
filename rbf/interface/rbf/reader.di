@@ -10,6 +10,7 @@ import std.regex;
 import std.range;
 import std.algorithm;
 import rbf.errormsg;
+import rbf.log;
 import rbf.field;
 import rbf.record;
 import rbf.layout;

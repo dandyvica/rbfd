@@ -140,6 +140,15 @@ public:
 		mixin(NamedItemsContainer!(Field,true).getMembersData("description"));
 	}
 
+	/**
+	 * concatenate field value for the same name
+	 */
+	@property TVALUE concat(string name)
+	{
+        auto values = array(this[name].map!(f => f.value));
+        return values.reduce!((a,b) => a ~ b);
+	}
+
 	string findByIndex(in ulong i)
     {
 		foreach (f; this) 

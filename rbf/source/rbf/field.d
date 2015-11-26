@@ -74,9 +74,12 @@ public:
 		// save field type
 		_fieldType = type;
 
-		// set pattern from its type
+		// set pattern inherited from its type
+        /*
 		_charPattern  = type.meta.pattern;
 		_fieldPattern = regex(_charPattern);
+        */
+        pattern = type.meta.pattern;
 
         //_rawValue = new char[length];
         //_strValue = new char[length];
@@ -116,7 +119,8 @@ public:
 	/// write property for setting a new pattern for this field, hence
 	/// overriding the field type one
 	@property void pattern(in string s) { _charPattern = s; _fieldPattern = regex(s); }
-	bool matchPattern() { return !matchAll(_rawValue.strip, _fieldPattern).empty; }
+	@property string pattern() { return _charPattern; };
+	bool matchPattern() { return !matchAll(_strValue.strip, _fieldPattern).empty; }
 
 	/// read/write property for field value
 	@property auto value() { return _strValue; }
@@ -183,6 +187,11 @@ public:
 			return(MSG003.format(name, description, length, type, lowerBound, upperBound, rawValue, value, offset, index));
 		}
 	}
+
+    auto contextualInfo()
+    {
+        return "name=<%s>, alternateName=<%s>, index=<%d>, offset=<%d>".format(name, context.alternateName, context.index+1, context.offset+1);
+    }
 
 	/// useful for unit tests
 	bool opEquals(Tuple!(string,string,string,ulong) t)

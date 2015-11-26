@@ -9,6 +9,7 @@ import std.algorithm;
 import std.variant;
 
 import rbf.errormsg;
+import rbf.log;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
