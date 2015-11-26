@@ -1,4 +1,4 @@
-// D import file generated from 'source/rbf/writers/csvwriter.d'
+// D import file generated from 'source\rbf\writers\csvwriter.d'
 module rbf.writers.csvwriter;
 pragma (msg, "========> Compiling module ", "rbf.writers.csvwriter");
 import std.stdio;

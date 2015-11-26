@@ -8,9 +8,10 @@
 	},
 	"targetPath": "bin",
 	"targetType": "executable",
-	"libs": ["rbf", "sqlite3"],
+	"libs-linux": ["rbf", "sqlite3"],
+	"libs-windows": ["..\\rbf\\lib\\rbf", "sqlite3"],
 	"importPaths": ["source", "../rbf/interface"],
 	"stringImportPaths": ["./views", "../rbf/views"],
-	"lflags": ["-L../rbf/lib", "-L/usr/lib/x86_64-linux-gnu"],
-	"preBuildCommands": ["pandoc -s -t man source/doc/help.md -o views/help.1", "man views/help.1 | col -b > views/help.txt"],
+	"lflags-linux": ["-L../rbf/lib", "-L/usr/lib/x86_64-linux-gnu"],
+	"preBuildCommands-linux": ["pandoc -s -t man source/doc/help.md -o views/help.1", "man views/help.1 | col -b > views/help.txt"],
 }

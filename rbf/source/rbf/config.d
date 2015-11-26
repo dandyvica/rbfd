@@ -34,7 +34,7 @@ version(linux)
 {
     immutable xmlSettings = ".rbf/rbf.xml";
 }
-version(Win64) 
+version(Windows) 
 {
     immutable xmlSettings = `\local\rbf\rbf.xml`;
 }

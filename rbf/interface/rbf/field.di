@@ -1,4 +1,4 @@
-// D import file generated from 'source/rbf/field.d'
+// D import file generated from 'source\rbf\field.d'
 module rbf.field;
 pragma (msg, "========> Compiling module ", "rbf.field");
 import std.stdio;
@@ -17,14 +17,14 @@ alias TVALUE = string;
 pragma (msg, "========> TVALUE = ", TVALUE.stringof);
 struct ContextualInfo
 {
-	ulong index;
-	ulong offset;
-	ulong occurence;
-	ulong lowerBound;
-	ulong upperBound;
+	size_t index;
+	size_t offset;
+	size_t occurence;
+	size_t lowerBound;
+	size_t upperBound;
 	typeof(Field.name) alternateName;
 }
-class Field : Element!(string, ulong, ContextualInfo)
+class Field : Element!(string, size_t, ContextualInfo)
 {
 	private 
 	{
@@ -36,7 +36,7 @@ class Field : Element!(string, ulong, ContextualInfo)
 		string _charPattern;
 		public 
 		{
-			this(in string name, in string description, FieldType type, in ulong length);
+			this(in string name, in string description, FieldType type, in size_t length);
 			this(in string csvdata);
 			@property FieldType type();
 			@property void pattern(in string s);

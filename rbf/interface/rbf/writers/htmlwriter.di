@@ -1,4 +1,4 @@
-// D import file generated from 'source/rbf/writers/htmlwriter.d'
+// D import file generated from 'source\rbf\writers\htmlwriter.d'
 module rbf.writers.htmlwriter;
 pragma (msg, "========> Compiling module ", "rbf.writers.htmlwriter");
 import std.stdio;

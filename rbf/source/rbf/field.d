@@ -27,18 +27,18 @@ pragma(msg, "========> TVALUE = ", TVALUE.stringof);
  */
 struct ContextualInfo 
 {
-	ulong index;					/// index of the field within its parent record
-	ulong offset;					/// offset of the field within its parent record from the first field
-	ulong occurence;				/// index of the field within all the fields having the same name
-	ulong lowerBound;				/// when adding a field to a record, give
-	ulong upperBound;				/// absolute position within the line read
+	size_t index;					/// index of the field within its parent record
+	size_t offset;					/// offset of the field within its parent record from the first field
+	size_t occurence;				/// index of the field within all the fields having the same name
+	size_t lowerBound;				/// when adding a field to a record, give
+	size_t upperBound;				/// absolute position within the line read
 	typeof(Field.name) alternateName;/// when the field appers more than once, this builds unique field name by adding its index
 }
 
 /******************************************************************************************************
  * This field class represents a field as found in record-based files
  */
-class Field : Element!(string, ulong, ContextualInfo) 
+class Field : Element!(string, size_t, ContextualInfo) 
 {
 private:
 
@@ -63,7 +63,7 @@ public:
 	 *  length = length in bytes of the field. Should be >0
 	 *
 	 */
-	this(in string name, in string description, FieldType type, in ulong length)
+	this(in string name, in string description, FieldType type, in size_t length)
 	// verify pre-conditions
 	{
 
@@ -104,7 +104,7 @@ public:
 		auto f = csvdata.split(";");
 		enforce(f.length == 5, MSG010.format(f.length, 5));
 		// create object
-		this(f[0], f[1], new FieldType(f[2],f[3]), to!ulong(f[4]));
+		this(f[0], f[1], new FieldType(f[2],f[3]), to!size_t(f[4]));
 	}
 	///
 	unittest 

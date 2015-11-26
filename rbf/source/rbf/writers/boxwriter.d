@@ -94,7 +94,7 @@ public:
 private:
 
 	// print out each field
-	wchar[] _boxLine(wchar begin, wchar middle, wchar joiner, wchar end, ulong[] lengths)
+	wchar[] _boxLine(wchar begin, wchar middle, wchar joiner, wchar end, size_t[] lengths)
     {
         auto la = array(lengths.map!(l => middle.repeat(l)));
         return begin ~ join(la, joiner) ~ end;

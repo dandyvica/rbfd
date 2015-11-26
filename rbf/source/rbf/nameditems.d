@@ -73,8 +73,8 @@ public:
     {
 		private TLIST items;
 
-		ulong head = 0;
-		ulong tail = 0;
+		size_t head = 0;
+		size_t tail = 0;
 
 		this(TLIST list) 
         {
@@ -128,10 +128,10 @@ public:
 	@property string name() { return _containerName; }
 
 	/// Get container number of elements
-	@property ulong size() { return _list.length; }
+	@property auto size() { return _list.length; }
 
 	/// Get container number of elements for name
-	@property ulong size(string name) { return _map[name].length; }
+	@property auto size(string name) { return _map[name].length; }
 
 	/// get length of all elements
 	static if (__traits(hasMember, T, "length")) {

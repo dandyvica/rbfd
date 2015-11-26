@@ -1,4 +1,4 @@
-// D import file generated from 'source/rbf/nameditems.d'
+// D import file generated from 'source\rbf\nameditems.d'
 module rbf.nameditems;
 pragma (msg, "========> Compiling module ", "rbf.nameditems");
 import std.stdio;
@@ -61,8 +61,8 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				struct Range
 				{
 					private TLIST items;
-					ulong head = 0;
-					ulong tail = 0;
+					size_t head = 0;
+					size_t tail = 0;
 					this(TLIST list)
 					{
 						items = list;
@@ -115,11 +115,11 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				{
 					return _containerName;
 				}
-				@property ulong size()
+				auto @property size()
 				{
 					return _list.length;
 				}
-				@property ulong size(string name)
+				auto @property size(string name)
 				{
 					return _map[name].length;
 				}

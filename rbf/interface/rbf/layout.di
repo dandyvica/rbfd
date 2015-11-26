@@ -1,4 +1,4 @@
-// D import file generated from 'source/rbf/layout.d'
+// D import file generated from 'source\rbf\layout.d'
 module rbf.layout;
 pragma (msg, "========> Compiling module ", "rbf.layout");
 import std.stdio;

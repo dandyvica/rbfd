@@ -52,7 +52,7 @@ public:
         _fmt = "%%-*s%s".format(outputFeature.fsep);
 
         // calculate all lengths in advance
-        ulong rulerLength;
+        size_t rulerLength;
         foreach (rec; layout)
         {
             rulerLength = 0;
