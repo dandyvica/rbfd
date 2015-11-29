@@ -36,7 +36,7 @@ version(linux)
 }
 version(Windows) 
 {
-    immutable xmlSettings = `\local\rbf\rbf.xml`;
+    immutable xmlSettings = `\rbf\rbf.xml`;
 }
 
 /*********************************************
@@ -187,7 +187,7 @@ private:
               _rbfhome = environment["HOME"];
               settingsFile = _rbfhome ~ "/" ~ xmlSettings;
           }
-          version(Win64) 
+          version(Windows) 
           {
               _rbfhome = environment["APPDATA"];
               settingsFile = _rbfhome ~ xmlSettings;

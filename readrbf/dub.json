@@ -9,7 +9,7 @@
 	"targetPath": "bin",
 	"targetType": "executable",
 	"libs-linux": ["rbf", "sqlite3"],
-	"libs-windows": ["..\\rbf\\lib\\rbf", "sqlite3"],
+	"libs-windows": ["..\\rbf\\lib\\rbf", "..\\..\\..\\tools\\sqlite3\\sqlite3"],
 	"importPaths": ["source", "../rbf/interface"],
 	"stringImportPaths": ["./views", "../rbf/views"],
 	"lflags-linux": ["-L../rbf/lib", "-L/usr/lib/x86_64-linux-gnu"],

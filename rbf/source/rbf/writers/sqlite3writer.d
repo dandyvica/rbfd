@@ -231,7 +231,8 @@ public:
         auto nbTables = 0;
 
         // build the list of SQL reserved keywords: it's used to check whether a record name is a reserved keyword
-        _sqlKeywordsList = sqlKeywords.split('\n');
+        //_sqlKeywordsList = sqlKeywords.split('\n');
+        _sqlKeywordsList = array(sqlKeywords.lineSplitter);
         _sqlKeywordsList = array(_sqlKeywordsList.filter!(f => f != ""));
 
         // creation of all tables
