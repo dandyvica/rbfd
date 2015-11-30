@@ -1,4 +1,4 @@
-// D import file generated from 'source\rbf\writers\identwriter.d'
+// D import file generated from 'source/rbf/writers/identwriter.d'
 module rbf.writers.identwriter;
 pragma (msg, "========> Compiling module ", "rbf.writers.identwriter");
 import std.stdio;

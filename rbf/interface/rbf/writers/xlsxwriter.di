@@ -1,4 +1,4 @@
-// D import file generated from 'source\rbf\writers\xlsxwriter.d'
+// D import file generated from 'source/rbf/writers/xlsxwriter.d'
 module rbf.writers.xlsxwriter;
 pragma (msg, "========> Compiling module ", "rbf.writers.xlsxwriter");
 import std.stdio;

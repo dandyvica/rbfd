@@ -315,6 +315,12 @@ public:
 				auto data = e.split(":");
 				auto recName = data[0].strip;
 
+                // check if record name is in layout
+                if (recName !in this)
+                {
+                    throw new Exception(MSG055.format(recName));
+                }
+
 				// build field list
 				auto fieldList = array(data[1].split(",").map!(e => e.strip));
 

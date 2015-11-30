@@ -6,6 +6,7 @@ import std.string;
 import std.algorithm;
 import std.regex;
 import std.exception;
+import std.array;
 
 import rbf.field;
 
@@ -33,8 +34,11 @@ public:
     // this is the regex to use to split the condition
 		static auto reg = regex(r"(\w+)(\s*)(=|!=|>|<|~|!~|==)(\s*)(.+)$");
 
+        // split according to separation
+        auto splitted = (separator == "\n") ? array(recordFilter.lineSplitter) : recordFilter.split(separator);
+
         // read filter file
-        foreach (cond; recordFilter.split(separator))
+        foreach (cond; splitted.filter!(s => s.strip != ""))
         {
             // split filter clause into individual data
             auto m = matchAll(cond, reg);

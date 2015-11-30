@@ -1,4 +1,4 @@
-// D import file generated from 'source\rbf\writers\tagwriter.d'
+// D import file generated from 'source/rbf/writers/tagwriter.d'
 module rbf.writers.tagwriter;
 pragma (msg, "========> Compiling module ", "rbf.writers.tagwriter");
 import std.stdio;

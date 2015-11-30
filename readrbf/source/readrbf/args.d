@@ -55,6 +55,7 @@ public:
 	bool bCheckPattern;  				                /// if true, check if field values are matching pattern
 
 	ulong samples;					                    /// limit to n first lines (n == samples)
+    bool bUseAlternateNames;                            /// in case of field duplication, append field name with index
 
 
 
@@ -99,7 +100,8 @@ public:
                     "b" , &bJustRead       ,
                     "p" , &bProgressBar    ,
                     "c" , &bCheckLayout    ,
-                    "br", &bBreakRecord
+                    "br", &bBreakRecord    ,
+                    "ua", &bUseAlternateNames
                 );
             }
             catch (ConvException e) 

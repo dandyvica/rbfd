@@ -24,6 +24,9 @@ import rbf.config;
 
 import args;
 
+// constants
+immutable chunkSize = 1000;
+
 int main(string[] argv)
 {
 	// number of records read
@@ -90,6 +93,14 @@ int main(string[] argv)
 		}
 
         //---------------------------------------------------------------------------------
+		// use alternate names
+        //---------------------------------------------------------------------------------
+		if (opts.bUseAlternateNames) 
+        {
+			settings.outputDir[outputFormat].useAlternateName = true;
+		}
+
+        //---------------------------------------------------------------------------------
 		// need to get rid of some fields ?
         //---------------------------------------------------------------------------------
 		if (opts.isFieldFilterFileSet) 
@@ -131,20 +142,6 @@ int main(string[] argv)
 		}
 
         //---------------------------------------------------------------------------------
-		// verify record filter arguments: if field name is not found in layout, stop
-        //---------------------------------------------------------------------------------
-        if (opts.isRecordFilterFileSet || opts.isRecordFilterSet)
-        {
-            foreach(rf; opts.filteredRecords)
-            {
-                if (!layout.isFieldInLayout(rf.fieldName))
-                {
-                    throw new Exception(MSG024.format(rf.fieldName));
-                }
-            }
-        }
-
-        //---------------------------------------------------------------------------------
 		// if verbose option is requested, print out what's possible
         //---------------------------------------------------------------------------------
 		if (opts.bVerbose) 
@@ -161,6 +158,20 @@ int main(string[] argv)
 			printMembers!(OutputFeature)(settings.outputDir[outputFormat]);
 
 		}
+
+        //---------------------------------------------------------------------------------
+		// verify record filter arguments: if field name is not found in layout, stop
+        //---------------------------------------------------------------------------------
+        if (opts.isRecordFilterFileSet || opts.isRecordFilterSet)
+        {
+            foreach(rf; opts.filteredRecords)
+            {
+                if (!layout.isFieldInLayout(rf.fieldName))
+                {
+                    throw new Exception(MSG024.format(rf.fieldName));
+                }
+            }
+        }
 
         //---------------------------------------------------------------------------------
         // re-index each field index
@@ -226,7 +237,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
             // don't want a progress bar?
             //---------------------------------------------------------------------------------
-            if (opts.bProgressBar && nbReadRecords % 1000 == 0)
+            if (opts.bProgressBar && nbReadRecords % chunkSize == 0)
             {
                 if (reader.nbRecords != 0)
                     stderr.writef("info: %d/%d records read so far (%.0f %%), %d matching record filter condition\r",
@@ -281,11 +292,12 @@ int main(string[] argv)
 
         stderr.writeln();
 		stderr.writefln(MSG014, reader.nbLinesRead, nbReadRecords, nbWrittenRecords);
-		//stderr.writefln(MSG015, elapsedtime);
 		log.log(LogLevel.INFO, MSG015, elapsedtime);
 
 		if (!opts.bJustRead)
+        {
 				stderr.writefln(MSG013, opts.outputFileName, getSize(opts.outputFileName));
+        }
 
         // if we wasked for checking formats, print out number of bad checks
         if (opts.bCheckPattern)

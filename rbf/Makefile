@@ -3,10 +3,10 @@
 #-----------------------------------------------------------------
 basedir = $(shell pwd)
 srcdir = $(basedir)/source
-objdir = $(basedir)/temp
-exedir = $(basedir)/temp
-libdir = $(basedir)/temp
-xlsimportdir = $(basedir)/views
+objdir = $(basedir)/obj
+exedir = $(basedir)/bin
+libdir = $(basedir)/lib
+importdir = $(basedir)/views
 docdir = $(basedir)/doc
 
 ut_objdir = $(basedir)/temp
