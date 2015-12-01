@@ -175,6 +175,8 @@ public:
     {
         foreach(f; this)
         {
+            // for each field being repeated at least twice, buld its "alternate" name 
+            // which, by the way it's build, unique
             auto list = this[f.name];
             if (list.length > 1)
             {
@@ -189,6 +191,9 @@ public:
     }
 
 
+	/**
+	 * when fields are repeated, we use a simple regex to identify that repetition
+	 */
     void identifyRepeatedFields()
     {
         // build our string to search for: each field is replaced by
