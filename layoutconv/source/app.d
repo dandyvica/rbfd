@@ -10,12 +10,13 @@ import std.exception;
 import std.path;
 import std.regex;
 
+import rbf.config;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
 
 string inputLayoutFileName;			/// input file layout
-enum Format {html, xml, cstruct, csv, test};		/// output format HTML, ...
+enum Format {html, xml, h, csv};		/// output format HTML, ...
 Format outputFormat;
 bool bCheckLayout;							/// if true, try to validate layouy by checking length
 bool stdOutput;									/// if true, print to standard output instead of file
@@ -50,65 +51,47 @@ where:
 			"O", &stdOutput,
 			"c", &bCheckLayout
 		);
+
+        //---------------------------------------------------------------------------------
+		// read XML properties from rbf.xml file
+        //---------------------------------------------------------------------------------
+		auto settings = new Setting();
+
+        // define new layout and validate it if requested
+        auto layout = new Layout(inputLayoutFileName);
+        if (bCheckLayout) layout.validate;
+
+        // build output file name
+        auto outputFileName = stripExtension(baseName(inputLayoutFileName)) ~ "." ~ to!string(outputFormat);
+        File outputHandle = (stdOutput) ? stdout : File(outputFileName, "w");
+
+        // depending on output wnated format, call appropriate function
+        final switch(outputFormat)
+        {
+            case outputFormat.html:
+                layout2html(outputHandle, layout);
+                break;
+            case outputFormat.xml:
+                break;
+            case outputFormat.h:
+                // this is necessary to use alternate name because names can be duplicated
+                layout.each!(r => r.buildAlternateNames);
+                layout2cstruct(outputHandle, layout);
+                break;
+            case outputFormat.csv:
+                layout2csv(outputHandle, layout);
+                break;
+        }
+
 	}
 	catch (Exception e) {
 		stderr.writefln("error: %s", e.msg);
 		return 1;
 	}
 
-	// define new layout and validate it if requested
-	auto layout = new Layout(inputLayoutFileName);
-	if (bCheckLayout) layout.validate;
-
-	// build output file name
-	File outputHandle = (stdOutput) ? stdout :
-		File(baseName(inputLayoutFileName) ~ "." ~ to!string(outputFormat), "w");
-
-	// depending on output wnated format, call appropriate function
-	final switch(outputFormat)
-	{
-		case outputFormat.html:
-			layout2html(outputHandle, layout);
-			break;
-		case outputFormat.xml:
-			break;
-		case outputFormat.cstruct:
-			break;
-		case outputFormat.csv:
-			layout2csv(outputHandle, layout);
-			break;
-		case outputFormat.test:
-			testLayout(inputLayoutFileName);
-			break;
-	}
-
 	// ok
 	return 0;
 }
-
-// write out layout as a CSV-list of records and fields
-void testLayout(string inputLayoutFileName) {
-
-	foreach (i; 0..100)
-	{
-		auto layout = new Layout(inputLayoutFileName);
-		layout["06"].identifyRepeatedFields;
-		layout["06"].each!(f => writef("%s(%d);", f.name, f.context.index));
-		writeln();
-		//layout.each!(r => r.identifyRepeatedFields);
-		//assert(layout["04"].meta.repeatingPattern == [["COTP", "CORT", "COAM"], ["TMFT", "TMFA"]]);
-		writeln(layout["06"].meta.repeatingPattern);
-	}
-
-
-
-}
-
-
-
-
-
-
 
 // write out layout as a CSV-list of records and fields
 void layout2csv(File output, Layout layout) {
@@ -163,5 +146,35 @@ void layout2html(File html, Layout layout) {
 	//writefln("Records read: %d\nElapsed time = %s", nbRecords, elapsedtime);
 	// closing HTML
 	html.writeln(`</div></div></body></html>`);
+
+}
+
+// write out XML layout structure as as C-union
+void layout2cstruct(File output, Layout layout) {
+    // each record is converted as a C structure
+	foreach (rec; &layout.sorted) 
+    {
+        // structure header
+		output.writefln("typedef struct RECORD_%s_T {", rec.name);
+
+        // each field is a structure member
+        foreach (f; rec)
+        {
+    		output.writefln("\tchar %s[%d];", f.context.alternateName, f.length);
+        }
+
+        // end structure
+		output.writefln("} RECORD_%s_T;", rec.name);
+        output.writeln;
+	}
+
+    // now write union
+	output.writeln("union {");
+	foreach (rec; &layout.sorted) 
+    {
+        output.writefln("\tRECORD_%s_T rec_%s;", rec.name, rec.name);
+    }
+	output.writeln("};");
+    output.writeln;
 
 }

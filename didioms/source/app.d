@@ -38,12 +38,12 @@ void main(string[] argv)
 
     File fh = File(argv[1], "r");
 
-    auto txhs = buildRegex("TXHS");
-    auto txrs = buildRegex("TXRS");
-    auto txcs = buildRegex("TXCS");
-    auto txws = buildRegex("TXWS");
+    auto fl = buildRegex("FL");
+    auto lg = buildRegex("LG");
+    auto sg = buildRegex("SG");
 
-    auto fmt = "(%s)((%s)((?:%s)+)((?:%s)*))+".format(txhs, txrs, txcs, txws);
+    auto fmt = "(%s)(?:((%s)((%s)+)))+".format(fl, lg, sg);
+    writeln(fmt);
 
     auto r = regex(fmt, "m");
 
@@ -53,10 +53,10 @@ void main(string[] argv)
         auto m = matchAll(s, r);
         if (!m.empty)
         {
-            writefln("<%s>", m.captures[1].strip);
-            writefln("<%s>", m.captures[2].strip);
-            writefln("<%s>", m.captures[3].strip);
-            writefln("<%s>", m.captures[4].strip);
+            foreach (i; 1 .. m.captures.length)
+            {
+                writefln("%d: <%s>", i, m.captures[i].strip);
+            }
             writeln("******************************");
         }
     }

@@ -5,7 +5,6 @@
 	"homepage": "https://github.com/dandyvica/rbfd",
 	"license": "GPL-2.0",
 	"dependencies": {
-                 "dyaml": {"version" : "~>0.5.0" }, 
 	},
 	"targetPath": "bin",
 	"targetType": "executable",
