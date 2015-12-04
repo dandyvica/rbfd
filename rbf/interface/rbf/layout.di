@@ -47,6 +47,7 @@ class Layout : NamedItemsContainer!(Record, false, LayoutMeta)
 		{
 			FieldType[string] ftype;
 			this(string xmlFile);
+			string buildFieldNameWhenRoot(string recName, string rootName);
 			override string toString();
 			void keepOnly(string[][string] recordMap);
 			void keepOnly(in string list, in string separator);

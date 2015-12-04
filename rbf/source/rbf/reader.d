@@ -32,18 +32,20 @@ class Reader
 
 private:
 
-	immutable string _rbFile; /// filename to read
-	Layout _layout; /// list of all records read from XML definition file
-	MapperFunc _recordIdentifier; /// this function will identify a record name from the line read
-	Regex!char _ignoreRegex; /// regex ignore pattern: don't read those lines matching this regex
-	/// regex include pattern: read only those lines matching this regex
-	Regex!char _lineRegex; /// but previous one comes first
-	STRING_MAPPER _mapper; /// mapper function
-	ulong _nbLinesRead; /// size read
-	ulong _inputFileSize; /// input file size
-    ulong _guessedRecordNumber; /// guessed number of records (in case of a lauyout having reclength!=0)
-    bool _checkPattern;
-    ulong _nbBadCheck;
+	immutable string _rbFile;               /// filename to read
+	Layout _layout;                         /// list of all records read from XML definition file
+	MapperFunc _recordIdentifier;           /// this function will identify a record name from the line read
+	Regex!char _ignoreRegex;                /// regex ignore pattern: don't read those lines matching this regex
+	                                        /// regex include pattern: read only those lines matching this regex
+	Regex!char _lineRegex;                  /// but previous one comes first
+	STRING_MAPPER _mapper;                  /// mapper function which can be defined to transform a record
+	ulong _nbLinesRead;                     /// size read
+	ulong _inputFileSize;                   /// input file size
+    ulong _guessedRecordNumber;             /// guessed number of records (in case of a lauyout having reclength!=0)
+    bool _checkPattern;                     /// do we want to check field pattern for each record?
+    ulong _nbBadCheck;                      /// counter for those bad formatted fields
+
+    string _sectionName;                     /// last fetched record name
 
 public:
 	/**
@@ -108,10 +110,12 @@ public:
 
 	Record _getRecordFromLine(in char[] lineReadFromFile) 
     {
+        // current record found
+        Record rec;
+
 
 		// get rid of \n
 		auto line = lineReadFromFile.idup;
-		//auto line = lineReadFromFile;
 
 		// if line is matching the ignore pattern, just loop
 		if (layout.meta.ignoreLinePattern != "" && matchFirst(line, _ignoreRegex)) 
@@ -129,30 +133,42 @@ public:
 		auto recordName = _recordIdentifier(line);
 
 		// record not found ? So loop
-		if (recordName !in _layout) 
+        if (recordName !in _layout) 
         {
-            log.log(LogLevel.WARNING, MSG018, _nbLinesRead, recordName);
-			return null;
-		}
+            recordName = _layout.buildFieldNameWhenRoot(recordName, _sectionName);
+            if (recordName !in _layout)
+            {
+                log.log(LogLevel.WARNING, MSG018, _nbLinesRead, recordName);
+                return null;
+            }
+        }
+
+        // save our record
+        rec = _layout[recordName];
+
+        // if this record is starts a new section, keep its name
+        if (rec.meta.section) 
+            _sectionName = recordName;
+        else
+            _sectionName = "";
 
 		// do we keep this record?
-		if (_layout[recordName].meta.skip) return null;
+		if (rec.meta.skip) return null;
 
         // keep track of original line number
-        _layout[recordName].meta.sourceLineNumber = _nbLinesRead;
+        rec.meta.sourceLineNumber = _nbLinesRead;
 
 		// now we can safely save our values
 		// set record value (and fields)
-		_layout[recordName].value = line;
+		rec.value = line;
 
 		// is a mapper registered? so we need to call it
-		if (_mapper)
-			_mapper(_layout[recordName]);
+		if (_mapper) _mapper(rec);
 
         // do we need to check field patterns?
         if (_checkPattern)
         {
-            foreach (f;  _layout[recordName])
+            foreach (f; rec)
             {
                 if (f.value != "" && !f.matchPattern) 
                 {
@@ -163,7 +179,7 @@ public:
 		}
 
 		// return to caller our record
-		return _layout[recordName];
+		return rec;
 
 	}
 

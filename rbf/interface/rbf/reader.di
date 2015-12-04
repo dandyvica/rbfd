@@ -30,6 +30,7 @@ class Reader
 		ulong _guessedRecordNumber;
 		bool _checkPattern;
 		ulong _nbBadCheck;
+		string _sectionName;
 		public 
 		{
 			this(string rbFile, Layout layout, MapperFunc recIndentifier = null);

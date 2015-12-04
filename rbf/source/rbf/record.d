@@ -28,6 +28,7 @@ struct RecordMeta
 	Record[] subRecord;          /// list of all records matching those repeated fields
     string ruler;                /// when using the text writer, length of the ruler for header vs. data
     ulong sourceLineNumber;      /// line number where this record is found
+    bool  section;               /// we want to save this record name
 }
 
 /***********************************

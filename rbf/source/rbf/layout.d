@@ -177,8 +177,26 @@ public:
 			// save record name
 			recName = xml.tag.attr["name"];
 
+            // if root attribute is found, this record is tied to its root. Then
+            // its name should be built according this is root. This is because of 
+            // some layouts, where record names can be duplicated. So we need to find a way
+            // to have unique record names
+            if ("root" in xml.tag.attr) 
+            {
+                recName = buildFieldNameWhenRoot(recName, xml.tag.attr["root"]);
+            }
+
+
 			// create a Record object and store it into our record aa
-			this  ~= new Record(recName, xml.tag.attr["description"]);
+            auto record = new Record(recName, xml.tag.attr["description"]);
+
+            // sometimes, we need to keep track of the occurence of some records. We use this
+            // XML attribute for this purpose
+            record.meta.section = to!bool(xml.tag.attr.get("section", "false"));
+
+            // add new record to layout
+            this ~= record;
+            
 		};
 
 		// read <field> definitions, create field and add field to previously created record
@@ -232,6 +250,16 @@ public:
 		assert("COUN" in l);
 		assert("CONT" in l);
 		assert("FOO" !in l);
+	}
+
+	/**
+	 * used to create field name when root attribute is found
+	 *
+	 */
+	string buildFieldNameWhenRoot(string recName, string rootName)
+    {
+        immutable fmt = "%s_%s";
+        return fmt.format(recName, rootName);
 	}
 
 	/**
@@ -411,11 +439,11 @@ public:
 			if (rec.length != meta.length) 
             {
 				validates = false;
-                log.log(LogLevel.WARNING, MSG034, rec.name, rec.length, _length);
+                log.log(LogLevel.WARNING, MSG034, rec.name, rec.length, meta.length);
 			}
 		}
 		if (validates) 
-                log.log(LogLevel.WARNING, MSG035, meta.file);
+                log.log(LogLevel.INFO, MSG035, meta.file);
 	}
 
 	/**

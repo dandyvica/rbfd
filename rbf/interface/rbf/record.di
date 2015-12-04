@@ -21,6 +21,7 @@ struct RecordMeta
 	Record[] subRecord;
 	string ruler;
 	ulong sourceLineNumber;
+	bool section;
 }
 class Record : NamedItemsContainer!(Field, true, RecordMeta)
 {
