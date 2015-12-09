@@ -15,5 +15,6 @@ class CSVWriter : Writer
 {
 	this(in string outputFileName);
 	override void prepare(Layout layout);
+	override void build(string outputFileName);
 	override void write(Record rec);
 }

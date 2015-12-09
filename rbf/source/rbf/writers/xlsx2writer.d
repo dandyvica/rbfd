@@ -49,9 +49,8 @@ public:
 		_worksheetFile = new Worksheet(_xlsxDir, _xlsxSheetName);
 	}
 
-	override void prepare(Layout layout) 
-    {
-    }
+	override void prepare(Layout layout) {}
+    override void build(string outputFileName) {}
 
 	/** 
      * Insert a row into an Excel worksheet

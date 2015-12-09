@@ -91,6 +91,8 @@ public:
         _lastFooter = _boxLine(bottomLeft, horizontalBar, bottomCross, bottomRight, lengths);
 	}
 
+    override void build(string outputFileName) {}
+
 private:
 
 	// print out each field

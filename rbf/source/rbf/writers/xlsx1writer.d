@@ -90,6 +90,8 @@ public:
         layout[].filter!(rec => !rec.meta.skip).each!(rec => _createWorksheet(rec));
     }
 
+    override void build(string outputFileName) {}
+
 	/** 
      * Insert a row into an Excel worksheet
 	 *

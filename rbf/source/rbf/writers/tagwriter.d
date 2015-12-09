@@ -25,6 +25,7 @@ class TAGWriter : Writer {
 	}
 
 	override void prepare(Layout layout) {}
+    override void build(string outputFileName) {}
 
 	override void write(Record rec)
 	{

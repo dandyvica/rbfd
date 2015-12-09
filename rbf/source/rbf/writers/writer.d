@@ -75,6 +75,7 @@ public:
 
 	// should be implemented by derived classes
 	abstract void prepare(Layout layout);
+	abstract void build(string outputFileName);
 	abstract void write(Record rec);
 	//abstract void write(Field rec);
 

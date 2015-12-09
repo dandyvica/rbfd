@@ -7,7 +7,6 @@ import std.string;
 import std.conv;
 import std.exception;
 import std.algorithm;
-import std.variant;
 import std.range;
 import rbf.field;
 import rbf.record;
@@ -22,6 +21,7 @@ class TXTWriter : Writer
 		{
 			this(in string outputFileName);
 			override void prepare(Layout layout);
+			override void build(string outputFileName);
 			override void write(Record rec);
 			private void _write(string member)(Field f)
 			{

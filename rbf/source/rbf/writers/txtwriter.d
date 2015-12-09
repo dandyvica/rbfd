@@ -7,7 +7,6 @@ import std.string;
 import std.conv;
 import std.exception;
 import std.algorithm;
-import std.variant;
 import std.range;
 
 import rbf.field;
@@ -74,6 +73,8 @@ public:
             }
         }
     }
+
+    override void build(string outputFileName) {}
 
 	/** 
      * Write a record in the opened text file

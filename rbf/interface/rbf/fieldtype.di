@@ -7,11 +7,13 @@ import std.string;
 import std.regex;
 import std.algorithm;
 import std.exception;
+import std.range;
 import rbf.errormsg;
 import rbf.log;
 import rbf.field : TVALUE;
 static TVALUE overpunch(TVALUE s);
 alias CmpFunc = bool delegate(const TVALUE, const string, const TVALUE);
+alias FmtFunc = string delegate(const char[] value, const size_t length);
 alias Conv = TVALUE function(TVALUE);
 enum AtomicType 
 {
@@ -27,9 +29,9 @@ struct FieldTypeMeta
 	string stringType;
 	string pattern;
 	string format;
-	string fmtPattern;
 	Conv preConv;
 	CmpFunc filterTestCallback;
+	FmtFunc formatterCallback;
 }
 class FieldType
 {
@@ -98,6 +100,13 @@ class FieldType
 				log.log(LogLevel.WARNING, lvalue, operator, rvalue, T.stringof);
 			}
 			return condition;
+		}
+		string formatter(T)(in char[] value, in size_t length)
+		{
+			if (value == "")
+				return to!string(' '.repeat(length));
+			T convertedValue = value != "" ? to!T(value) : T.init;
+			return meta.format.format(length, length, convertedValue);
 		}
 	}
 }

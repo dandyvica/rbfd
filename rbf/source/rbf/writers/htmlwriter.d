@@ -36,6 +36,8 @@ class HTMLWriter : Writer {
 		_fh.writeln(`<body role="document"><div class="container">`);
 	}
 
+    override void build(string outputFileName) {}
+
 	// write out record depending on orientation
 	override void write(Record rec)
 	{

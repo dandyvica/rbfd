@@ -65,3 +65,5 @@ immutable MSG052 = "sqlite3 lib version <%s>";
 immutable MSG053 = "info: number of bad formatted fields: <%d>";
 immutable MSG054 = "error: field %s in not in layout %s";
 immutable MSG055 = "field filter error: record <%s> is not found in layout";
+immutable MSG056 = "new field type: name=<%s>, type=<%s>, pattern=<%s>, format=<%s>";
+immutable MSG057 = "processing record-based file creation";

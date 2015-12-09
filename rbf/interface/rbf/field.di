@@ -34,6 +34,7 @@ class Field : Element!(string, size_t, ContextualInfo)
 		byte _valueSign = 1;
 		Regex!char _fieldPattern;
 		string _charPattern;
+		string _format;
 		public 
 		{
 			this(in string name, in string description, FieldType type, in size_t length);
@@ -42,10 +43,13 @@ class Field : Element!(string, size_t, ContextualInfo)
 			@property void pattern(in string s);
 			@property string pattern();
 			bool matchPattern();
+			@property void fieldFormat(in string s);
+			@property string fieldFormat();
 			auto @property value()
 			{
 				return _strValue;
 			}
+			void setFormattedValue(char[] s);
 			@property T value(T)()
 			{
 				return to!T(_strValue) * sign;

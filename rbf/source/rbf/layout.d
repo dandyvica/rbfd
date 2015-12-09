@@ -163,11 +163,17 @@ public:
 				ftype[ftName] = new FieldType(attr["name"], attr["type"]);
 
 				// set extra features in any
-				ftype[ftName].meta.pattern      = attr.get("pattern", "");
-				ftype[ftName].meta.format       = attr.get("format", "");
+                if ("pattern" in attr) ftype[ftName].meta.pattern  = attr["pattern"];
+                if ("format" in attr)  ftype[ftName].meta.format   = attr["format"];
 
                 // preconv is set to overpunch if any
                 if (attr.get("preconv","") == "overpunch") ftype[ftName].meta.preConv = &overpunch;
+
+                // log
+                with(ftype[ftName].meta) 
+                {
+                    log.log(LogLevel.INFO, MSG056, name, stringType, pattern, format);
+                }
 			}
 		};
 
@@ -221,6 +227,9 @@ public:
 
             // if a specific pattern defined for this field?
             if ("pattern" in xml.tag.attr) field.pattern = xml.tag.attr["pattern"];
+
+            // if a specific format defined for this field?
+            if ("format" in xml.tag.attr) field.fieldFormat = xml.tag.attr["format"];
 
 			// add field to our record
 			this[recName] ~= field;

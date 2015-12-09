@@ -52,6 +52,8 @@ private:
 	Regex!char _fieldPattern;		  /// override field type pattern by this
 	string _charPattern;			  /// pattern as a string
 
+    string _format;                   /// field format if any
+
 public:
 	/**
  	 * create a new field object
@@ -81,8 +83,8 @@ public:
         */
         pattern = type.meta.pattern;
 
-        //_rawValue = new char[length];
-        //_strValue = new char[length];
+        // save format if any
+        _format = type.meta.format;
 	}
 	///
 	unittest {
@@ -122,6 +124,10 @@ public:
 	@property string pattern() { return _charPattern; };
 	bool matchPattern() { return !matchAll(_strValue.strip, _fieldPattern).empty; }
 
+    /// property for field format
+	@property void fieldFormat(in string s) { _format = s; }
+	@property string fieldFormat() { return _format; };
+
 	/// read/write property for field value
 	@property auto value() { return _strValue; }
 	///
@@ -131,6 +137,14 @@ public:
 		field1.value = "  John Doe   ";
 		assert(field1.value == "John Doe");
 	}
+
+    /// set a value by filling-in formatted data
+    void setFormattedValue(char[] s)
+    {
+        //writef("before name=<%s:%d>, format=<%s>, value=<%s>", name, length, _format, s);
+        _rawValue = _fieldType.meta.formatterCallback(s, length);
+        //writefln(", rawValue=<%s>", rawValue);
+    }
 
 	/// convert value to type T
 	@property T value(T)() { return to!T(_strValue) * sign; }
@@ -187,7 +201,6 @@ public:
 			return(MSG003.format(name, description, length, type, lowerBound, upperBound, rawValue, value, offset, index));
 		}
 	}
-
     auto contextualInfo()
     {
         return "name=<%s>, alternateName=<%s>, index=<%d>, offset=<%d>".format(name, context.alternateName, context.index+1, context.offset+1);

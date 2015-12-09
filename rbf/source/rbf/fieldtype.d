@@ -17,6 +17,7 @@ import std.string;
 import std.regex;
 import std.algorithm;
 import std.exception;
+import std.range;
 
 import rbf.errormsg;
 import rbf.log;
@@ -44,6 +45,7 @@ static TVALUE overpunch(TVALUE s)
 
 // filter matching method pointer
 alias CmpFunc = bool delegate(const TVALUE,const string,const TVALUE);
+alias FmtFunc = string delegate(const char[] value, const size_t length);
 alias Conv = TVALUE function(TVALUE);
 
 /***********************************
@@ -62,15 +64,14 @@ enum AtomicType {
 * in a record-based file
  */
 struct FieldTypeMeta {
-	string name;
-	AtomicType type;
-	string stringType;
-	string pattern;
-	string format;
-	//bool checkPattern;
-	string fmtPattern;
-	Conv preConv;								 /// conversion occruing before setting a field value
+	string name;                    /// name of the field type to refer to
+	AtomicType type;                /// field type converted to enum
+	string stringType;              /// field type as read in the XML file
+	string pattern;                 /// field pattern as a regex to fit to
+	string format;                  /// when converted back to a string value, prtinf()-like format string
+	Conv preConv;				    /// conversion occruing before setting a field value
 	CmpFunc filterTestCallback; 	/// method to test whether a value matches a filter
+    FmtFunc formatterCallback;      /// function used to convert a value
 }
 
 
@@ -92,28 +93,42 @@ public:
 	this(string nickName, string declaredType)
 	{
 		// set type according to what is passed
-		with(meta) {
+		with(meta) 
+        {
 			stringType = declaredType;
 			type       = to!AtomicType(stringType);
 			name	   = nickName;
 
+            // set features of this type according to its basic type
 			final switch (type)
 			{
 				case AtomicType.decimal:
-					filterTestCallback = &matchFilter!float;
-					fmtPattern = "%f";
+					filterTestCallback = &matchFilter!double;
+                    formatterCallback  = &formatter!double;
+
+                    meta.pattern = `[\d.]+`;
+                    meta.format  = "%0*.*g";
 					break;
 				case AtomicType.integer:
-					filterTestCallback = &matchFilter!long;
-					fmtPattern = "%d";
+					filterTestCallback = &matchFilter!ulong;
+                    formatterCallback  = &formatter!ulong;
+
+                    meta.pattern = `\d+`;
+                    meta.format  = "%0*.*d";
 					break;
 				case AtomicType.date:
 					filterTestCallback = &matchFilter!string;
-					fmtPattern = "%s";
+                    formatterCallback  = &formatter!string;
+
+                    meta.pattern = `\d+`;
+                    meta.format  = "%-*.*s";
 					break;
 				case AtomicType.string:
 					filterTestCallback = &matchFilter!string;
-					fmtPattern = "%s";
+                    formatterCallback  = &formatter!string;
+
+                    meta.pattern = `[\w/\*\.,\-]+`;
+                    meta.format  = "%-*.*s";
 					break;
 			}
 		}
@@ -128,7 +143,8 @@ public:
 
 	/// test a record filter. Basically it tests whether a value is matching
     /// a result
-	bool isFieldFilterMatched(TVALUE lvalue, string op, TVALUE rvalue) {
+	bool isFieldFilterMatched(TVALUE lvalue, string op, TVALUE rvalue) 
+    {
 		return meta.filterTestCallback(lvalue, op, rvalue);
 	}
 	///
@@ -152,8 +168,10 @@ public:
     {
 		bool condition;
 
-		try {
-			switch (operator) {
+		try 
+        {
+			switch (operator) 
+            {
 				case "=":
 				case "==":
 					mixin(testFilter!T("=="));
@@ -167,7 +185,8 @@ public:
 				case ">":
 					mixin(testFilter!T(">"));
 					break;
-				static if (is(T == string)) {
+				static if (is(T == string)) 
+                {
 					case "~":
 						condition = !matchAll(lvalue, regex(rvalue)).empty;
 						break;
@@ -188,6 +207,46 @@ public:
 
 		return condition;
 	}
+
+    // format a field according to its root type
+	string formatter(T)(in char[] value, in size_t length) 
+    {
+        // no value? Just return blank string
+        if (value == "") return to!string(' '.repeat(length));
+
+
+    
+
+        // we need to check whether value is empty. In that case, we just send back the T type default value
+        T convertedValue = (value != "") ? to!T(value) : T.init;
+
+        // float type processing is kind of specific
+        /*
+		static if (is(T == float)) 
+        {
+            // precision is used to reformat
+            size_t precision;
+            size_t decPoint;
+
+            // this is a true float value. Due to formatting issue with floats, new to get exact
+            // number of digits after the decimal point
+            decPoint = value.indexOf('.');
+
+            // decimal point found!
+            if (decPoint != -1)
+            {
+                precision = value.length - decPoint;
+            }
+            return meta.format.format(length, precision, value);
+        }
+        else
+        {
+            return meta.format.format(length, length, convertedValue);
+        }
+        */
+       return meta.format.format(length, length, convertedValue);
+            
+    }
 
 }
 ///

@@ -36,6 +36,7 @@ string buildRegex(string s)
 void main(string[] argv)
 {
 
+    /*
     File fh = File(argv[1], "r");
 
     auto fl = buildRegex("FL");
@@ -62,4 +63,23 @@ void main(string[] argv)
     }
 
     fh.close;
+    */
+
+    /*
+
+int i = 100;
+string s = " this is a string   ";
+
+    writefln("<%0.*d>", 10, i);
+    writefln("<%10.*d>", 10, i);
+    writefln("<%*.*s>", 30, 30, s.strip);
+    writefln("<%-*.*s>", 30, 30, s.strip);
+
+    */
+
+    auto s1 = argv[1], s2 = argv[2];
+    auto l = to!ulong(to!double(s1));
+    auto f = to!double(s2);
+    writefln("l=<%d>, f=<%11.11g>", l, f);
+
 }

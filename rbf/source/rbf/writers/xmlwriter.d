@@ -79,6 +79,8 @@ File _xsd;
         _xsd.writefln(`</xs:sequence></xs:complexType></xs:element>`);
     }
 
+    override void build(string outputFileName) {}
+
     // write out data as XML tree
 	override void write(Record rec)
 	{

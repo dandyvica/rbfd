@@ -50,6 +50,7 @@ abstract class Writer
 				OutputFeature outputFeature;
 				this(in string outputFileName, in bool create = true);
 				abstract void prepare(Layout layout);
+				abstract void build(string outputFileName);
 				abstract void write(Record rec);
 				void open();
 				void close();
