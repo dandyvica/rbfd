@@ -49,12 +49,14 @@ enum Orientation { horizontal, vertical }
 /***********************************
 	* struct for describing layout metadata
  */
-struct SettingCore {
+struct SettingCore 
+{
 	mixin  LayoutCore;
 }
 alias LayoutDir = NamedItemsContainer!(SettingCore, false);
 
-struct OutputFeature {
+struct OutputFeature 
+{
     string name;		      /// name of the output format (e.g.: "txt")
     string outputDir;		  /// location of output file
     string fsep;		      /// field separator char for text output format
