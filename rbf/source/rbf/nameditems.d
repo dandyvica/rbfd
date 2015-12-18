@@ -10,6 +10,7 @@ import std.process;
 import std.range;
 import std.typecons;
 import std.exception;
+import std.regex;
 
 import rbf.errormsg;
 
@@ -265,7 +266,9 @@ public:
 		// check if name if really in container
 		enforce(name in this, MSG001.format(name, this.name));
 
+        // remove all elements matching name
 		_list = _list.remove!(f => f.name == name);
+
 		// remove corresponding key
 		_map.remove(name);
 	}
@@ -351,6 +354,7 @@ public:
 	//----------------------------------------------------------------------------
 	// belonging methods
 	//----------------------------------------------------------------------------
+    // classic in method
 	TLIST* opBinaryRight(string op)(TNAME name)	if (op == "in")
 	{
 		return (name in _map);

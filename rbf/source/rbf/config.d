@@ -30,14 +30,18 @@ void printMembers(T)(T v)
 }
 
 /// configuration file name
+immutable xmlSettingsFile = "rbf.xml";
+immutable xmlSettingsFileEnvVar = "RBF_CONF";
 version(linux) 
 {
-    immutable xmlSettings = ".rbf/rbf.xml";
+    immutable xmlSettings = ".rbf/" ~ xmlSettingsFile;
 }
 version(Windows) 
 {
-    immutable xmlSettings = `\rbf\rbf.xml`;
+    immutable xmlSettings = `\rbf\` ~ xmlSettingsFile;
 }
+
+// settings file
 
 /*********************************************
  * Orientation for printing out data:
@@ -166,19 +170,21 @@ public:
 	@property OutputDir outputDir() { return _outputDirectory; }
 
 private:
-  string _getConfigFileName() {
+  string _getConfigFileName() 
+  {
 
       // settings file
       string settingsFile;
 
       // test if env variable is set
-      auto rbfconf = environment.get("RBFCONF", "");
+      auto rbfconf = environment.get(xmlSettingsFileEnvVar, "");
       if (rbfconf != "") return rbfconf;
 
       // otherwise, first possible location is current directory
-      if (exists(getcwd ~ xmlSettings)) 
+      auto suspectedSettingsFile = buildNormalizedPath(getcwd, xmlSettingsFile);
+      if (exists(suspectedSettingsFile)) 
       {
-          settingsFile = getcwd ~ xmlSettings;
+          return suspectedSettingsFile;
       }
       else 
       {

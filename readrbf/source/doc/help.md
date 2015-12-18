@@ -4,7 +4,7 @@
 readrbf - read a record-based file and convert it to a known format
 
 # SYNOPSIS
-readrbf -i file - l layout [-o format] [-f file] [-c] [-O] [--br] [--ff] [--fl] [--fr] [-r file] [-s n] [-v] [-p] [-h]
+readrbf -i file - l layout [-o format] [-f file] [-c] [-O] [--br] [--ff] [--fl] [--fr] [-r file] [-s n] [-v] [-p] [-h] [--dup] [--of file]
 
 # DESCRIPTION
 This program is aimed at reading a record-based file and converting it to
@@ -26,6 +26,9 @@ text presentation.
 
 --check
 : check whether field patterns are matched
+
+--dup
+: just print fields which are repeated within each record
 
 -f file
 : Full path and name of a file to filter fields.
@@ -58,6 +61,9 @@ the same than the input one.
 
 -O
 : Write to standard output only.
+
+-of filename
+: Convert file to given file name
 
 -p
 : Print out progress status.

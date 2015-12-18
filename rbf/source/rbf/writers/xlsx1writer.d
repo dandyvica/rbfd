@@ -87,7 +87,7 @@ public:
 	override void prepare(Layout layout) 
     {
         // for each record we don't skip, create worksheet
-        layout[].filter!(rec => !rec.meta.skip).each!(rec => _createWorksheet(rec));
+        //layout[].filter!(rec => !rec.meta.skip).each!(rec => _createWorksheet(rec));
     }
 
     override void build(string outputFileName) {}
@@ -104,14 +104,12 @@ public:
 		// don't keep this record?
 		//if (record.meta.skip) return;
 
-		// worksheet exist?
-        /*
+		// worksheet doesn't still exist? If no, juste create it
 		if (record.name !in _createdWorksheet) 
         {
 			_createdWorksheet[record.name] = true;
 			_createWorksheet(record);
 		}
-        */
 
         // write record to worksheet
         _writeRecordToWorksheet(record, _worksheetFile[record.name]);

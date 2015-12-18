@@ -6,6 +6,7 @@ readrbf \- read a record\-based file and convert it to a known format
 .PP
 readrbf \-i file \- l layout [\-o format] [\-f file] [\-c] [\-O]
 [\-\-br] [\-\-ff] [\-\-fl] [\-\-fr] [\-r file] [\-s n] [\-v] [\-p] [\-h]
+[\-\-dup] [\-\-of file]
 .SH DESCRIPTION
 .PP
 This program is aimed at reading a record\-based file and converting it
@@ -23,6 +24,8 @@ for better text presentation.
 \-c : Validate layout structure.
 .PP
 \-\-check : check whether field patterns are matched
+.PP
+\-\-dup : just print fields which are repeated within each record
 .PP
 \-f file : Full path and name of a file to filter fields.
 .PP
@@ -49,6 +52,8 @@ Defaulted to txt if not specified.
 ident means the output file format is the same than the input one.
 .PP
 \-O : Write to standard output only.
+.PP
+\-of filename : Convert file to given file name
 .PP
 \-p : Print out progress status.
 .PP

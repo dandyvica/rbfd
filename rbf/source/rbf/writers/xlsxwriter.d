@@ -12,6 +12,7 @@ import std.conv;
 import std.xml;
 
 import rbf.errormsg;
+import rbf.log;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
@@ -42,7 +43,7 @@ package:
 		chdir(_xlsxDir);
 
         // log
-        stderr.writeln(MSG011);
+        stderr.writeln(MSG011.format(_xlsxFilename));
 
 		// create zip
 		auto result = std.process.execute([outputFeature.zipper, "-r", "../" ~ _xlsxFilename, "."]);
@@ -53,6 +54,55 @@ package:
 		chdir("..");
 		rmdirRecurse(_xlsxDir);
 	}
+
+    void _buildZip()
+    {
+        // add an archive into zip
+        ArchiveMember _addArchive(string fileName)
+        {
+            ArchiveMember am = new ArchiveMember();
+            am.name = fileName;
+
+            // read whole file
+            am.expandedData(cast(ubyte[])std.file.read(fileName));
+
+            return am;
+        }
+
+        // create new archive zip file
+        ZipArchive zip = new ZipArchive();
+
+		// ch dir to XLSX directory
+		chdir(_xlsxDir);
+
+        // zip files we know
+        zip.addMember(_addArchive("_rels/.rels"));
+        zip.addMember(_addArchive("xl/_rels/workbook.xml.rels"));
+        zip.addMember(_addArchive("xl/workbook.xml"));
+        zip.addMember(_addArchive("[Content_Types].xml"));
+
+        // now find all files in the xl/worksheets directory and add to zip
+        auto entries = dirEntries("xl/worksheets", "*.xml", SpanMode.shallow);
+        foreach (f; entries)
+        {
+            log.log(LogLevel.INFO, MSG059, f.name);
+            zip.addMember(_addArchive(f.name));
+        }
+
+        // build zip
+        void[] compressedData = zip.build();
+
+        // first go back to root dir
+		chdir("..");
+
+        // finally create zip
+        std.file.write(_xlsxFilename, compressedData);
+        log.log(LogLevel.INFO, MSG011, _xlsxFilename);
+
+		// now it's time to remove all files
+        log.log(LogLevel.INFO, MSG060);
+		rmdirRecurse(_xlsxDir);
+    }
 
 	/** 
      * Create a worksheet with headers
@@ -107,7 +157,8 @@ public:
 		super(excelFileName, false);
 
         // log
-        stderr.writeln(MSG012);
+        //stderr.writeln(MSG012);
+        log.log(LogLevel.INFO, MSG012);
 
 		// save file name
 		_xlsxFilename = std.path.baseName(excelFileName);
@@ -147,7 +198,8 @@ public:
 		_relsFile.close;
 
 		// finally create zip
-		_createZip();
+		//_createZip();
+		_buildZip();
 	}
 
 }

@@ -222,7 +222,7 @@ public:
 					xml.tag.attr["name"],
 					xml.tag.attr["description"],
 					ftype[xml.tag.attr["type"]],
-					to!uint(xml.tag.attr["length"])
+					to!size_t(xml.tag.attr["length"])
 			);
 
             // if a specific pattern defined for this field?
@@ -241,7 +241,7 @@ public:
 		// if any, delete skipped fields from layout
 		if (meta.skipField != []) 
         {
-			this.removeFromAllRecords(meta.skipField);
+			this.removeFieldsByRegexFromAllRecords(meta.skipField);
 		}
 
         // log
@@ -407,9 +407,9 @@ public:
 	 * for each record, remove each field in the list.
 	 *
 	 * Params:
-	 *	fieldList = list of fields to get rid of in each record
+	 *	fieldList = list of field names to get rid of in each record
 	 */
-	void removeFromAllRecords(string[] fieldList) 
+	void removeFieldsByNameFromAllRecords(string[] fieldList) 
     {
 		// check first if all fields are in layout
 		fieldList.each!(
@@ -430,12 +430,38 @@ public:
 	///
 	unittest {
 		auto l = new Layout(test_file);
-		l.removeFromAllRecords(["NAME", "CAPITAL", "POPULATION"]);
-		assertThrown(l.removeFromAllRecords(["FOO"]));
+		l.removeFieldsByNameFromAllRecords(["NAME", "CAPITAL", "POPULATION"]);
+		assertThrown(l.removeFieldsByNameFromAllRecords(["FOO"]));
 		assert(l["CONT"] == ["AREA", "DENSITY", "CITY"]);
 		assert(l["COUN"] == []);
 	}
 
+	/**
+	 * for each record, remove each field in the list when name is matching the regex
+	 *
+	 * Params:
+	 *	fieldList = list of field name regexes to get rid of in each record
+	 */
+	void removeFieldsByRegexFromAllRecords(string[] fieldListRegex) 
+    {
+		// a field might not belong to a record. As the remove() method from container
+		// is checking field existence, need to check if each field is in the considered
+		// record.
+		foreach (rec; this) 
+        {
+			foreach (re; fieldListRegex) 
+            {
+                auto matched = rec.names.filter!(fname => !matchFirst(fname, regex(re)).empty);
+                // foreach matched field name, delete it
+                foreach (fname; matched)
+                {
+                    // need to check first if field has not been already deleted from record
+                    // this could be the case (e.g.: FILL)
+                    if (fname in rec) rec.remove(fname);
+                }
+			}
+		}
+	}
 	/**
 	 * validate syntax: check if record length is matching file length
 	 * is not in the record, just loop
@@ -482,7 +508,7 @@ unittest {
 	assert(!l.isFieldInLayout("ID"));
 	assert(!l.isFieldInLayout("ID2"));
 
-	l.removeFromAllRecords(["NAME", "POPULATION"]);
+	l.removeFieldsByNameFromAllRecords(["NAME", "POPULATION"]);
 	assert(l.isFieldInLayout("DENSITY"));
 	assert(!l.isFieldInLayout("FOO"));
 }

@@ -51,7 +51,8 @@ class Layout : NamedItemsContainer!(Record, false, LayoutMeta)
 			override string toString();
 			void keepOnly(string[][string] recordMap);
 			void keepOnly(in string list, in string separator);
-			void removeFromAllRecords(string[] fieldList);
+			void removeFieldsByNameFromAllRecords(string[] fieldList);
+			void removeFieldsByRegexFromAllRecords(string[] fieldListRegex);
 			void validate();
 			bool isFieldInLayout(string fieldName);
 		}

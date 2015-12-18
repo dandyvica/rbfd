@@ -10,6 +10,7 @@ import std.process;
 import std.range;
 import std.typecons;
 import std.exception;
+import std.regex;
 import rbf.errormsg;
 immutable uint PRE_ALLOC_SIZE = 300;
 class NamedItemsContainer(T, bool allowDuplicates, Meta...)

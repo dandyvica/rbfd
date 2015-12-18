@@ -57,6 +57,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// start logging data
         //---------------------------------------------------------------------------------
+        log.log(LogLevel.INFO, MSG061, argv);
         log.log(LogLevel.INFO, MSG050, totalCPUs);
 
         //---------------------------------------------------------------------------------
@@ -65,18 +66,23 @@ int main(string[] argv)
         auto outputFormat = to!string(opts.outputFormat);
 
         //---------------------------------------------------------------------------------
-		// output format is an enum but should match the string in rbf.xml config file
+		// build output file name 
         //---------------------------------------------------------------------------------
-        opts.outputFileName = baseName(opts.inputFileName) ~ "." ~ settings.outputDir[outputFormat].outputExtension;
+        if (opts.givenOutputFileName != "")
+        {
+            opts.outputFileName = opts.givenOutputFileName;
+        }
+        else
+        {
+            opts.outputFileName = baseName(opts.inputFileName) ~ "." ~ settings.outputDir[outputFormat].outputExtension;
+        }
 
         //---------------------------------------------------------------------------------
-		// check output formats
+		// check output format is authorized
         //---------------------------------------------------------------------------------
 		if (outputFormat !in settings.outputDir) 
         {
-			throw new Exception(
-				"fatal: output format should be in the following list: %s".
-						format(settings.outputDir.names));
+			throw new Exception(MSG058.format(settings.outputDir.names));
 		}
 
         //---------------------------------------------------------------------------------
@@ -85,7 +91,7 @@ int main(string[] argv)
 		auto layout = new Layout(settings.layoutDir[opts.inputLayout].file);
 
         //---------------------------------------------------------------------------------
-		// layout syntax validation requested
+		// layout syntax validation requested from command line
         //---------------------------------------------------------------------------------
 		if (opts.bCheckLayout) 
         {
@@ -93,7 +99,7 @@ int main(string[] argv)
 		}
 
         //---------------------------------------------------------------------------------
-		// use alternate names
+		// use alternate names if requested
         //---------------------------------------------------------------------------------
 		if (opts.bUseAlternateNames) 
         {
@@ -108,7 +114,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// only keep specified fields
             //---------------------------------------------------------------------------------
-			layout.keepOnly(opts.filteredFields, "\n");
+			layout.keepOnly(opts.filteredFields, std.ascii.newline);
             log.log(LogLevel.INFO, MSG026, layout.size);
 		}
         // list of records/fields given from the command line
@@ -201,10 +207,14 @@ int main(string[] argv)
 		writer.outputFeature = settings.outputDir[outputFormat];
 		writer.prepare(layout);
 
+        //---------------------------------------------------------------------------------
 		// break records?
-		if (opts.bBreakRecord)
+        //---------------------------------------------------------------------------------
+		if (opts.bBreakRecord || opts.bPrintDuplicatedPattern)
 		{
             log.log(LogLevel.INFO, MSG039);
+
+            // try to identify those fields which are repeated
 			layout.each!(r => r.identifyRepeatedFields);
 			foreach (rec; layout) 
             {
@@ -212,8 +222,21 @@ int main(string[] argv)
                 {
                     rec.meta.repeatingPattern.each!(rp => rec.findRepeatedFields(rp));
                     rec.meta.repeatingPattern.each!(rp => log.log(LogLevel.INFO, MSG040, rec.name, rp));
+
+                    // we just want to print out repeated fields
+                    if (opts.bPrintDuplicatedPattern)
+                    {
+                        foreach (sr; rec.meta.subRecord)
+                        {
+                            writefln("%s: %s", rec.name, join(sr.fieldAlternateNames, ","));
+                        }
+                    }
+                    writeln;
                 }
 			}
+
+            // in case of just print the duplicated fields, exit
+            if (opts.bPrintDuplicatedPattern) return(3);
 		}
 
         //---------------------------------------------------------------------------------
@@ -300,7 +323,9 @@ int main(string[] argv)
 				stderr.writefln(MSG013, opts.outputFileName, getSize(opts.outputFileName));
         }
 
+        //---------------------------------------------------------------------------------
         // if we wasked for checking formats, print out number of bad checks
+        //---------------------------------------------------------------------------------
         if (opts.bCheckPattern)
         {
             stderr.writefln(MSG053, reader.nbBadCheck);
@@ -320,29 +345,10 @@ int main(string[] argv)
 		return 1;
 	}
 
+    //---------------------------------------------------------------------------------
 	// return code to OS
+    //---------------------------------------------------------------------------------
 	return 0;
 
 }
 
-
-
-
-
-// test
-void spawnedFunction()
-{
-    int result=0;
-
-    while (result != 1)
-    {
-        receive(
-                (Field f) { writefln("Received field <%s>", f.name); },
-                (string recName) { writefln("Received record <%s>", recName); },
-                (int i) { 
-                    writefln("Received i=%d, ending thread", i); 
-                    result = i;
-                },
-               );
-    }
-}

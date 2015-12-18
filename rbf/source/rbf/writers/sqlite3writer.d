@@ -264,7 +264,7 @@ public:
 	 */
 	this(in string databaseName)
 	{
-        // call root class but don't create the file
+        // call root class (overwrite the file)
 		super(databaseName);
         log.log(LogLevel.INFO, MSG052, fromStringz(sqlite3_libversion()));
 

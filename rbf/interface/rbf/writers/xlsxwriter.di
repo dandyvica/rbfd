@@ -11,6 +11,7 @@ import std.zip;
 import std.conv;
 import std.xml;
 import rbf.errormsg;
+import rbf.log;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
@@ -28,6 +29,7 @@ class XLSXWriter : Writer
 		Rels _relsFile;
 		WorkbookRels _workbookRelsFile;
 		void _createZip();
+		void _buildZip();
 		void _writeRecordToWorksheet(Record record, Worksheet worksheetFile);
 		public 
 		{

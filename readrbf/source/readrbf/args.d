@@ -37,6 +37,7 @@ public:
 	string inputLayout;					                /// input file layout
 	OutputFormat outputFormat = OutputFormat.txt;		/// output format HTML, TXT, ...
 	string outputFileName;		                		/// name of the final converted file
+	string givenOutputFileName;		                    /// name of the final converted file when given in the command line
 
 	string fieldFilterFile;			                	/// if any, name of the field filter file
 	string fieldFilter;					                /// if any, list of records/fields to filter out
@@ -57,6 +58,9 @@ public:
 	ulong samples;					                    /// limit to n first lines (n == samples)
     bool bUseAlternateNames;                            /// in case of field duplication, append field name with index
 
+    bool bAppendMode;                                   /// overwrite the output file
+    bool bPrintDuplicatedPattern;                       /// write out duplicated patterns for each record
+
 
 
 
@@ -71,7 +75,8 @@ public:
 		// print-out help
 		if (argv.length == 1)
 		{
-            _interactiveMode();
+            //_interactiveMode();
+            _printHelp();
 		}
         else if (argv.length == 2 && argv[1] == "-h")
         {
@@ -79,29 +84,33 @@ public:
         }
         else
         {
-            try {
+            try 
+            {
                 // get command line arguments
                 auto cmd = getopt(argv,
                     std.getopt.config.caseSensitive,
-                    std.getopt.config.required,
-                    "i" , &inputFileName,
-                    std.getopt.config.required,
-                    "l" , &inputLayout     ,
-                    "o" , &outputFormat    ,
-                    "O" , &stdOutput       ,
-                    "f" , &fieldFilterFile ,
-                    "ff", &fieldFilter     ,
-                    "fl", &lineFilter      ,
-                    "check", &bCheckPattern,
-                    "r" , &recordFilterFile,
-                    "fr", &recordFilter    ,
-                    "v" , &bVerbose        ,
-                    "s" , &samples         ,
-                    "b" , &bJustRead       ,
-                    "p" , &bProgressBar    ,
-                    "c" , &bCheckLayout    ,
-                    "br", &bBreakRecord    ,
-                    "ua", &bUseAlternateNames
+                    std.getopt.config.required     ,
+                    "i"                            , &inputFileName          ,
+                    std.getopt.config.required     ,
+                    "l"                            , &inputLayout            ,
+                    "o"                            , &outputFormat           ,
+                    "O"                            , &stdOutput              ,
+                    "of"                           , &givenOutputFileName    ,
+                    "f"                            , &fieldFilterFile        ,
+                    "ff"                           , &fieldFilter            ,
+                    "fl"                           , &lineFilter             ,
+                    "check"                        , &bCheckPattern          ,
+                    "r"                            , &recordFilterFile       ,
+                    "fr"                           , &recordFilter           ,
+                    "v"                            , &bVerbose               ,
+                    "s"                            , &samples                ,
+                    "b"                            , &bJustRead              ,
+                    "p"                            , &bProgressBar           ,
+                    "c"                            , &bCheckLayout           ,
+                    "br"                           , &bBreakRecord           ,
+                    "dup"                          , &bPrintDuplicatedPattern,
+                    "append"                       , &bAppendMode            , // not yet impletmented
+                    "ua"                           , &bUseAlternateNames
                 );
             }
             catch (ConvException e) 
@@ -109,7 +118,8 @@ public:
                 stderr.writefln(MSG043, possibleValues);
                 core.stdc.stdlib.exit(2);
             }
-            catch (Exception e) {
+            catch (Exception e) 
+            {
                 _printHelp(e.msg);
             }
         }
