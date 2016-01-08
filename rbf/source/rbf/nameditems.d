@@ -17,7 +17,12 @@ import rbf.errormsg;
 immutable uint PRE_ALLOC_SIZE = 300;
 
 /***********************************
- * Generic container for field-like objects
+ * Generic container for field-like objects. Each element of the container must have a name
+ * and is found using its name
+ *
+ * T = main type of the payload
+ * allowDuplicates = if true, T objects can have the same name
+ * Meta = optional structure for additional metadata
  */
 class NamedItemsContainer(T, bool allowDuplicates, Meta...) {
 private:
@@ -46,7 +51,7 @@ protected:
 	alias TLIST   = T[];
 	alias TMAP	  = T[][TNAME];
 
-	// useful type alias whether the container accepts duplcates or not
+	// useful type alias whether the container accepts duplicates or not
 	static if (allowDuplicates) 
     {
 		alias TRETURN = TLIST;
@@ -64,6 +69,7 @@ protected:
 								/// need to keep track of all instances
 
 public:
+    // optional data
     static if (Meta.length > 0) 
     {
         Meta[0] meta;
@@ -98,12 +104,14 @@ public:
 	/**	Constructor taking an optional parameter
 
 	Params:
-	preAllocSize = preallocation of the inner array
+	    name = optional name of the container
 
 	*/
 	this(string name = "") 
     {
 		_containerName = name;
+
+        // it's useful to preallocate list to a significant value
 		_list.reserve(PRE_ALLOC_SIZE);
 	}
 

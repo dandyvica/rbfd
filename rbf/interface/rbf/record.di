@@ -43,7 +43,7 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 		}
 		@property string[] fieldDescriptions();
 		@property TVALUE concat(string name);
-		string findByIndex(in ulong i);
+		string findNameByIndex(in ulong i);
 		void recalculateIndex();
 		void buildAlternateNames();
 		void identifyRepeatedFields();

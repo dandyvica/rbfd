@@ -22,7 +22,7 @@ import rbf.record;
 import rbf.layout;
 
 // definition of useful aliases
-alias STRING_MAPPER = void function(Record);           /// alias to a delegate used to change field values
+//alias STRING_MAPPER = void function(Record);           /// alias to a delegate used to change field values
 
 /***********************************
  * record-base file reader used to loop on each record
@@ -38,7 +38,7 @@ private:
 	Regex!char _ignoreRegex;                /// regex ignore pattern: don't read those lines matching this regex
 	                                        /// regex include pattern: read only those lines matching this regex
 	Regex!char _lineRegex;                  /// but previous one comes first
-	STRING_MAPPER _mapper;                  /// mapper function which can be defined to transform a record
+	//STRING_MAPPER _mapper;                  /// mapper function which can be defined to transform a record
 	ulong _nbLinesRead;                     /// size read
 	ulong _inputFileSize;                   /// input file size
     ulong _guessedRecordNumber;             /// guessed number of records (in case of a lauyout having reclength!=0)
@@ -58,19 +58,21 @@ public:
 	 */
 	this(string rbFile, Layout layout, MapperFunc recIndentifier = null)
 	{
-		// check arguments
+		// record-based file must exist
 		enforce(exists(rbFile), MSG051.format(rbFile));
 
 		// save file name and opens file for reading
 		_rbFile = rbFile;
 
-		// build all records but defining a new format
+		// save layout container object
 		_layout = layout;
 
-		// save record identifier lambda
+		// save record hash identifier lambda
 		_recordIdentifier = (recIndentifier) ? recIndentifier : layout.meta.mapper;
 
 		// get file size and try to calculate number of records
+        // this is used to print out progression of reading. But it is only meaningful when
+        // each line of the input file has the same length
 		_inputFileSize = getSize(rbFile);
         if (layout.meta.length != 0) _guessedRecordNumber = _inputFileSize / (layout.meta.length+1);
 
@@ -95,7 +97,7 @@ public:
 	/**
 	 * register a callback function which will be called for each fetched record
 	 */
-	@property void recordTransformer(STRING_MAPPER func) { _mapper = func; }
+	//@property void recordTransformer(STRING_MAPPER func) { _mapper = func; }
 
 	@property Layout layout() { return _layout; }
 
@@ -113,11 +115,10 @@ public:
         // current record found
         Record rec;
 
-
-		// get rid of \n
+		// convert to string
 		auto line = lineReadFromFile.idup;
 
-		// if line is matching the ignore pattern, just loop
+		// if line is matching the ignore pattern, just loop to ignore this line
 		if (layout.meta.ignoreLinePattern != "" && matchFirst(line, _ignoreRegex)) 
         {
 			return null;
@@ -129,7 +130,8 @@ public:
 			return null;
 		}
 
-		// try to fetch corresponding record name for line we've read
+		// try to fetch the corresponding record name for line we've read
+        // using the hash matching method
 		auto recordName = _recordIdentifier(line);
 
 		// record not found ? So loop
@@ -143,19 +145,19 @@ public:
             }
         }
 
-        // save our record
+        // save our record because our hash function has sent back something
         rec = _layout[recordName];
 
-        // if this record is starts a new section, keep its name
+        // if this record starts a new section, keep its name
         if (rec.meta.section) 
             _sectionName = recordName;
         else
             _sectionName = "";
 
-		// do we keep this record?
+		// do we keep this record? sometimes, we skip records when setting record or field filters
 		if (rec.meta.skip) return null;
 
-        // keep track of original line number
+        // keep track of the original line number: useful for pointing out errors in the rb-file
         rec.meta.sourceLineNumber = _nbLinesRead;
 
 		// now we can safely save our values
@@ -163,11 +165,12 @@ public:
 		rec.value = line;
 
 		// is a mapper registered? so we need to call it
-		if (_mapper) _mapper(rec);
+		//if (_mapper) _mapper(rec);
 
         // do we need to check field patterns?
         if (_checkPattern)
         {
+            // so for each field, we verify if field value is matching the field pattern
             foreach (f; rec)
             {
                 if (f.value != "" && !f.matchPattern) 
@@ -187,29 +190,39 @@ public:
     struct Range 
     {
         private:
-            File _fh;
-            ulong _nbChars = ulong.max;
-            char[] _buffer;
-            Reader _outerThis;
-            Record rec;
+            File _fh;                       /// file handle on opened file
+            size_t _nbChars = size_t.max;   /// number of chars reads for each line
+            char[] _buffer;                 /// buffer read from filee
+            Reader _outerThis;              /// pointer on enclosing this
+            Record rec;                     /// read record object
 
         public:
             // this constructor will be called from helper function []
             // need to get access to the outer class this
             this(string fileName, Reader outer) 
             {
+                // open file in read only mode
                 _fh = File(fileName);
                 //_fh.setvbuf(65536);
+
+                // save enclosing this
                 _outerThis = outer;
 
+                // read each line until we find a record
                 do 
                 {
+                    // read one line from file
                     _nbChars = _fh.readln(_buffer);
+
+                    // no char read? This means we've reached the end of file
                     if (_nbChars == 0) return;
 
+                    // now, we've read one additional line from file
                     _outerThis._nbLinesRead++;
 
+                    // identify record from line
                     rec = _outerThis._getRecordFromLine(_buffer);
+
                 } while (rec is null);
 
             }
@@ -221,6 +234,7 @@ public:
             void popFront() 
             {
 
+                // more or less tje same logic than from the ctor
                 do 
                 {
                     // read one line from file
@@ -231,8 +245,9 @@ public:
 
                     _outerThis._nbLinesRead++;
 
-                    // get rid of \n
-                    _buffer = _buffer.stripRight('\n');
+                    // get rid of EOL
+                    //_buffer = _buffer.stripRight('\n');
+                    _buffer = _buffer.chomp;
 
                     // try to get a record from that line
                     // call outer class this
@@ -244,7 +259,8 @@ public:
 
     }
 
-	/// Return a range on the container
+	/// Return a range on the container. This is a helper function mimiced on
+    /// container Dlang libs
 	Range opSlice() 
     {
 		return Range(_rbFile, this);

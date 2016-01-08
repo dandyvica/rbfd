@@ -14,10 +14,10 @@ import rbf.layout;
 import rbf.writers.writer;
 
 /*********************************************
- * writer class for writing to various ouput
- * formats
+ * CSV class
  */
-class CSVWriter : Writer {
+class CSVWriter : Writer 
+{
 
 	this(in string outputFileName)
 	{
@@ -29,7 +29,8 @@ class CSVWriter : Writer {
 
 	override void write(Record rec)
 	{
-		_fh.write(join(rec.fieldValues, outputFeature.fsep), "\n");
+		//_fh.write(join(rec.fieldValues, outputFeature.fsep), "\n");
+		_fh.writeln(join(rec.fieldValues, outputFeature.fsep));
 	}
 
 }

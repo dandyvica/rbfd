@@ -41,10 +41,11 @@ struct LayoutMeta
 	mixin LayoutCore;							/// basic data
 	ulong length;							    /// optional layout length
 	string layoutVersion;					    /// layout version found in XML file
-	string ignoreLinePattern;                   /// in some case, we need to get rid of some lines
-	string[] skipField;						    /// field names to systematically skip
+	string ignoreLinePattern;                   /// in some case, we need to get rid of some lines. This pattern
+                                                /// gives the regex for this
+	string[] skipField;						    /// list of field names (comma separated) to systematically skip when reading
 	MapperFunc mapper;						    /// function which identifies a record name from a string
-	string mapperDefinition;			        /// as defined in the XML file
+	string mapperDefinition;			        /// mapper as declared in the XML file
 }
 
 /***********************************
@@ -55,6 +56,8 @@ class Layout : NamedItemsContainer!(Record, false, LayoutMeta)
 
 private:
 
+    // used to create the hash function from its definition. It maps a line read from the input rb-file
+    // to a string value which could be viewed as a hash value, found in the layout definition file
 	void _extractMapper(string mapper) 
     {
 		// regexes to catch mapper data
@@ -73,7 +76,7 @@ private:
 				meta.mapper = (TVALUE x) => m.captures[2];
 				break;
 
-			// 1-order function
+			// 1-order function: just a slice of the input string
 			case 1:
 				auto m1 = matchAll(m.captures[2], r1);
 				meta.mapper = (TVALUE x) => x[
@@ -81,7 +84,7 @@ private:
 				];
 				break;
 
-			// 2-order function
+			// 2-order function: a concatenation of 2 slices
 			case 2:
 				auto m2 = matchAll(m.captures[2], r2);
 				meta.mapper = (TVALUE x) =>
@@ -96,36 +99,38 @@ private:
 
 public:
 
+    // as in layout file the fieldtypes are declared first, we need to keep those when reading
+    // the layout file 
 	FieldType[string] ftype;
 
 	/**
 	 * create all records based on the XML file structure
 	 *
 	 * Params:
-	 *	xmlFile = name of the record/field definition list
+	 *	xmlFile = name of the record/field definition lista a.k.a layout file
 	 */
 	this(string xmlFile)
 	{
 		// check for XML file existence
 		enforce(exists(xmlFile), MSG037.format(xmlFile));
 
-		// save meta
+		// save layout metadata
 		meta.file = xmlFile;
 		meta.name = baseName(xmlFile);
 
 		// open XML file and load it into a string
 		string xmlData = cast(string)std.file.read(xmlFile);
 
-		// call constructor from string
+		// call container constructor from string
 		super(baseName(xmlFile));
 
-		/// to save the record name when we find a <record> tag
+		/// used to save the record name when we find a <record> tag
 		string recName;
 
 		// create a new parser
 		auto xml = new DocumentParser(xmlData);
 
-		// read <meta> definitions and keep types
+		// read layout <meta> definitions and keep types
 		xml.onStartTag["meta"] = (ElementParser xml)
 		{
             // save metadata of the structure
@@ -142,16 +147,18 @@ public:
                 meta.skipField = array(fields.split(',').map!(e => e.strip));
             }
 
-            // build mapper if any
+            // build mapper which must exist othetwise we can't read a rb-file
             if ("mapper" !in xml.tag.attr || xml.tag.attr["mapper"] == "") 
             {
                 throw new Exception(MSG038);
             }
+
+            // now we can build the mapper hash function
             _extractMapper(xml.tag.attr["mapper"]);
             meta.mapperDefinition = xml.tag.attr["mapper"];
         };
 
-		// read <fieldtype> definitions and keep types
+		// read <fieldtype> definitions and keep types in the aa
 		xml.onStartTag["fieldtype"] = (ElementParser xml)
 		{
 			// save field type base on its name
@@ -162,14 +169,14 @@ public:
 				// store new type
 				ftype[ftName] = new FieldType(attr["name"], attr["type"]);
 
-				// set extra features in any
+				// set extra features in any: pattern or format
                 if ("pattern" in attr) ftype[ftName].meta.pattern  = attr["pattern"];
                 if ("format" in attr)  ftype[ftName].meta.format   = attr["format"];
 
                 // preconv is set to overpunch if any
                 if (attr.get("preconv","") == "overpunch") ftype[ftName].meta.preConv = &overpunch;
 
-                // log
+                // log creation of field types
                 with(ftype[ftName].meta) 
                 {
                     log.log(LogLevel.INFO, MSG056, name, stringType, pattern, format);
@@ -192,7 +199,6 @@ public:
                 recName = buildFieldNameWhenRoot(recName, xml.tag.attr["root"]);
             }
 
-
 			// create a Record object and store it into our record aa
             auto record = new Record(recName, xml.tag.attr["description"]);
 
@@ -200,7 +206,7 @@ public:
             // XML attribute for this purpose
             record.meta.section = to!bool(xml.tag.attr.get("section", "false"));
 
-            // add new record to layout
+            // add new record to layout container
             this ~= record;
             
 		};
@@ -211,13 +217,15 @@ public:
 			// fetch field type
 			auto type = xml.tag.attr["type"];
 
-			// check whether type is defined
+			// the field type must be defined otherwise it's not possible to continue
 			if (type !in ftype) 
             {
-				throw new Exception("error: type %s is not defined!!".format(type));
+				throw new Exception(MSG062.format(type, xml.tag.attr["name"]));
 			}
 
-			// otherwise just create with fetched type
+			// now create field object with <field> attributes 
+            // now need to check for attribute existence because the layout XML file
+            // should have been validated against XSD using a validator
 			auto field = new Field(
 					xml.tag.attr["name"],
 					xml.tag.attr["description"],
@@ -225,17 +233,17 @@ public:
 					to!size_t(xml.tag.attr["length"])
 			);
 
-            // if a specific pattern defined for this field?
+            // if a specific pattern defined for this field, override the one of the field type
             if ("pattern" in xml.tag.attr) field.pattern = xml.tag.attr["pattern"];
 
-            // if a specific format defined for this field?
+            // if a specific format defined for this field, override the one of the field type
             if ("format" in xml.tag.attr) field.fieldFormat = xml.tag.attr["format"];
 
-			// add field to our record
+			// finally, add field to our record
 			this[recName] ~= field;
 		};
 
-		// parse XML here
+		// real XML parsing occurs here
 		xml.parse();
 
 		// if any, delete skipped fields from layout
@@ -244,7 +252,7 @@ public:
 			this.removeFieldsByRegexFromAllRecords(meta.skipField);
 		}
 
-        // log
+        // log creation of layout
         log.log(LogLevel.INFO, MSG023, xmlFile, this.size);
 	}
 	///
@@ -332,6 +340,8 @@ public:
 	 * keep only fields specified for each record:field in the string
 	 *
 	 * Params:
+     * list = list of separated record:field names
+     * separator = string used to split field names
 	 *
 	 */
 	void keepOnly(in string list, in string separator) 
@@ -440,7 +450,7 @@ public:
 	 * for each record, remove each field in the list when name is matching the regex
 	 *
 	 * Params:
-	 *	fieldList = list of field name regexes to get rid of in each record
+	 *	fieldListRegex = list of field name regexes to get rid of in each record
 	 */
 	void removeFieldsByRegexFromAllRecords(string[] fieldListRegex) 
     {
@@ -482,7 +492,7 @@ public:
 	}
 
 	/**
-	 * return true if field is in any record of layout
+	 * return true if field is in any record of the layout file
 	 */
 	bool isFieldInLayout(string fieldName)
     {

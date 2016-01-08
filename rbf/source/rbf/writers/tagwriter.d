@@ -14,10 +14,10 @@ import rbf.layout;
 import rbf.writers.writer;
 
 /*********************************************
- * writer class for writing tagged records
- * (one record per line)
+ * writer class for writing tagged records (one record per line)
  */
-class TAGWriter : Writer {
+class TAGWriter : Writer 
+{
 
 	this(in string outputFileName)
 	{
@@ -27,10 +27,12 @@ class TAGWriter : Writer {
 	override void prepare(Layout layout) {}
     override void build(string outputFileName) {}
 
+    // write tags for each record
 	override void write(Record rec)
 	{
 		_fh.writef("%s:", rec.name);
-		foreach (field; rec) {
+		foreach (field; rec) 
+        {
 			_fh.writef(`%s="%s" `,field.name, field.value);
 		}
 		_fh.writeln();

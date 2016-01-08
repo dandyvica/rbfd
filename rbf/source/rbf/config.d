@@ -87,7 +87,7 @@ private:
 
 public:
 
-    string logFileName;
+    string logFileName;             /// where we'll write all log statements
 
 	/**
 	 * read the XML configuraimport rbf.xml file configuration file
@@ -99,44 +99,46 @@ public:
         _layoutDirectory = new LayoutDir("layouts");
         _outputDirectory = new OutputDir("outputs");
 
-        // settings file
+        // settings file depending on whether we found the file in the current directory,
+        // given by an environment variable, or to a fixed location based on the OS type
         string settingsFile;
 
-        // if file name is passed, take it or otherwise try possible locations
+        // if file name is passed as an argument to the ctor, take it or otherwise try possible locations
         settingsFile = (xmlConfigFile != "") ? xmlConfigFile : _getConfigFileName();
 
-        // get settings path
+        // get settings file path
         auto settingsFilePath = dirName(settingsFile) ~ "/";
 
         // ensure file exists
         std.exception.enforce(exists(settingsFile), MSG004.format(settingsFile));
 
-        // open XML file and load it into a string
+        // open XML settings file and load it into a string
         string s = cast(string)std.file.read(settingsFile);
 
-        // create a new parser
+        // create a new XML parser
         auto xml = new DocumentParser(s);
 
-        // read <global> and <log> definition tag
+        // read <log> definition tag to extract log file name
         xml.onStartTag["log"] = (ElementParser xml)
         {
-            // save global config and create log handler
+            // save global config and create the log handler
             this.logFileName = xml.tag.attr.get("path", "./rbf.log");
             log = Log(this.logFileName);
         };
 
-        // read <layout> definition tag
+        // read <layout> definition tag to build the container of all layouts
         xml.onStartTag["layout"] = (ElementParser xml)
         {
             // save layout metadata
             this._layoutDirectory ~= SettingCore(
                     xml.tag.attr["name"],
                     xml.tag.attr["description"],
-                    settingsFilePath ~ xml.tag.attr["file"],
+                    settingsFilePath ~ xml.tag.attr["file"],        /// this is where the layout definition file is found
                     );
         };
 
-        // read <output> definition tag
+        // read <output> definition tag to build the container of all outputs
+        // what we call output is a type of external formatted data and is generally an export format
         xml.onStartTag["output"] = (ElementParser xml)
         {
             // manage attributes
@@ -158,53 +160,56 @@ public:
                     );
         };
 
-        // real parsing
+        // real parsing of the XML tags
         xml.parse();
 
-        // log info on configuration file
+        // log info in configuration file
         log.log(LogLevel.INFO, MSG027, settingsFile);
 
-  }
+    }
 
 	@property LayoutDir layoutDir() { return _layoutDirectory; }
 	@property OutputDir outputDir() { return _outputDirectory; }
 
 private:
-  string _getConfigFileName() 
-  {
+        
+    // return the name of the configuration file with different methods
+    string _getConfigFileName() 
+    {
 
-      // settings file
-      string settingsFile;
+        // settings file
+        string settingsFile;
 
-      // test if env variable is set
-      auto rbfconf = environment.get(xmlSettingsFileEnvVar, "");
-      if (rbfconf != "") return rbfconf;
+        // test if env variable is set and if any, it's poiting on the settings file
+        // location
+        auto rbfconf = environment.get(xmlSettingsFileEnvVar, "");
+        if (rbfconf != "") return rbfconf;
 
-      // otherwise, first possible location is current directory
-      auto suspectedSettingsFile = buildNormalizedPath(getcwd, xmlSettingsFile);
-      if (exists(suspectedSettingsFile)) 
-      {
-          return suspectedSettingsFile;
-      }
-      else 
-      {
-          // XML settings file location is OS-dependent
-          string _rbfhome;
-          version(linux) 
-          {
-              _rbfhome = environment["HOME"];
-              settingsFile = _rbfhome ~ "/" ~ xmlSettings;
-          }
-          version(Windows) 
-          {
-              _rbfhome = environment["APPDATA"];
-              settingsFile = _rbfhome ~ xmlSettings;
-          }
-      }
+        // otherwise, first possible location is current directory
+        auto suspectedSettingsFile = buildNormalizedPath(getcwd, xmlSettingsFile);
+        if (exists(suspectedSettingsFile)) 
+        {
+            return suspectedSettingsFile;
+        }
+        else 
+        {
+            // last possible location is OS-dependent
+            string _rbfhome;
+            version(linux) 
+            {
+                _rbfhome = environment["HOME"];
+                settingsFile = _rbfhome ~ "/" ~ xmlSettings;
+            }
+            version(Windows) 
+            {
+                _rbfhome = environment["APPDATA"];
+                settingsFile = _rbfhome ~ xmlSettings;
+            }
+        }
 
-      return settingsFile;
+        return settingsFile;
 
-  }
+    }
 
 }
 ///

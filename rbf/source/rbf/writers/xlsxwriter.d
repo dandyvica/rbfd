@@ -37,6 +37,7 @@ package:
      * Creation of a zip file (xlsx = zip file) from all created files
      *
 	 */
+    /*
 	void _createZip() 
     {
 		// ch dir to XLSX directory
@@ -54,7 +55,9 @@ package:
 		chdir("..");
 		rmdirRecurse(_xlsxDir);
 	}
+    */
 
+    // create a zip file from a list of files
     void _buildZip()
     {
         // add an archive into zip

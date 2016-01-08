@@ -25,12 +25,12 @@ import rbf.config;
 import args;
 
 // constants
-immutable chunkSize = 1000;
+immutable chunkSize = 1000;         /// print out message every chunkSize record
 
 int main(string[] argv)
 {
 	// number of records read
-	auto nbReadRecords = 0;
+	auto nbReadRecords    = 0;
 	auto nbWrittenRecords = 0;
 	auto nbMatchedRecords = 0;
 
@@ -180,12 +180,12 @@ int main(string[] argv)
         }
 
         //---------------------------------------------------------------------------------
-        // re-index each field index
+        // re-index each field
         //---------------------------------------------------------------------------------
         layout.each!(r => r.recalculateIndex);
 
         //---------------------------------------------------------------------------------
-        // build alternate names
+        // build alternate field names
         //---------------------------------------------------------------------------------
         layout.each!(r => r.buildAlternateNames);
 
@@ -198,7 +198,7 @@ int main(string[] argv)
 				opts.outputFileName
 		);
 
-		auto output = (opts.stdOutput) ? "" :outputFileName;
+		auto output = (opts.stdOutput) ? "" : outputFileName;
 		writer = writerFactory(output, opts.outputFormat);
 
         //---------------------------------------------------------------------------------
@@ -263,10 +263,10 @@ int main(string[] argv)
             if (opts.bProgressBar && nbReadRecords % chunkSize == 0)
             {
                 if (reader.nbRecords != 0)
-                    stderr.writef("info: %d/%d records read so far (%.0f %%), %d matching record filter condition\r",
-                            nbReadRecords, reader.nbRecords, to!float(nbReadRecords)/reader.nbRecords*100, nbMatchedRecords);
+                    stderr.writef(MSG066, nbReadRecords, reader.nbRecords, 
+                            to!float(nbReadRecords)/reader.nbRecords*100, nbMatchedRecords);
                 else
-                    stderr.writef("%d lines read so far\r",nbReadRecords);
+                    stderr.writef(MSG065, nbReadRecords);
             }
 
             //---------------------------------------------------------------------------------
@@ -346,7 +346,7 @@ int main(string[] argv)
 	}
 
     //---------------------------------------------------------------------------------
-	// return code to OS
+	// return successful code to OS
     //---------------------------------------------------------------------------------
 	return 0;
 

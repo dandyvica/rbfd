@@ -27,12 +27,13 @@ pragma(msg, "========> TVALUE = ", TVALUE.stringof);
  */
 struct ContextualInfo 
 {
-	size_t index;					/// index of the field within its parent record
-	size_t offset;					/// offset of the field within its parent record from the first field
-	size_t occurence;				/// index of the field within all the fields having the same name
-	size_t lowerBound;				/// when adding a field to a record, give
-	size_t upperBound;				/// absolute position within the line read
-	typeof(Field.name) alternateName;/// when the field appers more than once, this builds unique field name by adding its index
+	size_t index;		     			/// index of the field within its parent record
+	size_t offset;			    		/// offset of the field within its parent record from the first field
+	size_t occurence;			    	/// index of the field within all the fields having the same name
+	size_t lowerBound;				    /// when adding a field to a record, give
+	size_t upperBound;		    		/// absolute position within the line read
+	typeof(Field.name) alternateName;   /// when the field appers more than once, this builds unique 
+                                        ///field name by adding its index
 }
 
 /******************************************************************************************************
@@ -42,17 +43,17 @@ class Field : Element!(string, size_t, ContextualInfo)
 {
 private:
 
-	FieldType _fieldType; 		      /// type of the field as defined in the XML layout
+	FieldType _fieldType; 		      /// type of the field as defined in the XML file layout
 
 	TVALUE _rawValue;                 /// pristine value
-	TVALUE _strValue;		          /// store the string value of the field
+	TVALUE _strValue;		          /// store the string value of the field but stripped
 
 	byte _valueSign = 1;			  /// sign of the scalar value if any
 
-	Regex!char _fieldPattern;		  /// override field type pattern by this
+	Regex!char _fieldPattern;		  /// override field type pattern by this pattern
 	string _charPattern;			  /// pattern as a string
 
-    string _format;                   /// field format if any
+    string _format;                   /// field format if specified
 
 public:
 	/**
@@ -66,24 +67,24 @@ public:
 	 *
 	 */
 	this(in string name, in string description, FieldType type, in size_t length)
-	// verify pre-conditions
 	{
 
 		// just copy what is passed to constructor
 		super(name, description, length);
+
+        // by default, the alternate name is the field name. It might change if the same field name
+        // is added to a record, and therefore depending on the context
         context.alternateName = name;
 
 		// save field type
 		_fieldType = type;
 
 		// set pattern inherited from its type
-        /*
-		_charPattern  = type.meta.pattern;
-		_fieldPattern = regex(_charPattern);
-        */
+        // pattern is here not a variable but a write property. Using a property is useful because
+        // we might override the pattern set from the field type to that one read when set at field level
         pattern = type.meta.pattern;
 
-        // save format if any
+        // save format if set in field type: this format is the printf-like format string specifier
         _format = type.meta.format;
 	}
 	///
@@ -93,19 +94,23 @@ public:
 
 	/**
  	 * create a new field object from a CSV string
+     * this is another ctor which might be useful
 	 *
 	 * Params:
 	 * 	csvdata = string containing field data in CSV format
+     *  delimiter = string used to split first argument
      *
      * Example:
      * auto field1 = new Field("FIELD1;Field description;N;decimal;15");
 	 *
 	 */
-	this(in string csvdata)
+	this(in string csvdata, string delimiter=";")
 	{
-		auto f = csvdata.split(";");
+        // split string into individual atoms
+		auto f = csvdata.split(delimiter);
 		enforce(f.length == 5, MSG010.format(f.length, 5));
-		// create object
+
+		// create object calling the original ctor
 		this(f[0], f[1], new FieldType(f[2],f[3]), to!size_t(f[4]));
 	}
 	///
@@ -128,7 +133,7 @@ public:
 	@property void fieldFormat(in string s) { _format = s; }
 	@property string fieldFormat() { return _format; };
 
-	/// read/write property for field value
+	/// read/write property for field string value
 	@property auto value() { return _strValue; }
 	///
 	unittest 
@@ -156,11 +161,15 @@ public:
 		assert(field1.value!int == 50);
 	}
 
+    // set the value of a field
 	@property void value(TVALUE s)
 	{
+        // raw value is exactly copied asis
 		_rawValue = s;
 
 		// convert if field type requests it
+        // sometimes, the value read from field but must be first converted. This conversion
+        // is declared in the <fieldtype> tag of the layout file
 		if (type.meta.preConv) 
         {
 			_strValue = type.meta.preConv(s.strip);

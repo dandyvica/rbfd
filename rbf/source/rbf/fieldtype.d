@@ -23,6 +23,10 @@ import rbf.errormsg;
 import rbf.log;
 import rbf.field: TVALUE;
 
+
+// this converter method is necessary because of the overpunch legacy way
+// of conveying ascii data in some IATA formats like HOT
+// it just converts some ASCII chars to others
 static TVALUE overpunch(TVALUE s) 
 {
 	static string posTable = makeTrans("{ABCDEFGHI}", "01234567890");
@@ -49,8 +53,7 @@ alias FmtFunc = string delegate(const char[] value, const size_t length);
 alias Conv = TVALUE function(TVALUE);
 
 /***********************************
- * all possible field types for a field
-* in a record-based file
+ * all possible field types for a field in a record-based file
  */
 enum AtomicType {
 	decimal,
@@ -65,11 +68,11 @@ enum AtomicType {
  */
 struct FieldTypeMeta {
 	string name;                    /// name of the field type to refer to
-	AtomicType type;                /// field type converted to enum
-	string stringType;              /// field type as read in the XML file
+	AtomicType type;                /// field type converted to enum type
+	string stringType;              /// field type as read in the XML layout file
 	string pattern;                 /// field pattern as a regex to fit to
-	string format;                  /// when converted back to a string value, prtinf()-like format string
-	Conv preConv;				    /// conversion occruing before setting a field value
+	string format;                  /// when converted back to a string value, printf()-like format string
+	Conv preConv;				    /// conversion method called before setting a field value
 	CmpFunc filterTestCallback; 	/// method to test whether a value matches a filter
     FmtFunc formatterCallback;      /// function used to convert a value
 }
@@ -88,11 +91,12 @@ public:
  	 * creates a new type from a string type
 	 *
 	 * Params:
-	 *  type = whether the field holds numerical, alphanumerical... data
+	 *  nickname = name to which the <fieldtype> tag refers (it's name attribute)
+     *  deckaredType = name of the real field type and is matched to enum
 	 */
 	this(string nickName, string declaredType)
 	{
-		// set type according to what is passed
+		// set type according to what is passed as arguments
 		with(meta) 
         {
 			stringType = declaredType;
@@ -106,6 +110,7 @@ public:
 					filterTestCallback = &matchFilter!double;
                     formatterCallback  = &formatter!double;
 
+                    // default pattern and format string for this type
                     meta.pattern = `[\d.]+`;
                     meta.format  = "%0*.*g";
 					break;
@@ -113,6 +118,7 @@ public:
 					filterTestCallback = &matchFilter!ulong;
                     formatterCallback  = &formatter!ulong;
 
+                    // default pattern and format string for this type
                     meta.pattern = `\d+`;
                     meta.format  = "%0*.*d";
 					break;
@@ -120,6 +126,7 @@ public:
 					filterTestCallback = &matchFilter!string;
                     formatterCallback  = &formatter!string;
 
+                    // default pattern and format string for this type
                     meta.pattern = `\d+`;
                     meta.format  = "%-*.*s";
 					break;
@@ -127,6 +134,7 @@ public:
 					filterTestCallback = &matchFilter!string;
                     formatterCallback  = &formatter!string;
 
+                    // default pattern and format string for this type
                     meta.pattern = `[\w/\*\.,\-]+`;
                     meta.format  = "%-*.*s";
 					break;
@@ -141,8 +149,7 @@ public:
 		return meta.type == AtomicType.decimal || meta.type == AtomicType.integer;
 	}
 
-	/// test a record filter. Basically it tests whether a value is matching
-    /// a result
+	/// Test a record filter. Basically it tests whether a lvalue is matching an rvalue
 	bool isFieldFilterMatched(TVALUE lvalue, string op, TVALUE rvalue) 
     {
 		return meta.filterTestCallback(lvalue, op, rvalue);
@@ -170,6 +177,7 @@ public:
 
 		try 
         {
+            // operator is normally limited to those listed below
 			switch (operator) 
             {
 				case "=":
@@ -185,6 +193,7 @@ public:
 				case ">":
 					mixin(testFilter!T(">"));
 					break;
+                // and some operators only make sense if the field type is string
 				static if (is(T == string)) 
                 {
 					case "~":
@@ -213,9 +222,6 @@ public:
     {
         // no value? Just return blank string
         if (value == "") return to!string(' '.repeat(length));
-
-
-    
 
         // we need to check whether value is empty. In that case, we just send back the T type default value
         T convertedValue = (value != "") ? to!T(value) : T.init;

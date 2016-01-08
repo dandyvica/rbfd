@@ -22,14 +22,17 @@ alias htmlRowBuilder = binaryFun!(formatter);
 /*********************************************
  * each record is displayed as an HTML table
  */
-class HTMLWriter : Writer {
+class HTMLWriter : Writer 
+{
 
 	this(in string outputFileName)
 	{
 		super(outputFileName);
 	}
 
-	override void prepare(Layout layout) {
+    // prepare HTML file by writing HTML header
+	override void prepare(Layout layout) 
+    {
 		// bootstrap header
 		_fh.writeln(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">`);
 		_fh.writeln(`<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"></head>`);
@@ -39,6 +42,8 @@ class HTMLWriter : Writer {
     override void build(string outputFileName) {}
 
 	// write out record depending on orientation
+    // horizontal = one line per record
+    // vertical = one whole table per record
 	override void write(Record rec)
 	{
 		if (outputFeature.orientation == Orientation.horizontal)
@@ -55,74 +60,80 @@ class HTMLWriter : Writer {
 	}
 
 private:
-	string _buildHTMLDataRow(Record rec) {
-    return array(rec.fieldValues.map!(f => htmlRowBuilder("td",f))).join("");
-	}
-
-	// write out data with values in row
-	void _writeV(Record rec) {
-		// write fields as a HTML table
-		// start a new HTML table
-
-    // write record name & description
-		_fh.writefln(`</table><h2><span class="label label-primary">%s - %s</span></h2>`,
-					rec.meta.name, rec.meta.description);
-
-		// gracefully end previous table and start a new HTML table
-		_fh.write(`<table class="table table-striped">`);
-
-		// write out table header
-		_fh.write(`<tr><th>Index</th><th>Field</th><th>Description</th><th>Length</th><th>Type</th><th>Value</th></tr>`);
-		foreach (f; rec) {
-			_fh.write(
-				`<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>`.
-						format(f.context.index+1, f.name, f.description, f.length, f.type.meta.name, f.value)
-			);
-		}
-
-		// gracefully ends table
-		_fh.write(`</table>`);
-
-	}
-
-	// write out data with values in columns
-	void _writeH(Record rec) {
-		// write fields as a HTML table
-		// start a new HTML table
-		if (_previousRecordName != rec.name) {
-
-			// first record is a special case
-			if (_previousRecordName != "") {
-				_fh.writefln("</table>");
-			}
-
-      // write record name & description
-  		_fh.writefln(`</table><h2><span class="label label-primary">%s - %s</span></h2>`,
-  					rec.name, rec.meta.description);
-
-			// gracefully end previous table and start a new HTML table
-			_fh.write(`<table class="table table-striped">`);
-
-			// print out headers
-			auto headers = array(rec.fieldNames.map!(f => htmlRowBuilder("th",f))).join("");
-			_fh.writefln("<thead><tr>%s</tr></thead>", headers);
-
-			// and field descriptions
-			auto desc = array(rec.fieldDescriptions.map!(f => htmlRowBuilder("th",f))).join("");
-			_fh.writefln("<tr>%s</tr>", desc);
-
-      // print out first set of data
-			_fh.writefln("<tr>%s</tr>", _buildHTMLDataRow(rec));
-
-      // save a new record name
-		  _previousRecordName = rec.name;
-		}
-    // HTML table already started: just add row values
-		else
+    // build HTML tags for a single row of an HTML table
+    string _buildHTMLDataRow(Record rec) 
     {
-			_fh.writefln("<tr>%s</tr>", _buildHTMLDataRow(rec));
+        return array(rec.fieldValues.map!(f => htmlRowBuilder("td",f))).join("");
     }
-	}
+
+    // write out data with values in row
+    void _writeV(Record rec) 
+    {
+        // write fields as a HTML table
+        // start a new HTML table
+
+        // write record name & description
+        _fh.writefln(`</table><h2><span class="label label-primary">%s - %s</span></h2>`,
+                rec.meta.name, rec.meta.description);
+
+        // gracefully end previous table and start a new HTML table
+        _fh.write(`<table class="table table-striped">`);
+
+        // write out table header
+        _fh.write(`<tr><th>Index</th><th>Field</th><th>Description</th><th>Length</th><th>Type</th><th>Value</th></tr>`);
+        foreach (f; rec) 
+        {
+            _fh.write(
+                    `<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>`.
+                    format(f.context.index+1, f.name, f.description, f.length, f.type.meta.name, f.value)
+                    );
+        }
+
+        // gracefully end table
+        _fh.write(`</table>`);
+
+    }
+
+    // write out data with values in columns
+    void _writeH(Record rec) 
+    {
+        // write fields as a HTML table
+        // start a new HTML table
+        if (_previousRecordName != rec.name) 
+        {
+            // first record is a special case
+            if (_previousRecordName != "") 
+            {
+                _fh.writefln("</table>");
+            }
+
+            // write record name & description
+            _fh.writefln(`</table><h2><span class="label label-primary">%s - %s</span></h2>`,
+                    rec.name, rec.meta.description);
+
+            // gracefully end previous table and start a new HTML table
+            _fh.write(`<table class="table table-striped">`);
+
+            // print out headers
+            auto headers = array(rec.fieldNames.map!(f => htmlRowBuilder("th",f))).join("");
+            _fh.writefln("<thead><tr>%s</tr></thead>", headers);
+
+            // and field descriptions
+            auto desc = array(rec.fieldDescriptions.map!(f => htmlRowBuilder("th",f))).join("");
+            _fh.writefln("<tr>%s</tr>", desc);
+
+            // print out first set of data
+            _fh.writefln("<tr>%s</tr>", _buildHTMLDataRow(rec));
+
+            // save a new record name
+            _previousRecordName = rec.name;
+        }
+        // HTML table already started: just add row values
+        else
+        {
+            _fh.writefln("<tr>%s</tr>", _buildHTMLDataRow(rec));
+        }
+    }
 
 }
 ///

@@ -14,12 +14,11 @@ import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
 
-// format used to print out string or numerical data
-
 /*********************************************
  * in this case, each record is displayed as an ASCII table
  */
-class TXTWriter : Writer {
+class TXTWriter : Writer 
+{
 
 private:
 	string _fmt;
@@ -86,7 +85,8 @@ public:
 	override void write(Record rec)
 	{
         // print new header if this is a new record
-        if (_previousRecordName != rec.name) {
+        if (_previousRecordName != rec.name) 
+        {
             _fh.writeln();
 
             // print out names or alternate names depending on chosen option
@@ -96,8 +96,10 @@ public:
                 rec.each!(f => _write!"name"(f));
 
             // print line separator if requested
-            if (outputFeature.lsep != "") {
-                _fh.writef("\n%s", rec.meta.ruler);
+            if (outputFeature.lsep != "") 
+            {
+                _fh.writeln; 
+                _fh.writef("%s", rec.meta.ruler);
             }
 
             _fh.writeln();
@@ -121,7 +123,8 @@ private:
 	 *  f = Field object
      *
 	 */
-	void _write(string member)(Field f) {
+	void _write(string member)(Field f) 
+    {
 		// print out data
 	    _fh.writef(_fmt, f.cellLength1, mixin("f." ~ member));
 	}

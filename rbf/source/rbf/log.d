@@ -43,6 +43,7 @@ public:
         }
     }
 
+    // useful helper
     void info(string, A...)(string msg, A args) { log(LogLevel.info, msg, args); }
 
     // close log file

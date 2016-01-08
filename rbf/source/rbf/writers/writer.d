@@ -25,41 +25,42 @@ import rbf.writers.xmlwriter;
 import rbf.writers.xlsx1writer;
 import rbf.writers.xlsx2writer;
 
-
+// list of all possible output formats. For those formats, the settings XML file
+// should define their 
 enum OutputFormat { box, csv, html, ident, sql, tag, txt, excel1, excel2, xml }
 
 /*********************************************
- * writer class for writing to various ouput
- * formats
+ * writer base class for writing to various ouput formats
  */
 abstract class Writer 
 {
 private:
 
-	string _outputFileName; 		/// name of the file we want to create
+	string _outputFileName; 		/// name of the output file we want to create
 
 package:
 
 	File _fh; 						/// file handle on output file if any
 	string _previousRecordName;		/// sometimes, we need to keep track of the previous record written
+                                    /// useful to gracefully end ascii tables
 
 public:
 
-	OutputFeature outputFeature;    /// specifics data for chosen output format
+	OutputFeature outputFeature;    /// specific data for chosen output format
 
 
 	/**
-	 * creates a new Writer object for converting record-based files
+	 * creates a new Writer object for converting record-based files to output format
 	 *
 	 Params:
-	 outputFileName = name of the output file (or database name in case of sqlite3)
-	 create = true if file is created during constructor
+    	 outputFileName = name of the output file (or database name in case of sqlite3)
+    	 create = true if file is created during constructor
 	 */
 	this(in string outputFileName, in bool create = true)
 	{
 		// we might use standard output. So need to check out
+        // if outputFileName is not specified, output to stdout
 		_outputFileName = outputFileName;
-
 		if (outputFileName != "") 
         {
 			_outputFileName = outputFileName;

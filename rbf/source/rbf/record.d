@@ -50,17 +50,18 @@ public:
 	 * auto record = new Record("FIELD1", "Field1 description");
 	 * --------------
 	 */
-	this(in string name, in string description)
-	{
-			enforce(name != "", "record name should not be empty!");
+    this(in string name, in string description)
+    {
+        // name shouldn't be empty but description could be
+        enforce(name != "", "record name should not be empty!");
 
-			// pre-allocate array of fields
-			super(name);
+        // pre-allocate array of fields by calling the container's ctor
+        super(name);
 
-			// fill container name/desc
-			this.meta.name = name;
-			this.meta.description = description;
-	}
+        // fill container name/desc
+        this.meta.name = name;
+        this.meta.description = description;
+    }
 
 	/**
 	 * sets record value from one string
@@ -75,7 +76,7 @@ public:
 	 */
 	@property void value(TVALUE s)
 	{
-		// add or strip chars from string if string has not the same length as record
+		// add or strip chars from string if s has not the same length as record length
 		if (s.length < _length) 
         {
 			s = s.leftJustify(_length);
@@ -85,7 +86,7 @@ public:
 			s = s[0.._length];
 		}
 
-		// assign each field to a slice of s
+		// assign each field to it's corresponding slice of s
 		this.each!(f => f.value = s[f.context.lowerBound..f.context.upperBound]);
 	}
 
@@ -142,7 +143,7 @@ public:
 	}
 
 	/**
-	 * concatenate field value for the same name
+	 * concatenate field values for the fields having the same name
 	 */
 	@property TVALUE concat(string name)
 	{
@@ -150,7 +151,10 @@ public:
         return values.reduce!((a,b) => a ~ b);
 	}
 
-	string findByIndex(in ulong i)
+	/**
+	 * find the field name having index i
+	 */
+	string findNameByIndex(in ulong i)
     {
 		foreach (f; this) 
         {
@@ -170,15 +174,17 @@ public:
 
 	/**
 	 * when a field is repeated inside a record, we cannot call it by name.
-     * So we need to call it using its name and index
+     * So we need to call it using its name and index (a.k.a alternateName)
 	 */
     void buildAlternateNames()
     {
         foreach(f; this)
         {
-            // for each field being repeated at least twice, buld its "alternate" name 
+            // for each field being repeated at least twice, build its "alternate" name 
             // which, by the way it's build, unique
             auto list = this[f.name];
+
+            // only build alternate name for fields which are at least repeated twice
             if (list.length > 1)
             {
                 auto i=1;
@@ -219,7 +225,7 @@ public:
             // our result is a list of indexes liek "<2><5><7>...".
             // each number traces back to the field name
             auto result = matchAll(m[1], r"<(\d+)>");
-            auto a = array(result.map!(r => findByIndex(to!ulong(r[1]))));
+            auto a = array(result.map!(r => findNameByIndex(to!ulong(r[1]))));
             meta.repeatingPattern ~= a;
         }
 
@@ -286,8 +292,6 @@ public:
 	{
 		fieldList.each!(f => super.opOpAssign!"~"(f));
 	}
-
-
 
 	/**
 	 * print out Record properties with all fields and record data

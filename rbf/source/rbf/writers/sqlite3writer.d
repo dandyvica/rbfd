@@ -27,14 +27,14 @@ alias compiledSqlStatement = sqlite3_stmt *;
 /*********************************************
  * in this case, each record is insert into a SQL table
  */
-class Sqlite3Writer : Writer {
+class Sqlite3Writer : Writer 
+{
 
 private:
 
     sqlite3* _db;                                     /// sqlite3 database handle
     int _sqlCode;                                     /// sqlite3 API return code
     compiledSqlStatement[string] _compiledInsertStmt; /// list of pre-build INSERT statements
-    //string[string] _insertStmt;                     /// list of pre-build INSERT statements
     typeof(outputFeature.insertPool) _trxCounter;     /// pool counter for grouping INSERTs
     string[] _sqlKeywordsList;                        /// list of all SQLITE3 reserved keywords
     ushort[string] _recordCounter;                    /// aa to store the sequence of each record
@@ -56,7 +56,7 @@ private:
 	 */
     string _buildTableName(string recordName)
     {
-        // is record name a reserved keywords?
+        // is record name a reserved keywords? In that case, add 'R' in front of the record name
         if (_sqlKeywordsList.canFind(recordName) || recordName[0].isDigit)
             return "R" ~ recordName;
         else
@@ -66,7 +66,7 @@ private:
 
 	/** 
      * Build the SQL statement used to create tables matching record
-     * only create the table if itt's not already existing
+     * only create the table if it's not already existing
 	 *
 	 * Params:
 	 * 	rec = Record object
@@ -122,7 +122,7 @@ private:
         _sqlCode = sqlite3_exec(_db, toStringz(stmt), null, null, null); 
         if (_sqlCode != SQLITE_OK) 
         {
-            stderr.writeln("error: statement <%s>, error code = <%d>, error msg <%s>".format(stmt, _sqlCode, fromStringz(sqlite3_errmsg(_db))));
+            stderr.writeln(MSG063.format(stmt, _sqlCode, fromStringz(sqlite3_errmsg(_db))));
         }
     }
 
@@ -140,7 +140,7 @@ private:
         _sqlCode = sqlite3_exec(_db, toStringz(stmt), cb, cast(void*)outerThis, null); 
         if (_sqlCode != SQLITE_OK) 
         {
-            stderr.writeln("error: statement <%s>, error code = <%d>, error msg <%s>".format(stmt, _sqlCode, fromStringz(sqlite3_errmsg(_db))));
+            stderr.writeln(MSG063.format(stmt, _sqlCode, fromStringz(sqlite3_errmsg(_db))));
         }
     }
 
@@ -210,6 +210,7 @@ private:
             catch (ConvException e) 
             {
                 log.log(LogLevel.INFO, MSG020, rec.meta.sourceLineNumber, rec.name, f.name, f.value, f.type.meta.type);
+
                 // instead, use a NULL value
                 _sqlCode = sqlite3_bind_null(_compiledInsertStmt[rec.name], to!int(f.context.index+1));
             }
@@ -217,7 +218,7 @@ private:
             // test successful bind()
             if (_sqlCode != SQLITE_OK)
             {
-                stderr.writeln("error: sqlite_bind() API error, error code = <%d>, error msg <%s>".format(_sqlCode, fromStringz(sqlite3_errmsg(_db))));
+                stderr.writeln(MSG064.format(_sqlCode, fromStringz(sqlite3_errmsg(_db))));
             }
         }
     }
@@ -327,7 +328,7 @@ public:
         // create all tables now!
         _executeStmt("COMMIT TRANSACTION");
 
-        // log
+        // log tables creation
         log.log(LogLevel.INFO, MSG025, "META");
         log.log(LogLevel.INFO, MSG022, nbTables+1);
     }
@@ -373,7 +374,6 @@ public:
             }
         }
 
-        //sqlite3_reset(_compiledInsertStmt[rec.name]);
         // it's time to clear bindings
         sqlite3_clear_bindings(_compiledInsertStmt[rec.name]);
         

@@ -38,7 +38,7 @@ class Field : Element!(string, size_t, ContextualInfo)
 		public 
 		{
 			this(in string name, in string description, FieldType type, in size_t length);
-			this(in string csvdata);
+			this(in string csvdata, string delimiter = ";");
 			@property FieldType type();
 			@property void pattern(in string s);
 			@property string pattern();

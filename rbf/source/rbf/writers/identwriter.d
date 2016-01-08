@@ -14,10 +14,10 @@ import rbf.layout;
 import rbf.writers.writer;
 
 /*********************************************
- * writer class for writing to various ouput
- * formats
+ * Class for identity writer 
  */
-class IdentWriter : Writer {
+class IdentWriter : Writer 
+{
 
 	this(in string outputFileName)
 	{
@@ -27,6 +27,7 @@ class IdentWriter : Writer {
 	override void prepare(Layout layout) {}
     override void build(string outputFileName) {}
 
+    // identity is just printing out the same values than read
 	override void write(Record rec)
 	{
 		_fh.writeln(rec.rawValue);

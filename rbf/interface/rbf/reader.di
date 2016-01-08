@@ -14,7 +14,6 @@ import rbf.log;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
-alias STRING_MAPPER = void function(Record);
 class Reader
 {
 	private 
@@ -24,7 +23,6 @@ class Reader
 		MapperFunc _recordIdentifier;
 		Regex!char _ignoreRegex;
 		Regex!char _lineRegex;
-		STRING_MAPPER _mapper;
 		ulong _nbLinesRead;
 		ulong _inputFileSize;
 		ulong _guessedRecordNumber;
@@ -37,7 +35,6 @@ class Reader
 			@property void ignoreRegexPattern(in string pattern);
 			@property void lineRegexPattern(in string pattern);
 			@property ulong nbRecords();
-			@property void recordTransformer(STRING_MAPPER func);
 			@property Layout layout();
 			@property ulong nbLinesRead();
 			@property ulong inputFileSize();
@@ -49,7 +46,7 @@ class Reader
 				private 
 				{
 					File _fh;
-					ulong _nbChars = (ulong).max;
+					size_t _nbChars = size_t.max;
 					char[] _buffer;
 					Reader _outerThis;
 					Record rec;

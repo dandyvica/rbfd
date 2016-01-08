@@ -28,7 +28,6 @@ class XLSXWriter : Writer
 		Workbook _workbookFile;
 		Rels _relsFile;
 		WorkbookRels _workbookRelsFile;
-		void _createZip();
 		void _buildZip();
 		void _writeRecordToWorksheet(Record record, Worksheet worksheetFile);
 		public 

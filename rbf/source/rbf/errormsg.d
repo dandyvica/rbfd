@@ -10,6 +10,7 @@ import std.datetime;
 import std.process;
 
 // list of all error messages found in code
+// some are sent to log file, some to stdout or stderr
 immutable MSG001 = "error: element name <%s> is not in record/container <%s>";
 immutable MSG002 = "line# <%d>, record <%s>, field <%s>, value <%s> is not matching expected pattern <%s>";
 immutable MSG003 = "name=<%s>, description=<%s>, length=<%u>, type=<%s>, lower/upperBound=<%u:%u>, rawValue=<%s>, value=<%s>, offset=<%s>, index=<%s>";
@@ -71,3 +72,8 @@ immutable MSG058 = "fatal: output format should be in the following list: %s";
 immutable MSG059 = "add zip archive <%s>";
 immutable MSG060 = "deleting unnecessary files";
 immutable MSG061 = "started with the following arguments: %s";
+immutable MSG062 = "fatal error: type <%s> is not defined for field <%s> !!";
+immutable MSG063 = "error: statement <%s>, error code = <%d>, error msg <%s>";
+immutable MSG064 = "error: sqlite_bind() API error, error code = <%d>, error msg <%s>";
+immutable MSG065 = "%d lines read so far\r";
+immutable MSG066 = "info: %d/%d records read so far (%.0f %%), %d matching record filter condition\r";

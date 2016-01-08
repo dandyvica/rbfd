@@ -8,7 +8,8 @@ import std.algorithm;
 
 
 /***********************************
- * This is the core data for representing field data in record-based files
+ * This is the core data for representing atomic data in record-based files
+ * Mainly, those data are not dependant on the context. They are always valid
  */
 class Element(T,U,Context...) 
 {
@@ -22,7 +23,7 @@ private:
 
 public:
 
-	// any additional contextual information
+	// any additional contextual information if necessary
 	static if (Context.length > 0) 
     {
 		Context[0] context;
@@ -35,7 +36,6 @@ public:
 	 * 	name = name of the field
 	 *  description = a generally long description of the field
 	 *  length = length in bytes of the field. Should be >0
-	 *  ftype = FieldType object
 	 *
 	 */
 	this(in T name, in T description, in U length)
@@ -50,7 +50,8 @@ public:
 		_description = description;
 		_length      = length;
 
-		// used to print out text data
+		// used to print out text data. Useful to compute this at build time and not
+        // at run time
 		_cellLength1 = max(_length, _name.length);
 		_cellLength2 = max(_length, _description.length, _name.length);
 	}
@@ -105,7 +106,7 @@ public:
 	}
 
 	/**
-	 * return a string of Field attributes
+	 * return a string of element attributes
 	 */
 	override string toString() 
     {
