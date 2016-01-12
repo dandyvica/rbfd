@@ -183,12 +183,17 @@ private:
         // test if env variable is set and if any, it's poiting on the settings file
         // location
         auto rbfconf = environment.get(xmlSettingsFileEnvVar, "");
-        if (rbfconf != "") return rbfconf;
+        if (rbfconf != "") 
+        {
+            writefln(MSG067, rbfconf, xmlSettingsFileEnvVar);
+            return rbfconf;
+        }
 
         // otherwise, first possible location is current directory
         auto suspectedSettingsFile = buildNormalizedPath(getcwd, xmlSettingsFile);
         if (exists(suspectedSettingsFile)) 
         {
+            writefln(MSG069, suspectedSettingsFile); 
             return suspectedSettingsFile;
         }
         else 
@@ -207,6 +212,7 @@ private:
             }
         }
 
+        writefln(MSG070, settingsFile); 
         return settingsFile;
 
     }

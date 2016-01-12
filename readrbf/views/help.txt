@@ -7,7 +7,11 @@ SYNOPSIS
 
 DESCRIPTION
        This program is aimed at reading a record-based file and converting it to a human-readable format.  It reads its settings from the rbf.xml configu‐
-       ration file located in the current directory or ~/.rbf directory (linux) or the %%APPDATA%%\local\rbf directory (Windows).
+       ration file found in the following locations: 
+       
+       - from the RBF_CONF environment variable
+       - from the current directory 
+       - or lastly from the ~/.rbf directory (linux) or the %%APPDATA%%\local\rbf directory (Windows).
 
 OPTIONS
        -b : Benchmark: don't write output file but just read input file.

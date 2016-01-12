@@ -8,9 +8,16 @@ import std.algorithm;
 import std.range;
 import std.datetime;
 import std.process;
+import std.exception;
+
+import rbf.errormsg;
 
 // global log variable
 Log log;
+
+// log file name if not possible to get it from configuration or not possible to open
+// the location
+immutable defaultLogFile = "rbf.log";
 
 // list of all possible values for log level
 // TRACE is enabled by setting the RBF_TRACE variable
@@ -28,7 +35,15 @@ public:
     // create log file
     this(string logFileName)
     {
-        _logHandle = File(logFileName, "a");
+        try
+        {
+            _logHandle = File(logFileName, "a");
+        }
+        catch (ErrnoException)
+        {
+            _logHandle = File(defaultLogFile, "a");
+            writefln(MSG068, defaultLogFile);
+        }
         _trace = environment.get("RBF_TRACE", "");
     }
 

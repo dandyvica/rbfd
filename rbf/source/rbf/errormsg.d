@@ -77,3 +77,7 @@ immutable MSG063 = "error: statement <%s>, error code = <%d>, error msg <%s>";
 immutable MSG064 = "error: sqlite_bind() API error, error code = <%d>, error msg <%s>";
 immutable MSG065 = "%d lines read so far\r";
 immutable MSG066 = "info: %d/%d records read so far (%.0f %%), %d matching record filter condition\r";
+immutable MSG067 = "info: reading configuration file <%s> from environment variable <%s>";
+immutable MSG068 = "info: creating default log file <%s>";
+immutable MSG069 = "info: reading configuration file <%s> from the current directory";
+immutable MSG070 = "info: reading configuration file <%s> from the default location";
