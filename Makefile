@@ -26,7 +26,7 @@ $(shell mkdir -p $(readrbf_dir)/package)
 #-----------------------------------------------------------------
 # DMD compiler flags
 #-----------------------------------------------------------------
-DFLAGS = -w -c -I$(rbflib_src_dir) -J$(rbflib_views_dir) -J$(readrbf_views_dir)
+DFLAGS = -w -c -I$(rbflib_src_dir) -J$(rbflib_views_dir) -J$(readrbf_views_dir) -J$(data_dir)/local/conf
 
 sqlite_libpath = /usr/lib/x86_64-linux-gnu
 LDFLAGS = -L--no-as-needed -L-L$(sqlite_libpath) -L-L$(rbflib_lib_dir) -L-lsqlite3 -L-lrbf
@@ -153,13 +153,8 @@ $(readrbf_bin_dir)/readrbf: \
 $(readrbf_obj_dir)/app.o: $(readrbf_src_dir)/app.d
 	dmd $(DFLAGS) -I$(readrbf_src_dir)/readrbf $< -od$(readrbf_obj_dir)
 
-$(readrbf_obj_dir)/args.o: $(rbflib_views_dir)/help.txt $(readrbf_src_dir)/readrbf/args.d 
+$(readrbf_obj_dir)/args.o: $(readrbf_views_dir)/help.txt $(readrbf_src_dir)/readrbf/args.d 
 	dmd $(DFLAGS) -I$(readrbf_src_dir) $(readrbf_src_dir)/readrbf/args.d -od$(readrbf_obj_dir)
-
-$(rbflib_views_dir)/help.txt: $(readrbf_src_dir)/doc/help.md
-	pandoc -s -t man $< -o $(rbflib_views_dir)/help.1
-	man $(rbflib_views_dir)/help.1 | col -b > $@
-	rm $(rbflib_views_dir)/help.1
 
 #-----------------------------------------------------------------
 # other useful tags

@@ -17,6 +17,7 @@ import rbf.recordfilter;
 import rbf.writers.writer : OutputFormat;
 
 immutable helpString = import("help.txt");
+immutable authorString = import("author.txt");
 immutable IAformat = "%-50.50s : ";
 
 // useful mixin to generate input
@@ -211,7 +212,8 @@ public:
     void _printHelp(string msg="")
     {
         writeln(helpString.format(possibleValues));
-        writefln("\nCompiled on %s with %s version %d\n", __DATE__, __VENDOR__, __VERSION__);
+        writeln(authorString);
+        writefln("Compiled on %s with %s version %d", __DATE__, __VENDOR__, __VERSION__);
         if (msg != "") stderr.writefln("error: %s", msg);
         core.stdc.stdlib.exit(1);
     }

@@ -25,10 +25,10 @@ text presentation.
 : Validate layout structure.
 
 --check
-: check whether field patterns are matched
+: check whether field patterns are matched.
 
 --dup
-: just print fields which are repeated within each record
+: just print fields which are repeated within each record.
 
 -f file
 : Full path and name of a file to filter fields.
@@ -63,7 +63,7 @@ the same than the input one.
 : Write to standard output only.
 
 -of filename
-: Convert file to given file name
+: Convert file to given file name.
 
 -p
 : Print out progress status.
