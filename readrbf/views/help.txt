@@ -43,7 +43,7 @@ OPTIONS
 
        -O : Write to standard output only.
 
-       -of filename : Convert file to given file name
+       --of filename : Convert file to given file name
 
        -p : Print out progress status.
 
