@@ -35,7 +35,7 @@ immutable MSG021 = "creating tables, SQL pool size = %d";
 immutable MSG022 = "%d table(s) created";
 immutable MSG023 = "layout <%s> read, %d record(s) created";
 immutable MSG024 = "record filter error: field <%s> is not found in layout";
-immutable MSG025 = "creating table for record <%s>";
+immutable MSG025 = "creating table (for record) <%s>";
 immutable MSG026 = "field filter requested, layout has now <%d> records";
 immutable MSG027 = "====> configuration file is <%s>";
 immutable MSG028 = "built SQL statement: <%s>";
@@ -78,6 +78,8 @@ immutable MSG064 = "error: sqlite_bind() API error, error code = <%d>, error msg
 immutable MSG065 = "%d lines read so far\r";
 immutable MSG066 = "info: %d/%d records read so far (%.0f %%), %d matching record filter condition\r";
 immutable MSG067 = "info: reading configuration file <%s> from environment variable <%s>";
-immutable MSG068 = "info: creating default log file <%s>";
+immutable MSG068 = "info: creating/using default log file <%s>";
 immutable MSG069 = "info: reading configuration file <%s> from the current directory";
 immutable MSG070 = "info: reading configuration file <%s> from the default location";
+immutable MSG071 = "info: reading configuration file <%s> from the command line";
+immutable MSG072 = "info: %s table is populated";

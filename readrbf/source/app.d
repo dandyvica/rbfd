@@ -36,6 +36,9 @@ int main(string[] argv)
 
     //auto tid = spawn(&spawnedFunction);
 
+    // settings class for storing whole configuration
+    Config settings;
+
     //---------------------------------------------------------------------------------
 	// need to known how much time spent
     //---------------------------------------------------------------------------------
@@ -45,14 +48,26 @@ int main(string[] argv)
     {
 
         //---------------------------------------------------------------------------------
-		// read XML properties from rbf.xml file
-        //---------------------------------------------------------------------------------
-		auto settings = new Setting();
-
-        //---------------------------------------------------------------------------------
 		// manage arguments passed from the command line
         //---------------------------------------------------------------------------------
 		auto opts = CommandLineOption(argv);
+
+        //---------------------------------------------------------------------------------
+		// configuration file passed as arugment? Use it if neccessary
+        //---------------------------------------------------------------------------------
+        if (opts.cmdlineConfigFile != "")
+        {
+            settings = new Config(opts.cmdlineConfigFile);
+        }
+        else
+        {
+		    settings = new Config();
+        }
+
+        //---------------------------------------------------------------------------------
+		// read XML properties from rbf.xml file
+        //---------------------------------------------------------------------------------
+		//auto settings = new Config();
 
         //---------------------------------------------------------------------------------
 		// start logging data

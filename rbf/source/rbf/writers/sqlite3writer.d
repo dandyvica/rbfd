@@ -251,6 +251,29 @@ private:
     }
 
 
+	/** 
+     * Populate LAYOUT table with layout data
+	 *
+	 * Params:
+	 * 	layout = Layout object
+	 *
+	 */
+     void _fillLayout(Layout layout)
+     {
+         string stmt = "insert into LAYOUT (RECNAME, RECDESC, RECLENGTH, FNAME, FDESC, FTYPE, FLENGTH, FINDEX, FOFFSET)
+             values ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, %d);";
+
+         // loop on each record and field
+         foreach (rec; layout)
+         {
+             foreach (f; rec)
+             {
+                 // and insert data
+                _executeStmt(stmt.format(rec.name, rec.meta.description, rec.length, 
+                               f.name, f.description, f.type.meta.stringType, f.length, f.context.index, f.context.offset));
+             }
+         }
+     }
 
 
 
@@ -325,12 +348,22 @@ public:
         auto stmt = "create table if not exists META (TABLENAME TEXT, RECNAME TEXT, SEQNUM INTEGER);";
         _executeStmt(stmt);
 
-        // create all tables now!
-        _executeStmt("COMMIT TRANSACTION");
+        // create layout table which could be useful is some situation
+        stmt = "create table if not exists LAYOUT (RECNAME TEXT, RECDESC TEXT, RECLENGTH INTEGER, 
+            FNAME TEXT, FDESC TEXT, FTYPE TEXT, FLENGTH INTEGER, FINDEX INTEGER, FOFFSET INTEGER);";
+        _executeStmt(stmt);
 
         // log tables creation
         log.log(LogLevel.INFO, MSG025, "META");
+        log.log(LogLevel.INFO, MSG025, "LAYOUT");
         log.log(LogLevel.INFO, MSG022, nbTables+1);
+
+        // now populate LAYOUT table for layout object
+        _fillLayout(layout);
+        log.log(LogLevel.INFO, MSG071, "LAYOUT");
+
+        // create all tables now!
+        _executeStmt("COMMIT TRANSACTION");
     }
 
 	/** 

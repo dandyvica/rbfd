@@ -79,7 +79,7 @@ alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 	* class for reading XML definition file
  */
 //class Setting : NamedItemsContainer!(SettingCore, false, SettingMeta) {
-class Setting {
+class Config {
 
 private:
 	LayoutDir _layoutDirectory;		/// list of all settings
@@ -104,7 +104,13 @@ public:
         string settingsFile;
 
         // if file name is passed as an argument to the ctor, take it or otherwise try possible locations
-        settingsFile = (xmlConfigFile != "") ? xmlConfigFile : _getConfigFileName();
+        if (xmlConfigFile != "")
+        {
+            writefln(MSG071, xmlConfigFile); 
+            settingsFile = xmlConfigFile;
+        }
+        else
+            settingsFile = _getConfigFileName();
 
         // get settings file path
         auto settingsFilePath = dirName(settingsFile) ~ "/";
@@ -129,11 +135,20 @@ public:
         // read <layout> definition tag to build the container of all layouts
         xml.onStartTag["layout"] = (ElementParser xml)
         {
+            // we need to check whether the layout physical file is named as an absolute file path or relative
+            // if relative, prepend with the directory of the settings file
+            // it absolute, juste use it
+            auto layoutFilePath = xml.tag.attr["file"].idup;
+            if (!isAbsolute(layoutFilePath))
+            {
+                layoutFilePath = settingsFilePath ~ layoutFilePath;
+            }
+
             // save layout metadata
             this._layoutDirectory ~= SettingCore(
                     xml.tag.attr["name"],
                     xml.tag.attr["description"],
-                    settingsFilePath ~ xml.tag.attr["file"],        /// this is where the layout definition file is found
+                    layoutFilePath,                    /// this is where the layout definition file is found
                     );
         };
 

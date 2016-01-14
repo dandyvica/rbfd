@@ -16,6 +16,8 @@ import rbf.errormsg;
 import rbf.recordfilter;
 import rbf.writers.writer : OutputFormat;
 
+import daemon;
+
 immutable helpString = import("help.txt");
 immutable authorString = import("author.txt");
 immutable IAformat = "%-50.50s : ";
@@ -62,6 +64,8 @@ public:
     bool bAppendMode;                                   /// overwrite the output file
     bool bPrintDuplicatedPattern;                       /// write out duplicated patterns for each record
 
+    string cmdlineConfigFile;                           /// we can also provide configuration file from command line
+
 
 
 
@@ -82,6 +86,11 @@ public:
         else if (argv.length == 2 && argv[1] == "-h")
         {
             _printHelp();
+        }
+        // deamon mode
+        else if (argv.length == 2 && argv[1] == "-d")
+        {
+            daemon_mode();
         }
         else
         {
@@ -110,8 +119,9 @@ public:
                     "c"                            , &bCheckLayout           ,
                     "br"                           , &bBreakRecord           ,
                     "dup"                          , &bPrintDuplicatedPattern,
-                    "append"                       , &bAppendMode            , // not yet impletmented
-                    "ua"                           , &bUseAlternateNames
+                    "append"                       , &bAppendMode            , // not yet implemented
+                    "ua"                           , &bUseAlternateNames     ,
+                    "conf"                         , &cmdlineConfigFile
                 );
             }
             catch (ConvException e) 
