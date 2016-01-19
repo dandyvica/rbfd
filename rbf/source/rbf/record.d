@@ -23,7 +23,7 @@ struct RecordMeta
 {
 	string name;				 /// record name
 	string description;			 /// record description
-	bool   skip;		         /// do we skip this record?
+	bool   skipRecord;	         /// do we skip this record?
 	string[][] repeatingPattern; /// list of all fields which might be repeated within a record
 	Record[] subRecord;          /// list of all records matching those repeated fields
     string ruler;                /// when using the text writer, length of the ruler for header vs. data
@@ -298,7 +298,7 @@ public:
 	 */
 	override string toString()
 	{
-		auto s = "\nname=<%s>, description=<%s>, length=<%u>, skip=<%s>\n".format(name, meta.description, length, meta.skip);
+		auto s = "\nname=<%s>, description=<%s>, length=<%u>, skip=<%s>\n".format(name, meta.description, length, meta.skipRecord);
 		foreach (field; this)
 		{
 			s ~= field.toString();

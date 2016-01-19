@@ -155,7 +155,7 @@ public:
             _sectionName = "";
 
 		// do we keep this record? sometimes, we skip records when setting record or field filters
-		if (rec.meta.skip) return null;
+		if (rec.meta.skipRecord) return null;
 
         // keep track of the original line number: useful for pointing out errors in the rb-file
         rec.meta.sourceLineNumber = _nbLinesRead;

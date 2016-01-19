@@ -16,8 +16,6 @@ import rbf.errormsg;
 import rbf.recordfilter;
 import rbf.writers.writer : OutputFormat;
 
-import daemon;
-
 immutable helpString = import("help.txt");
 immutable authorString = import("author.txt");
 immutable IAformat = "%-50.50s : ";
@@ -88,10 +86,6 @@ public:
             _printHelp();
         }
         // deamon mode
-        else if (argv.length == 2 && argv[1] == "-d")
-        {
-            daemon_mode();
-        }
         else
         {
             try 

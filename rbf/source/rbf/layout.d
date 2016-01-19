@@ -312,7 +312,7 @@ public:
 			}
 
 			// for all other records not provided, just get rid of them
-			this[].filter!(e => e.name !in recordMap).each!(e => e.meta.skip = true);
+			this[].filter!(e => e.name !in recordMap).each!(e => e.meta.skipRecord = true);
 	}
 	///
 	unittest {

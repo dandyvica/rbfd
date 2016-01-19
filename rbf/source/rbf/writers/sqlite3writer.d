@@ -180,8 +180,8 @@ private:
     {
         foreach (f; rec)
         {
-            // test first for null values
-            if (f.value == "") 
+            // test first for null values: bind to NULL only for non string fields
+            if (f.value == "" && f.type.meta.type != AtomicType.string) 
             {
                 sqlite3_bind_null(_compiledInsertStmt[rec.name], to!int(f.context.index+1));
                 continue;
@@ -258,22 +258,26 @@ private:
 	 * 	layout = Layout object
 	 *
 	 */
-     void _fillLayout(Layout layout)
-     {
-         string stmt = "insert into LAYOUT (RECNAME, RECDESC, RECLENGTH, FNAME, FDESC, FTYPE, FLENGTH, FINDEX, FOFFSET)
-             values ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, %d);";
+    void _fillLayout(Layout layout)
+    {
+        string stmt = "insert into LAYOUT (RECNAME, RECDESC, RECLENGTH, FNAME, FDESC, FTYPE, FLENGTH, FINDEX, FOFFSET)
+            values ('%s', '%s', '%s', '%s', '%s', '%s', %d, %d, %d);";
 
-         // loop on each record and field
-         foreach (rec; layout)
-         {
-             foreach (f; rec)
-             {
-                 // and insert data
+        // loop on each record and field
+        foreach (rec; layout)
+        {
+            // do not include skipped records
+            if (rec.meta.skipRecord) continue;
+
+            // insert data for each record
+            foreach (f; rec)
+            {
+                // and insert data
                 _executeStmt(stmt.format(rec.name, rec.meta.description, rec.length, 
-                               f.name, f.description, f.type.meta.stringType, f.length, f.context.index, f.context.offset));
-             }
-         }
-     }
+                            f.context.alternateName, f.description, f.type.meta.stringType, f.length, f.context.index+1, f.context.offset+1));
+            }
+        }
+    }
 
 
 
@@ -326,7 +330,7 @@ public:
         foreach(rec; layout)
         {
             // create only for kept records after any potential field filter
-            if (rec.meta.skip) continue;
+            if (rec.meta.skipRecord) continue;
 
             // build statement
             auto stmt = _buildCreateTableStatement(rec);

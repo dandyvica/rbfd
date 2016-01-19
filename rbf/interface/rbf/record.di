@@ -16,7 +16,7 @@ struct RecordMeta
 {
 	string name;
 	string description;
-	bool skip;
+	bool skipRecord;
 	string[][] repeatingPattern;
 	Record[] subRecord;
 	string ruler;
