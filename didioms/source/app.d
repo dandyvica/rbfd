@@ -8,6 +8,7 @@ import std.range;
 import std.datetime;
 import std.concurrency;
 import std.regex;
+import std.socket;
 
 void spawnedFunction()
 {
@@ -77,9 +78,33 @@ string s = " this is a string   ";
 
     */
 
-    auto s1 = argv[1], s2 = argv[2];
-    auto l = to!ulong(to!double(s1));
-    auto f = to!double(s2);
-    writefln("l=<%d>, f=<%11.11g>", l, f);
 
+    daemon_mode();
+}
+
+
+void daemon_mode() 
+{
+    Socket server = new TcpSocket();
+    server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
+    server.bind(new InternetAddress(8080));
+    server.listen(1);
+
+    while(true) {
+        Socket client = server.accept();
+
+        char[1024] buffer;
+        auto received = client.receive(buffer);
+
+        writefln("The client said:\n%s", buffer[0.. received]);
+
+        enum header =
+            "HTTP/1.0 200 OK\nContent-Type: text/html; charset=utf-8\n\n";
+
+        string response = header ~ "Hello World!\n";
+        client.send(response);
+
+        client.shutdown(SocketShutdown.BOTH);
+        client.close();
+    }
 }
