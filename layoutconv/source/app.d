@@ -15,11 +15,12 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 
-string inputLayoutFileName;			/// input file layout
-enum Format {html, xml, h, csv};		/// output format HTML, ...
+string inputLayoutFileName;		        	/// input file layout
+string inputTemplate;                       /// template string to fill
+enum Format {html, xml, h, csv, temp};		/// output format HTML, ...
 Format outputFormat;
 bool bCheckLayout;							/// if true, try to validate layouy by checking length
-bool stdOutput;									/// if true, print to standard output instead of file
+bool stdOutput;								/// if true, print to standard output instead of file
 
 int main(string[] argv)
 {
@@ -29,17 +30,21 @@ int main(string[] argv)
 		writeln(r"
 Convert XML layout file to other formats.
 
-Usage: layoutconv -l xmlfile -o [html,xml,cstruct,csv,test] [-O] [-c]
+Usage: layoutconv -l xmlfile -o [html,xml,cstruct,csv,temp] -t [template string] [-O] [-c]
 
 where:
 
 -O  : write to stdout instead of a file
--c  : valide layout first
+-c  : validate layout first
+-t  : template string to replace
 
 
 ");
 		return 1;
 	}
+
+    // file name created
+    string outputFileName;
 
 	try {
 		// get command line arguments
@@ -47,6 +52,7 @@ where:
 			std.getopt.config.caseSensitive,
 			std.getopt.config.required,
 			"l", &inputLayoutFileName,
+			"t", &inputTemplate,
 			"o", &outputFormat,
 			"O", &stdOutput,
 			"c", &bCheckLayout
@@ -55,14 +61,14 @@ where:
         //---------------------------------------------------------------------------------
 		// read XML properties from rbf.xml file
         //---------------------------------------------------------------------------------
-		auto settings = new Setting();
+		auto settings = new Config();
 
         // define new layout and validate it if requested
         auto layout = new Layout(inputLayoutFileName);
         if (bCheckLayout) layout.validate;
 
         // build output file name
-        auto outputFileName = stripExtension(baseName(inputLayoutFileName)) ~ "." ~ to!string(outputFormat);
+        outputFileName = stripExtension(baseName(inputLayoutFileName)) ~ "." ~ to!string(outputFormat);
         File outputHandle = (stdOutput) ? stdout : File(outputFileName, "w");
 
         // depending on output wnated format, call appropriate function
@@ -81,6 +87,9 @@ where:
             case outputFormat.csv:
                 layout2csv(outputHandle, layout);
                 break;
+            case outputFormat.temp:
+                layout2temp(outputHandle, inputTemplate, layout);
+                break;
         }
 
 	}
@@ -90,20 +99,51 @@ where:
 	}
 
 	// ok
+    if (!stdOutput) writefln("info: <%s> created", outputFileName);
 	return 0;
 }
 
 // write out layout as a CSV-list of records and fields
-void layout2csv(File output, Layout layout) {
+void layout2csv(File output, Layout layout) 
+{
 	// list of records (sorted)
-	foreach (rec; &layout.sorted) {
+	foreach (rec; &layout.sorted) 
+    {
 		output.write(rec.name, ";");
 		output.writeln(rec.names.join(';'));
 	}
 }
 
+// write out layout as a template string
+void layout2temp(File output, string inputTemplate, Layout layout) 
+{
+    // output string when replacing tags
+    string outputString;
+
+	// list of records (sorted)
+	foreach (rec; &layout.sorted) 
+    {
+        foreach (f; rec) 
+        {
+
+            outputString = inputTemplate.replace("recname", rec.name)
+                .replace("recdesc", rec.meta.description)
+                .replace("fname", f.name)
+                .replace("faltname", f.context.alternateName)
+                .replace("fdesc", f.description)
+                .replace("flength", to!string(f.length))
+                .replace("ftype", f.type.meta.stringType)
+                .replace("foffset", to!string(f.context.offset+1))
+                .replace("findex", to!string(f.context.index+1))
+                ;
+                        output.writeln(outputString);
+        }
+	}
+}
+
 // write out HTML table from XML Layout
-void layout2html(File html, Layout layout) {
+void layout2html(File html, Layout layout) 
+{
 
 	// write out HTML header (uses bootstrap css framework)
 	html.writeln(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">`);
@@ -115,7 +155,8 @@ void layout2html(File html, Layout layout) {
 	html.writeln(`<div class="container">`);
 
 	// loop on each record (sorted)
-	foreach (rec; layout) {
+	foreach (rec; layout) 
+    {
 		// loop on each
 		//auto rec = fmt[recName];
 
@@ -130,7 +171,8 @@ void layout2html(File html, Layout layout) {
 
 		// loop on each field to print out description
 		auto i = 1;
-		foreach (field; rec) {
+		foreach (field; rec) 
+        {
 			html.writeln(`<tr>`);
 			html.writefln(`<td>%s</td>`,i++);
 			html.writefln(`<td><strong>%s</strong></td>`,field.name);
@@ -150,7 +192,8 @@ void layout2html(File html, Layout layout) {
 }
 
 // write out XML layout structure as as C-union
-void layout2cstruct(File output, Layout layout) {
+void layout2cstruct(File output, Layout layout) 
+{
     // each record is converted as a C structure
 	foreach (rec; &layout.sorted) 
     {

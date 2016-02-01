@@ -245,8 +245,8 @@ int main(string[] argv)
                         {
                             writefln("%s: %s", rec.name, join(sr.fieldAlternateNames, ","));
                         }
+                        writeln;
                     }
-                    writeln;
                 }
 			}
 
