@@ -83,3 +83,7 @@ immutable MSG069 = "info: reading configuration file <%s> from the current direc
 immutable MSG070 = "info: reading configuration file <%s> from the default location";
 immutable MSG071 = "info: reading configuration file <%s> from the command line";
 immutable MSG072 = "info: %s table is populated";
+immutable MSG073 = "error: SQL statement file <%s> not found";
+immutable MSG074 = "info: reading external SQL statement file <%s>";
+immutable MSG075 = "info: triggering pre-sql file <%s>";
+immutable MSG076 = "info: triggering post-sql file <%s>";

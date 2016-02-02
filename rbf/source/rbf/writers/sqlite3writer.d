@@ -252,6 +252,31 @@ private:
 
 
 	/** 
+     * Read external SQL statements file and execute all statements
+	 *
+	 * Params:
+	 * 	sqlStmtFile = sql statements file name
+	 *
+	 */
+    void _execStmtFile(string sqlStmtFile)
+    {
+		// check for SQL file existence
+		enforce(exists(sqlStmtFile), MSG073.format(sqlStmtFile));
+        log.log(LogLevel.INFO, MSG074, sqlStmtFile);
+
+        // begin transaction
+        _executeStmt("BEGIN IMMEDIATE TRANSACTION");
+
+        // read each line and execute statement
+        auto f = File(sqlStmtFile);
+        f.byLine(KeepTerminator.yes, ';').each!(s => _executeStmt(s.dup));
+        f.close;
+
+        // commit
+        _executeStmt("COMMIT TRANSACTION");
+    }
+
+	/** 
      * Populate LAYOUT table with layout data
 	 *
 	 * Params:
@@ -364,10 +389,17 @@ public:
 
         // now populate LAYOUT table for layout object
         _fillLayout(layout);
-        log.log(LogLevel.INFO, MSG071, "LAYOUT");
+        log.log(LogLevel.INFO, MSG072, "LAYOUT");
 
         // create all tables now!
         _executeStmt("COMMIT TRANSACTION");
+
+        // if any, execute pre file statement
+        if (outputFeature.sqlPreFile != "")
+        { 
+            log.log(LogLevel.INFO, MSG075, outputFeature.sqlPreFile);
+            _execStmtFile(outputFeature.sqlPreFile);
+        }
     }
 
 	/** 
@@ -473,6 +505,13 @@ public:
 
         // compiled statement clean-up
         _compiledInsertStmt.each!(stmt => sqlite3_finalize(stmt));
+
+        // if any, execute post file statement
+        if (outputFeature.sqlPostFile != "")
+        {
+            log.log(LogLevel.INFO, MSG076, outputFeature.sqlPostFile);
+            _execStmtFile(outputFeature.sqlPostFile);
+        }
 
         // finally, close connection to DB
         sqlite3_close(_db);

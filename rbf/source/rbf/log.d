@@ -52,7 +52,7 @@ public:
     {
         if (level != LogLevel.TRACE || _trace != "")
         {
-            _logHandle.writef("%s - [%s] - ", Clock.currTime, to!string(level));
+            _logHandle.writef("%-28.28s - [%s] - ", to!string(Clock.currTime), to!string(level));
             _logHandle.writefln(msg, args);
             _logHandle.flush;
         }

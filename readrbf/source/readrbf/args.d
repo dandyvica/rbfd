@@ -64,6 +64,10 @@ public:
 
     string cmdlineConfigFile;                           /// we can also provide configuration file from command line
 
+    string sqlPreFile;                                  /// name of the SQL statement file to run after creating tables but 
+                                                        /// before starting to insert data
+
+    string sqlPostFile;                                 /// name of the SQL statement file to run after inserting data
 
 
 
@@ -115,6 +119,8 @@ public:
                     "dup"                          , &bPrintDuplicatedPattern,
                     "append"                       , &bAppendMode            , // not yet implemented
                     "ua"                           , &bUseAlternateNames     ,
+                    "presql"                       , &sqlPreFile             ,
+                    "postsql"                      , &sqlPostFile            ,
                     "conf"                         , &cmdlineConfigFile
                 );
             }

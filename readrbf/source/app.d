@@ -220,6 +220,13 @@ int main(string[] argv)
 		// set writer features read in config and process preliminary steps
         //---------------------------------------------------------------------------------
 		writer.outputFeature = settings.outputDir[outputFormat];
+
+        // SQL format adds additonal feature
+        if (opts.outputFormat == OutputFormat.sql) 
+        {
+            writer.outputFeature.sqlPreFile  = opts.sqlPreFile;
+            writer.outputFeature.sqlPostFile = opts.sqlPostFile;
+        }
 		writer.prepare(layout);
 
         //---------------------------------------------------------------------------------

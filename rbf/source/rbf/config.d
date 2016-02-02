@@ -72,6 +72,13 @@ struct OutputFeature
     string alternateNameFmt;  /// format to use when formatting alternate name
     ushort insertPool;        /// used to group INSERTs into a single transaction
     string outputExtension;   /// file extension specific to output format
+
+
+    struct
+    {
+        string sqlPreFile;
+        string sqlPostFile;
+    }
 }
 alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 
