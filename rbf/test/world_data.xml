@@ -2,12 +2,12 @@
 <!-- inspired from https://en.wikipedia.org/wiki/List_of_continents_by_GDP_%28nominal%29 -->
 <!-- and http://www.nationsonline.org/oneworld/asia.htm -->
 <rbfile
-	version="1.0"
-	description="Continents, countries, cities"
-	ignoreLine="^#"
-	skipField="ID"
-	mapper="type:1 map:0..4"
+    xmlns="http://www.w3schools.com"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.w3schools.com rbf.xsd"
 >
+
+    <meta version="1.0" description="Continents, countries, cities" ignoreLine="^#" skipField="ID" mapper="type:1 map:0..4"/>
 
 	<fieldtype name="CHAR" type="string" pattern="\w+" format=""/>
 	<fieldtype name="NUM" type="decimal"/>

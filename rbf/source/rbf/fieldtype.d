@@ -265,9 +265,4 @@ unittest {
 	map["A/N"] = new FieldType("A/N","string");
 	map["A/N"].meta.pattern = r"\w+";
 
-	// map["N"]   = new FieldType("N","overpunchedInteger");
-	// map["N"].meta.pattern = r"[\dA-R{}]+";
-	// assert(map["N"].meta.preConv("6{}") == "600");
-	// assert(map["N"].meta.preConv("6J1") == "-611");
-
 }

@@ -30,7 +30,7 @@ class CSVWriter : Writer
 	override void write(Record rec)
 	{
 		//_fh.write(join(rec.fieldValues, outputFeature.fsep), "\n");
-		_fh.writeln(join(rec.fieldValues, outputFeature.fsep));
+		_fh.writeln(join(rec.fieldValues, outputFeature.fieldSeparator));
 	}
 
 }
@@ -46,7 +46,7 @@ unittest {
 	auto reader = new Reader("./test/world.data", layout);
 
 	auto writer = writerFactory("./test/world_data.csv", OutputFormat.csv);
-	writer.outputFeature.fsep = "-";
+	writer.outputFeature.fieldSeparator = "-";
 
 	foreach (rec; reader) { writer.write(rec); }
 

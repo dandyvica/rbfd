@@ -150,7 +150,6 @@ unittest {
 	auto reader = new Reader("./test/world.data", layout);
 
 	auto writer = writerFactory("./test/world_data.xlsx", OutputFormat.excel1);
-	writer.outputFeature.zipper = "/usr/bin/zip";
 
 	foreach (rec; reader) { writer.write(rec); }
 

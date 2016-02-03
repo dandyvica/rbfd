@@ -206,20 +206,3 @@ public:
 	}
 
 }
-unittest {
-
-	writeln("========> testing ", __FILE__);
-
-	import rbf.reader;
-	import std.regex;
-
-	auto layout = new Layout("./test/world_data.xml");
-	auto reader = new Reader("./test/world.data", layout);
-
-	auto writer = writerFactory("./test/world_data.xlsx", OutputFormat.excel1);
-	writer.outputFeature.zipper = "/usr/bin/zip";
-
-	foreach (rec; reader) { writer.write(rec); }
-
-	writer.close();
-}

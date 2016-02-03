@@ -238,10 +238,6 @@ public:
 		auto field1 = new Field("AGE", "Person's age", new FieldType("I","integer"), 3);
 		field1.value = " 50";
 		assert(to!int(field1) == 50);
-
-		// field1 = new Field("AGE", "Person's age", new FieldType("O","overpunchedInteger"), 10);
-		// field1.value = " 5{}";
-		// assert(to!int(field1) == 500);
 	}
 
 }
@@ -264,17 +260,5 @@ unittest
 		f1.pattern = r"^\d{1,3}$";
 		f1.value = "   123   ";
 		assert(f1.matchPattern);
-
-		//assert(to!int(f1) == 123);
-
-		//
-		// auto f2 = new Field("AGE", "Person's age", new rbfOverpunchedInteger(r"^[\d+A-R{}]$"), 13);
-		// f2.value = "   1A{}   ";
-		// assert(to!int(f2) == 1100);
-		// assert(f2.matchPattern);
-		//
-		//
-		// assert(f1.field)
-
 
 }

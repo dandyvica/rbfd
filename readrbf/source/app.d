@@ -89,7 +89,7 @@ int main(string[] argv)
         }
         else
         {
-            opts.outputFileName = baseName(opts.inputFileName) ~ "." ~ settings.outputDir[outputFormat].outputExtension;
+            opts.outputFileName = baseName(opts.inputFileName) ~ "." ~ settings.outputDir[outputFormat].outputFileExtension;
         }
 
         //---------------------------------------------------------------------------------
@@ -209,7 +209,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		Writer writer;
 		auto outputFileName = buildNormalizedPath(
-				settings.outputDir[outputFormat].outputDir,
+				settings.outputDir[outputFormat].outputDirectory,
 				opts.outputFileName
 		);
 

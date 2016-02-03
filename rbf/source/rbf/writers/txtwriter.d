@@ -47,7 +47,7 @@ public:
     override void prepare(Layout layout) 
     {
         // as separator is known at that time, build formatting string
-        _fmt = "%%-*s%s".format(outputFeature.fsep);
+        _fmt = "%%-*s%s".format(outputFeature.fieldSeparator);
 
         // calculate all lengths in advance
         size_t rulerLength;
@@ -66,9 +66,9 @@ public:
             }
 
             // set ruler characters
-            if (outputFeature.lsep != "")
+            if (outputFeature.lineSeparator != "")
             {
-                rec.meta.ruler = to!string(outputFeature.lsep[0].repeat(rulerLength+rec.size));
+                rec.meta.ruler = to!string(outputFeature.lineSeparator[0].repeat(rulerLength+rec.size));
             }
         }
     }
@@ -96,7 +96,7 @@ public:
                 rec.each!(f => _write!"name"(f));
 
             // print line separator if requested
-            if (outputFeature.lsep != "") 
+            if (outputFeature.lineSeparator != "") 
             {
                 _fh.writeln; 
                 _fh.writef("%s", rec.meta.ruler);
@@ -142,9 +142,9 @@ unittest {
 	auto reader = new Reader("./test/world.data", layout);
 
 	auto writer = writerFactory("./test/world_data.txt", OutputFormat.txt);
-	writer.outputFeature.fsep = "!";
-	writer.outputFeature.fielddesc = true;
-	writer.outputFeature.lsep = "$";
+	writer.outputFeature.fieldSeparator = "!";
+	writer.outputFeature.fieldDescription = true;
+	writer.outputFeature.lineSeparator = "$";
 	writer.outputFeature.useAlternateName = true;
 
 	writer.prepare(layout);

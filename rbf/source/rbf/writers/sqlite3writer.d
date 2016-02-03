@@ -35,7 +35,7 @@ private:
     sqlite3* _db;                                     /// sqlite3 database handle
     int _sqlCode;                                     /// sqlite3 API return code
     compiledSqlStatement[string] _compiledInsertStmt; /// list of pre-build INSERT statements
-    typeof(outputFeature.insertPool) _trxCounter;     /// pool counter for grouping INSERTs
+    typeof(outputFeature.sqlInsertPool) _trxCounter;  /// pool counter for grouping INSERTs
     string[] _sqlKeywordsList;                        /// list of all SQLITE3 reserved keywords
     ushort[string] _recordCounter;                    /// aa to store the sequence of each record
     string[string] _tableNames;                       /// aa to store record names vs table names
@@ -348,7 +348,7 @@ public:
         _sqlKeywordsList = array(_sqlKeywordsList.filter!(f => f != ""));
 
         // creation of all tables
-        log.log(LogLevel.INFO, MSG021, outputFeature.insertPool);
+        log.log(LogLevel.INFO, MSG021, outputFeature.sqlInsertPool);
 
         // create all tables = one table per record
         _executeStmt("BEGIN IMMEDIATE TRANSACTION");
@@ -450,7 +450,7 @@ public:
         _trxCounter++;
 
         // end transaction if needed
-        if (_trxCounter == outputFeature.insertPool)
+        if (_trxCounter == outputFeature.sqlInsertPool)
         {
             // insert using transaction
             _executeStmt("COMMIT TRANSACTION");

@@ -3,7 +3,7 @@ NAME
        readrbf - read a record-based file and convert it to a known format
 
 SYNOPSIS
-       readrbf -i file - l layout [-o format] [-f file] [-c] [-O] [--br] [--ff] [--fl] [--fr] [-r file] [-s n] [-v] [-p] [-h] [--dup] [--of file]
+       readrbf -i file - l layout [-o format] [-f file] [-c] [-O] [--br] [--ff] [--fl] [--fr] [-r file] [-s n] [-v] [-p] [-h] [--dup] [--of file] [--conf configfile] [--postsql sqlfile] [--presql sqlfile] [--ua]
 
 DESCRIPTION
        This program is aimed at reading a record-based file and converting it to a human-readable format.  It reads its settings from the rbf.xml configu‐
@@ -16,13 +16,13 @@ DESCRIPTION
 OPTIONS
        -b : Benchmark: don't write output file but just read input file.
 
-       --br : Break records: try to break record into individual sub-records for better text presentation.
+       --br : Break records: try to break record into individual repeated sub-records for better text presentation.
 
        -c : Validate layout structure.
 
-       --check : check whether field patterns are matched
+       --check : check whether field patterns are matched.
 
-       --dup : just print fields which are repeated within each record
+       --dup : just print records and fields which are repeated within each record.
 
        -f file : Full path and name of a file to filter fields.
 
@@ -43,15 +43,19 @@ OPTIONS
 
        -O : Write to standard output only.
 
-       --of filename : Convert file to given file name
+       --of filename : Convert file to given file name.
 
        -p : Print out progress status.
+
+       --presql sqlfile : execute SQL statements from the given file after creating of all tables and before inserting data.
+
+       --postsql sqlfile : execute SQL statements from the given file after inserting data.
 
        -r file : Full path and name of a file to filter records.
 
        -s n : Only convert the n-first records.
 
+       --ua : use alternate field names instead of regular field names. 
+
        -v : Verbose: print out options.
-
-
 

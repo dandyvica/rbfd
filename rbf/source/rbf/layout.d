@@ -324,12 +324,12 @@ public:
 		l = new Layout(test_file);
 		l.keepOnly(["CONT": ["NAME", "POPULATION"]]);
 		assert(l["CONT"] == ["NAME", "POPULATION"]);
-		assert(l["COUN"].meta.skip);
+		assert(l["COUN"].meta.skipRecord);
 
 		l = new Layout(test_file);
 		l.keepOnly(["CONT": ["*"]]);
 		assert(l["CONT"] == ["NAME", "AREA", "POPULATION", "DENSITY", "CITY"]);
-		assert(l["COUN"].meta.skip);
+		assert(l["COUN"].meta.skipRecord);
 
 		l = new Layout(test_file);
 		assertThrown(l.keepOnly(["CONT": ["FOO", "POPULATION"], "COUN": ["CAPITAL"]]));

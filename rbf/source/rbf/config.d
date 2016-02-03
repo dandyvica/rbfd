@@ -41,7 +41,8 @@ version(Windows)
     immutable xmlSettings = `\rbf\` ~ xmlSettingsFile;
 }
 
-// settings file
+// settings defaults
+immutable SQL_INSERT_POOL = "3000";
 
 /*********************************************
  * Orientation for printing out data:
@@ -59,25 +60,29 @@ struct SettingCore
 }
 alias LayoutDir = NamedItemsContainer!(SettingCore, false);
 
+// holds definition of output format features
 struct OutputFeature 
 {
-    string name;		      /// name of the output format (e.g.: "txt")
-    string outputDir;		  /// location of output file
-    string fsep;		      /// field separator char for text output format
-    string lsep;		      /// line separator char for text output format
-    Orientation orientation;  /// whether print by row or colums
-    string zipper;            /// name and path of the zipper executable
-    bool fielddesc;		      /// print field description if true
-    bool useAlternateName;    /// use field name followed by its occurence
-    string alternateNameFmt;  /// format to use when formatting alternate name
-    ushort insertPool;        /// used to group INSERTs into a single transaction
-    string outputExtension;   /// file extension specific to output format
+    string name;		          /// name of the output format (e.g.: "txt")
+    string outputDirectory;		  /// location of output file
+    string outputFileExtension;   /// file extension specific to output format
 
+    string fieldSeparator;	      /// field separator char for text output format
+    string lineSeparator;         /// line separator char for text output format
+    bool fieldDescription;	      /// print field description if true
 
+    bool useAlternateName;        /// use field name followed by its occurence
+    string alternateNameFmt;      /// format to use when formatting alternate name
+
+    Orientation orientation;      /// whether print by row or colums
+
+    // SQL specific
     struct
     {
-        string sqlPreFile;
-        string sqlPostFile;
+        ushort sqlInsertPool;     /// used to group INSERTs into a single transaction
+        string sqlPreFile;        /// name of the SQL file containing statements run before inserting data
+        string sqlPostFile;       /// name of the SQL file containing statements run after inserting data
+        bool addDataSource;       /// whether the input file name is added as a source for data in SQL output
     }
 }
 alias OutputDir = NamedItemsContainer!(OutputFeature, false);
@@ -85,7 +90,6 @@ alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 /***********************************
 	* class for reading XML definition file
  */
-//class Setting : NamedItemsContainer!(SettingCore, false, SettingMeta) {
 class Config {
 
 private:
@@ -167,19 +171,48 @@ public:
             auto fdesc = xml.tag.attr.get("fdesc", "false");
 
             // save layout metadata
+            /*
             this._outputDirectory ~= OutputFeature(
                     xml.tag.attr["name"],
                     xml.tag.attr.get("outputDir", ""),
                     xml.tag.attr.get("fsep", "|"),
                     xml.tag.attr.get("lsep", ""),
                     to!Orientation(xml.tag.attr.get("orientation", "horizontal")),
-                    xml.tag.attr.get("zipper", ""),
+                    //xml.tag.attr.get("zipper", ""),
                     (fdesc == "true") ? true : false,
                     to!bool(xml.tag.attr.get("useAlternateName", "false")),
                     xml.tag.attr.get("alternateNameFmt", "%s(%d)"),
                     to!ushort(xml.tag.attr.get("pool", "30")),
                     xml.tag.attr.get("extension", to!string(xml.tag.attr["name"])),
-                    );
+                    to!bool(xml.tag.attr.get("addSource", "false")),
+            );
+            */
+
+            OutputFeature of;
+
+            with (xml.tag)
+            {
+                // save common attributes
+                of.name                 = attr["name"];
+                of.outputDirectory      = attr.get("outputDir", "");
+                of.fieldDescription     = to!bool(attr.get("fdesc", "false"));
+                of.useAlternateName     = to!bool(attr.get("useAlternateName", "false"));
+                of.alternateNameFmt     = attr.get("alternateNameFmt", "%s(%d)");
+                of.outputFileExtension  = attr.get("extension", to!string(of.name));
+
+                // save text attributes
+                of.fieldSeparator = attr.get("fsep", "|");
+                of.lineSeparator  = attr.get("lsep", "");
+
+                // save HTML attributes
+                of.orientation = to!Orientation(attr.get("orientation", "horizontal"));
+
+                // save SQL attributes
+                of.sqlInsertPool = to!ushort(attr.get("pool", SQL_INSERT_POOL));
+                of.addDataSource = to!bool(attr.get("addSource", "false"));
+
+            }
+            this._outputDirectory ~= of;
         };
 
         // real parsing of the XML tags
@@ -243,17 +276,15 @@ private:
 ///
 unittest {
 	writeln("========> testing ", __FILE__);
-	auto c = new Setting("./test/config.xml");
+	auto c = new Config("./test/config.xml");
 
   assert(c.layoutDir["A"].name == "A");
   assert(c.layoutDir["B"].description == "Desc B");
   assert(c.layoutDir["C"].file.canFind("layout/c.xml"));
-	assert(c.layoutDir["world"].file.canFind("test/world_data.xml"));
+  assert(c.layoutDir["world"].file.canFind("test/world_data.xml"));
 
   assert(c.outputDir["txt"].name == "txt");
-  assert(c.outputDir["txt"].outputDir == "/tmp/");
-  assert(c.outputDir["txt"].fsep == "*");
-  assert(!c.outputDir["txt"].fielddesc);
-
-  assert(c.outputDir["xlsx"].zipper == "/usr/bin/zip");
+  assert(c.outputDir["txt"].outputDirectory == "/tmp/");
+  assert(c.outputDir["txt"].fieldSeparator == "*");
+  assert(!c.outputDir["txt"].fieldDescription);
 }

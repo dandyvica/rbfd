@@ -51,7 +51,7 @@ unittest {
 	auto reader = new Reader("./test/world.data", layout);
 
 	auto writer = writerFactory("./test/world_data.tag", OutputFormat.tag);
-	writer.outputFeature.fsep = " ";
+	writer.outputFeature.fieldSeparator = " ";
 
 	foreach (rec; reader) { writer.write(rec); }
 
