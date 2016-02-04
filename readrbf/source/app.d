@@ -21,6 +21,7 @@ import rbf.layout;
 import rbf.reader;
 import rbf.writers.writer;
 import rbf.config;
+import rbf.stat;
 
 import args;
 
@@ -65,15 +66,10 @@ int main(string[] argv)
         }
 
         //---------------------------------------------------------------------------------
-		// read XML properties from rbf.xml file
-        //---------------------------------------------------------------------------------
-		//auto settings = new Config();
-
-        //---------------------------------------------------------------------------------
 		// start logging data
         //---------------------------------------------------------------------------------
-        log.log(LogLevel.INFO, MSG061, argv);
-        log.log(LogLevel.INFO, MSG050, totalCPUs);
+        log.info(MSG061, argv);
+        log.info(MSG050, totalCPUs);
 
         //---------------------------------------------------------------------------------
 		// output format is an enum but should match the string in rbf.xml config file
@@ -81,7 +77,7 @@ int main(string[] argv)
         auto outputFormat = to!string(opts.outputFormat);
 
         //---------------------------------------------------------------------------------
-		// build output file name 
+		// use output file name if given or build it
         //---------------------------------------------------------------------------------
         if (opts.givenOutputFileName != "")
         {
@@ -93,7 +89,7 @@ int main(string[] argv)
         }
 
         //---------------------------------------------------------------------------------
-		// check output format is authorized
+		// check if œoutput format is valid
         //---------------------------------------------------------------------------------
 		if (outputFormat !in settings.outputDir) 
         {
@@ -101,12 +97,12 @@ int main(string[] argv)
 		}
 
         //---------------------------------------------------------------------------------
-		// define new layout corresponding to the requested layout
+		// define new layout corresponding to the requested layout given from the command line
         //---------------------------------------------------------------------------------
 		auto layout = new Layout(settings.layoutDir[opts.inputLayout].file);
 
         //---------------------------------------------------------------------------------
-		// layout syntax validation requested from command line
+		// layout syntax validation requested from command line ?
         //---------------------------------------------------------------------------------
 		if (opts.bCheckLayout) 
         {
@@ -130,7 +126,7 @@ int main(string[] argv)
 			// only keep specified fields
             //---------------------------------------------------------------------------------
 			layout.keepOnly(opts.filteredFields, std.ascii.newline);
-            log.log(LogLevel.INFO, MSG026, layout.size);
+            log.info(MSG026, layout.size);
 		}
         // list of records/fields given from the command line
 		if (opts.isFieldFilterSet) 
@@ -139,7 +135,7 @@ int main(string[] argv)
 			// only keep specified fields
             //---------------------------------------------------------------------------------
 			layout.keepOnly(opts.filteredFields, ";");
-            log.log(LogLevel.INFO, MSG026, layout.size);
+            log.info(MSG026, layout.size);
 		}
 
         //---------------------------------------------------------------------------------
@@ -147,7 +143,7 @@ int main(string[] argv)
 		// line and the configuration found in JSON properties file
         //---------------------------------------------------------------------------------
 		auto reader = new Reader(opts.inputFileName, layout);
-        log.log(LogLevel.INFO, MSG016, opts.inputFileName, reader.inputFileSize);
+        log.info(MSG016, opts.inputFileName, reader.inputFileSize);
 
         //---------------------------------------------------------------------------------
 		// check field patterns?
@@ -177,7 +173,6 @@ int main(string[] argv)
 			}
 			printMembers!(CommandLineOption)(opts);
 			printMembers!(OutputFeature)(settings.outputDir[outputFormat]);
-
 		}
 
         //---------------------------------------------------------------------------------
@@ -195,7 +190,7 @@ int main(string[] argv)
         }
 
         //---------------------------------------------------------------------------------
-        // re-index each field
+        // re-index each field because we might have deleted fields
         //---------------------------------------------------------------------------------
         layout.each!(r => r.recalculateIndex);
 
@@ -227,6 +222,8 @@ int main(string[] argv)
             writer.outputFeature.sqlPreFile  = opts.sqlPreFile;
             writer.outputFeature.sqlPostFile = opts.sqlPostFile;
         }
+
+        // some writers need preliminary process
 		writer.prepare(layout);
 
         //---------------------------------------------------------------------------------
@@ -234,7 +231,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		if (opts.bBreakRecord || opts.bPrintDuplicatedPattern)
 		{
-            log.log(LogLevel.INFO, MSG039);
+            log.info(MSG039);
 
             // try to identify those fields which are repeated
 			layout.each!(r => r.identifyRepeatedFields);
@@ -243,7 +240,7 @@ int main(string[] argv)
 				if (rec.meta.repeatingPattern.length != 0)
                 {
                     rec.meta.repeatingPattern.each!(rp => rec.findRepeatedFields(rp));
-                    rec.meta.repeatingPattern.each!(rp => log.log(LogLevel.INFO, MSG040, rec.name, rp));
+                    rec.meta.repeatingPattern.each!(rp => log.info(MSG040, rec.name, rp));
 
                     // we just want to print out repeated fields
                     if (opts.bPrintDuplicatedPattern)
@@ -338,7 +335,7 @@ int main(string[] argv)
 
         stderr.writeln();
 		stderr.writefln(MSG014, reader.nbLinesRead, nbReadRecords, nbWrittenRecords);
-		log.log(LogLevel.INFO, MSG015, elapsedtime);
+		log.info(MSG015, elapsedtime);
 
 		if (!opts.bJustRead)
         {
@@ -359,7 +356,7 @@ int main(string[] argv)
         int seconds;
         elapsedtime.split!"seconds"(seconds);
 
-        if (seconds != 0) log.log(LogLevel.INFO, MSG017, to!float(nbReadRecords/seconds));
+        if (seconds != 0) log.info(MSG017, to!float(nbReadRecords/seconds));
 	}
 	catch (Exception e) 
     {

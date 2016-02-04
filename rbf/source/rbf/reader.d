@@ -20,6 +20,7 @@ import rbf.log;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
+import rbf.stat;
 
 // definition of useful aliases
 //alias STRING_MAPPER = void function(Record);           /// alias to a delegate used to change field values
@@ -219,6 +220,7 @@ public:
 
                     // now, we've read one additional line from file
                     _outerThis._nbLinesRead++;
+                    //stat.nbPhysicalLines++;
 
                     // identify record from line
                     rec = _outerThis._getRecordFromLine(_buffer);

@@ -14,6 +14,7 @@ import rbf.log;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
+import rbf.stat;
 class Reader
 {
 	private 
