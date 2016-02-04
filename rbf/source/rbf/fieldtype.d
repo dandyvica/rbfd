@@ -18,6 +18,7 @@ import std.regex;
 import std.algorithm;
 import std.exception;
 import std.range;
+import std.traits;
 
 import rbf.errormsg;
 import rbf.log;
@@ -48,7 +49,7 @@ static TVALUE overpunch(TVALUE s)
 
 
 // filter matching method pointer
-alias CmpFunc = bool delegate(const TVALUE,const string,const TVALUE);
+alias CmpFunc = bool delegate(const TVALUE,const Operator,const TVALUE);
 alias FmtFunc = string delegate(const char[] value, const size_t length);
 alias Conv = TVALUE function(TVALUE);
 
@@ -61,6 +62,22 @@ enum AtomicType {
 	date,
 	string
 }
+
+// list of all possible operators for filtering records
+enum Operator:string {
+    EQUAL = "=",
+    NOT_EQUAL = "!=",
+    GREATER_THAN = ">",
+    LESS_THAN = "<",
+    MATCH = "~",
+    LIKE = "#",
+    NOT_MATCH = "!~",
+    NOT_LIKE = "!#",
+}
+
+// get the list of all operators as a string
+//string[] opList = cast(string[]) [ EnumMembers!Operator ];
+
 
 /***********************************
  * extra information for a field type
@@ -152,7 +169,8 @@ public:
 	/// Test a record filter. Basically it tests whether a lvalue is matching an rvalue
 	bool isFieldFilterMatched(TVALUE lvalue, string op, TVALUE rvalue) 
     {
-		return meta.filterTestCallback(lvalue, op, rvalue);
+        // test if operator is in the admissible list of all operators
+		return meta.filterTestCallback(lvalue, cast(Operator)(op), rvalue);
 	}
 	///
 	unittest {
@@ -171,41 +189,42 @@ public:
     {
 		return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
 	}
-	bool matchFilter(T)(in TVALUE lvalue, in string operator, in TVALUE rvalue) 
+	bool matchFilter(T)(in TVALUE lvalue, in Operator operator, in TVALUE rvalue) 
     {
+        // resulting boolean condition
 		bool condition;
 
 		try 
         {
-            // operator is normally limited to those listed below
+            // whole list of allowed operators
 			switch (operator) 
             {
-				case "=":
-				case "==":
+                case Operator.EQUAL:
 					mixin(testFilter!T("=="));
 					break;
-				case "!=":
+                case Operator.NOT_EQUAL:
 					mixin(testFilter!T("!="));
 					break;
-				case "<":
+                case Operator.LESS_THAN:
 					mixin(testFilter!T("<"));
 					break;
-				case ">":
+                case Operator.GREATER_THAN:
 					mixin(testFilter!T(">"));
 					break;
                 // and some operators only make sense if the field type is string
 				static if (is(T == string)) 
                 {
-					case "~":
+                    case Operator.LIKE:
+                    case Operator.MATCH:
 						condition = !matchAll(lvalue, regex(rvalue)).empty;
 						break;
-					case "!~":
+                    case Operator.NOT_LIKE:
+                    case Operator.NOT_MATCH:
 						condition = matchAll(lvalue, regex(rvalue)).empty;
                         //writefln("<%s> %s <%s> = %s", lvalue, operator, rvalue, condition);
 						break;
 				}
 				default:
-					throw new Exception(MSG030.format(operator));
 			}
 		}
 		catch (ConvException e) 

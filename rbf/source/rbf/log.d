@@ -59,7 +59,7 @@ public:
     }
 
     // useful helper
-    void info(string, A...)(string msg, A args) { log(LogLevel.info, msg, args); }
+    void info(string, A...)(string msg, A args) { log(LogLevel.INFO, msg, args); }
 
     // close log file
     ~this() 

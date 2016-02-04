@@ -7,12 +7,15 @@ import std.algorithm;
 import std.regex;
 import std.exception;
 import std.array;
+import std.traits;
+import rbf.errormsg;
+import rbf.fieldtype;
 import rbf.field;
 struct RecordClause
 {
 	string fieldName;
 	string operator;
-	TVALUE scalar;
+	TVALUE value;
 }
 class RecordFilter
 {

@@ -42,12 +42,14 @@ public:
 
 	string fieldFilterFile;			                	/// if any, name of the field filter file
 	string fieldFilter;					                /// if any, list of records/fields to filter out
+	string filteredFields;				                /// if any list of fields to filter out
+
 	string recordFilterFile;			                /// if any, name of the record filter file
 	string recordFilter;				                /// if any, name of the record filter file
 	RecordFilter filteredRecords;                       /// if any, list of clauses to filter records
-	string filteredFields;				                /// if nay list of fields to filter out
 
 	string lineFilter;					                /// if any, define a regex to match lines
+
 	bool bVerbose;						                /// if true, print out lots of data
 	bool bJustRead;						                /// if true, don't write data
 	bool bProgressBar;                                  /// print out read record progress bar
@@ -145,7 +147,7 @@ public:
             }
         }
 
-		// if no output file name specified, then use input file name and
+		// if a filter file is selected, use it. Same for field filter entered in the command line
 		// append the suffix
 		if (fieldFilterFile != "") 
         {
@@ -156,11 +158,11 @@ public:
 			filteredFields = fieldFilter;
 		}
 
-		// if filter file is specified, load conditions
+		// if record file is specified, load conditions
 		if (recordFilterFile != "") 
         {
 			enforce(exists(recordFilterFile), MSG042.format(recordFilterFile));
-			filteredRecords = new RecordFilter(cast(string)std.file.read(recordFilterFile), "\n");
+			filteredRecords = new RecordFilter(cast(string)std.file.read(recordFilterFile), std.ascii.newline);
 		} 
         else if (recordFilter != "") 
         {

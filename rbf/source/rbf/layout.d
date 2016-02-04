@@ -355,8 +355,9 @@ public:
 
 			// build a map from this list. Ex list: "CONT:ID,NAME;COUN:POPULATION"
 			// possibly remove empty data
-			auto recAndFields = list.split(separator).remove!(e => e == "");
+			auto recAndFields = list.split(separator).remove!(e => e == "").remove!(e => e.startsWith("#"));
 
+            // loop on found fields
 			foreach (e; recAndFields) 
             {
 				auto data = e.split(":");
@@ -372,6 +373,7 @@ public:
 				auto fieldList = array(data[1].split(",").map!(e => e.strip));
 
 				// look up each field
+                /*
 				foreach (f; fieldList) 
                 {
 					// calculated field?
@@ -387,12 +389,15 @@ public:
 					}
 
 				}
+                */
 
+                // save field list
 				recordMap[recName] = fieldList;
 			}
 
 			// call overloaded func
 			keepOnly(recordMap);
+            log.info(MSG077, recordMap);
 
 	}
 	///

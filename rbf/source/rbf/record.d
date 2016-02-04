@@ -329,7 +329,7 @@ public:
 			foreach (Field field; this[c.fieldName]) 
             {
 				// if one condition is false, then get out
-				condition |= field.type.isFieldFilterMatched(field.value, c.operator, c.scalar);
+				condition |= field.type.isFieldFilterMatched(field.value, c.operator, c.value);
 			}
 
 			if (!condition) return false;

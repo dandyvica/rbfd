@@ -8,11 +8,12 @@ import std.regex;
 import std.algorithm;
 import std.exception;
 import std.range;
+import std.traits;
 import rbf.errormsg;
 import rbf.log;
 import rbf.field : TVALUE;
 static TVALUE overpunch(TVALUE s);
-alias CmpFunc = bool delegate(const TVALUE, const string, const TVALUE);
+alias CmpFunc = bool delegate(const TVALUE, const Operator, const TVALUE);
 alias FmtFunc = string delegate(const char[] value, const size_t length);
 alias Conv = TVALUE function(TVALUE);
 enum AtomicType 
@@ -21,6 +22,17 @@ enum AtomicType
 	integer,
 	date,
 	string,
+}
+enum Operator : string
+{
+	EQUAL = "=",
+	NOT_EQUAL = "!=",
+	GREATER_THAN = ">",
+	LESS_THAN = "<",
+	MATCH = "~",
+	LIKE = "#",
+	NOT_MATCH = "!~",
+	NOT_LIKE = "!#",
 }
 struct FieldTypeMeta
 {
@@ -45,43 +57,46 @@ class FieldType
 		{
 			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
 		}
-		bool matchFilter(T)(in TVALUE lvalue, in string operator, in TVALUE rvalue)
+		bool matchFilter(T)(in TVALUE lvalue, in Operator operator, in TVALUE rvalue)
 		{
 			bool condition;
 			try
 			{
 				switch (operator)
 				{
-					case "=":
-					{
-					}
-					case "==":
+					case Operator.EQUAL:
 					{
 						mixin(testFilter!T("=="));
 						break;
 					}
-					case "!=":
+					case Operator.NOT_EQUAL:
 					{
 						mixin(testFilter!T("!="));
 						break;
 					}
-					case "<":
+					case Operator.LESS_THAN:
 					{
 						mixin(testFilter!T("<"));
 						break;
 					}
-					case ">":
+					case Operator.GREATER_THAN:
 					{
 						mixin(testFilter!T(">"));
 						break;
 						static if (is(T == string))
 						{
-							case "~":
+							case Operator.LIKE:
+							{
+							}
+							case Operator.MATCH:
 							{
 								condition = !matchAll(lvalue, regex(rvalue)).empty;
 								break;
 							}
-							case "!~":
+							case Operator.NOT_LIKE:
+							{
+							}
+							case Operator.NOT_MATCH:
 							{
 								condition = matchAll(lvalue, regex(rvalue)).empty;
 								break;
@@ -91,7 +106,6 @@ class FieldType
 					}
 					default:
 					{
-						throw new Exception(MSG030.format(operator));
 					}
 				}
 			}
