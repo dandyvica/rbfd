@@ -17,6 +17,7 @@ import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
 import rbf.nameditems;
+import rbf.stat;
 version (unittest)
 {
 	immutable test_file = "./test/world_data.xml";

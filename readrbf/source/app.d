@@ -31,9 +31,9 @@ immutable chunkSize = 1000;         /// print out message every chunkSize record
 int main(string[] argv)
 {
 	// number of records read
-	auto nbReadRecords    = 0;
-	auto nbWrittenRecords = 0;
-	auto nbMatchedRecords = 0;
+	//auto nbReadRecords    = 0;
+	//auto nbWrittenRecords = 0;
+	//auto nbMatchedRecords = 0;
 
     //auto tid = spawn(&spawnedFunction);
 
@@ -264,14 +264,14 @@ int main(string[] argv)
 		foreach (rec; reader)
 		{
             //---------------------------------------------------------------------------------
-			// record read is increasing
+			// one more record read
             //---------------------------------------------------------------------------------
-			nbReadRecords++;
+			stat.nbReadRecords++;
 
             //---------------------------------------------------------------------------------
-			// if samples is set, break if record count is reached
+			// if samples is set, break if line count is reached
             //---------------------------------------------------------------------------------
-			if (opts.samples != 0 && nbReadRecords > opts.samples) 
+			if (opts.samples != 0 && stat.nbReadLines > opts.samples) 
             {
                 break;
             }
@@ -279,13 +279,14 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
             // don't want a progress bar?
             //---------------------------------------------------------------------------------
-            if (opts.bProgressBar && nbReadRecords % chunkSize == 0)
+            if (opts.bProgressBar && stat.nbReadRecords % chunkSize == 0)
             {
-                if (reader.nbRecords != 0)
-                    stderr.writef(MSG066, nbReadRecords, reader.nbRecords, 
-                            to!float(nbReadRecords)/reader.nbRecords*100, nbMatchedRecords);
+                if (reader.nbGuessedRecords != 0)
+                    stat.progressBarStats(reader.nbGuessedRecords);
+                    //stderr.writef(MSG066, nbReadRecords, reader.nbRecords, 
+                    //        to!float(nbReadRecords)/reader.nbRecords*100, nbMatchedRecords);
                 else
-                    stderr.writef(MSG065, nbReadRecords);
+                    stderr.writef(MSG065, stat.nbReadRecords);
             }
 
             //---------------------------------------------------------------------------------
@@ -294,7 +295,7 @@ int main(string[] argv)
 			if (opts.isRecordFilterFileSet || opts.isRecordFilterSet)
 			{
 				if (!rec.matchRecordFilter(opts.filteredRecords)) continue;
-                nbMatchedRecords++;
+                stat.nbMatchedRecords++;
 			}
 
             //---------------------------------------------------------------------------------
@@ -306,7 +307,7 @@ int main(string[] argv)
 			// use our writer to generate the file
             //---------------------------------------------------------------------------------
 			writer.write(rec);
-			nbWrittenRecords++;
+			stat.nbWrittenRecords++;
 
             //---------------------------------------------------------------------------------
 			// write sub records if any
@@ -334,7 +335,8 @@ int main(string[] argv)
 		auto elapsedtime = Clock.currTime() - starttime;
 
         stderr.writeln();
-		stderr.writefln(MSG014, reader.nbLinesRead, nbReadRecords, nbWrittenRecords);
+		//stderr.writefln(MSG014, reader.nbLinesRead, nbReadRecords, nbWrittenRecords);
+        stat.finalStats();
 		log.info(MSG015, elapsedtime);
 
 		if (!opts.bJustRead)
@@ -351,12 +353,20 @@ int main(string[] argv)
         }
 
         //---------------------------------------------------------------------------------
+		// Detailed statistics on file?
+        //---------------------------------------------------------------------------------
+        if (opts.bDetailedStats)
+        {
+            stat.detailedStats();
+        }
+
+        //---------------------------------------------------------------------------------
 		// and some logs
         //---------------------------------------------------------------------------------
         int seconds;
         elapsedtime.split!"seconds"(seconds);
 
-        if (seconds != 0) log.info(MSG017, to!float(nbReadRecords/seconds));
+        if (seconds != 0) log.info(MSG017, to!float(stat.nbReadRecords/seconds));
 	}
 	catch (Exception e) 
     {

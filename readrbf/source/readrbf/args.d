@@ -57,6 +57,7 @@ public:
 	bool stdOutput;						                /// if true, print to standard output instead of file
 	bool bBreakRecord;  			                    /// if true, break records into individual sub-records
 	bool bCheckPattern;  				                /// if true, check if field values are matching pattern
+    bool bDetailedStats;                                /// if true, print out detailed statistics on file at the end of conversion         
 
 	ulong samples;					                    /// limit to n first lines (n == samples)
     bool bUseAlternateNames;                            /// in case of field duplication, append field name with index
@@ -123,6 +124,7 @@ public:
                     "ua"                           , &bUseAlternateNames     ,
                     "presql"                       , &sqlPreFile             ,
                     "postsql"                      , &sqlPostFile            ,
+                    "stats"                        , &bDetailedStats         ,
                     "conf"                         , &cmdlineConfigFile
                 );
             }

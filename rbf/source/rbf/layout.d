@@ -18,6 +18,7 @@ import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
 import rbf.nameditems;
+import rbf.stat;
 
 version(unittest) 
 {
@@ -208,6 +209,9 @@ public:
 
             // add new record to layout container
             this ~= record;
+
+            // create entry into stat AA
+            stat.nbRecs[recName] = 0;
             
 		};
 

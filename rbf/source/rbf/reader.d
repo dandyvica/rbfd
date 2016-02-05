@@ -40,9 +40,9 @@ private:
 	                                        /// regex include pattern: read only those lines matching this regex
 	Regex!char _lineRegex;                  /// but previous one comes first
 	//STRING_MAPPER _mapper;                  /// mapper function which can be defined to transform a record
-	ulong _nbLinesRead;                     /// size read
+	//ulong _nbLinesRead;                     /// size read
 	ulong _inputFileSize;                   /// input file size
-    ulong _guessedRecordNumber;             /// guessed number of records (in case of a lauyout having reclength!=0)
+    Counter _guessedRecordNumber;             /// guessed number of records (in case of a lauyout having reclength!=0)
     bool _checkPattern;                     /// do we want to check field pattern for each record?
     ulong _nbBadCheck;                      /// counter for those bad formatted fields
 
@@ -93,7 +93,7 @@ public:
 	@property void ignoreRegexPattern(in string pattern) { _ignoreRegex = regex(pattern); }
 	@property void lineRegexPattern(in string pattern)   { _lineRegex   = regex(pattern); }
 
-	@property ulong nbRecords()   { return _guessedRecordNumber; }
+	@property Counter nbGuessedRecords()   { return _guessedRecordNumber; }
 
 	/**
 	 * register a callback function which will be called for each fetched record
@@ -102,7 +102,7 @@ public:
 
 	@property Layout layout() { return _layout; }
 
-	@property ulong nbLinesRead() { return _nbLinesRead; }
+	//@property ulong nbLinesRead() { return _nbLinesRead; }
 
 	/// return the file size of the input file in bytes
 	@property ulong inputFileSize() { return _inputFileSize; }
@@ -135,13 +135,17 @@ public:
         // using the hash matching method
 		auto recordName = _recordIdentifier(line);
 
+        // for statistics, we count the number of records. Entry has been already created
+        // during layout creation
+        stat.nbRecs[recordName]++;
+
 		// record not found ? So loop
         if (recordName !in _layout) 
         {
             recordName = _layout.buildFieldNameWhenRoot(recordName, _sectionName);
             if (recordName !in _layout)
             {
-                log.log(LogLevel.WARNING, MSG018, _nbLinesRead, recordName);
+                log.log(LogLevel.WARNING, MSG018, stat.nbReadLines, recordName);
                 return null;
             }
         }
@@ -159,7 +163,7 @@ public:
 		if (rec.meta.skipRecord) return null;
 
         // keep track of the original line number: useful for pointing out errors in the rb-file
-        rec.meta.sourceLineNumber = _nbLinesRead;
+        rec.meta.sourceLineNumber = stat.nbReadLines;
 
 		// now we can safely save our values
 		// set record value (and fields)
@@ -176,7 +180,7 @@ public:
             {
                 if (f.value != "" && !f.matchPattern) 
                 {
-                    log.log(LogLevel.WARNING, MSG002, _nbLinesRead, recordName, f.contextualInfo, f.value, f.pattern);
+                    log.log(LogLevel.WARNING, MSG002, stat.nbReadLines, recordName, f.contextualInfo, f.value, f.pattern);
                     _nbBadCheck++;
                 }
             }
@@ -219,8 +223,8 @@ public:
                     if (_nbChars == 0) return;
 
                     // now, we've read one additional line from file
-                    _outerThis._nbLinesRead++;
-                    //stat.nbPhysicalLines++;
+                    //_outerThis._nbLinesRead++;
+                    stat.nbReadLines++;
 
                     // identify record from line
                     rec = _outerThis._getRecordFromLine(_buffer);
@@ -245,7 +249,8 @@ public:
                     // if eof, just return
                     if (_nbChars == 0) return;
 
-                    _outerThis._nbLinesRead++;
+                    //_outerThis._nbLinesRead++;
+                    stat.nbReadLines++;
 
                     // get rid of EOL
                     //_buffer = _buffer.stripRight('\n');

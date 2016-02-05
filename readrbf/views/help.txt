@@ -22,6 +22,8 @@ OPTIONS
 
        --check : check whether field patterns are matched.
 
+       --conf file: use the file given as argument instead of rbf.xml file.
+
        --dup : just print records and fields which are repeated within each record.
 
        -f file : Full path and name of a file to filter fields.
@@ -54,6 +56,8 @@ OPTIONS
        -r file : Full path and name of a file to filter records.
 
        -s n : Only convert the n-first records.
+
+       --stats: print out detailed statistics on file at the end of conversion.
 
        --ua : use alternate field names instead of regular field names. 
 

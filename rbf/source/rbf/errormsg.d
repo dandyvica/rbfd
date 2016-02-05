@@ -23,7 +23,7 @@ immutable MSG009 = "error: lower index %d is higher than upper index %d";
 immutable MSG010 = "error: unable to create field, wrong number of csv data (%d, expected %d)";
 immutable MSG011 = "info: creating Excel/ZIP file <%s>";
 immutable MSG012 = "info: creating Excel internal directory structure";
-immutable MSG013 = "\ninfo: created file %s, size = %d bytes";
+immutable MSG013 = "info: created file %s, size = %d bytes";
 immutable MSG014 = "info: lines: %d read, records: %d read, %d written";
 immutable MSG015 = "elapsed time = %s";
 immutable MSG016 = "opening input file <%s>, size = %d bytes";
