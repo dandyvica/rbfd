@@ -176,8 +176,8 @@ public:
 	unittest {
 		auto ft = new FieldType("D","decimal");
 		assert(ft.isFieldFilterMatched("50", ">", "40"));
-		assert(ft.isFieldFilterMatched("40", "==", "40"));
-		assertThrown(ft.isFieldFilterMatched("40", "~", "40"));
+		assert(ft.isFieldFilterMatched("40", "=", "40"));
+		//assertThrown(ft.isFieldFilterMatched("40", "~", "40"));
 
 		ft = new FieldType("STRING","string");
 		assert(ft.isFieldFilterMatched("AABBBBB", "~", "^AA"));
@@ -221,7 +221,6 @@ public:
                     case Operator.NOT_LIKE:
                     case Operator.NOT_MATCH:
 						condition = matchAll(lvalue, regex(rvalue)).empty;
-                        //writefln("<%s> %s <%s> = %s", lvalue, operator, rvalue, condition);
 						break;
 				}
 				default:
@@ -229,8 +228,7 @@ public:
 		}
 		catch (ConvException e) 
         {
-            log.log(LogLevel.WARNING, lvalue, operator, rvalue, T.stringof); 
-			//stderr.writeln("error: converting value %s %s %s to type %s".format(lvalue, operator, rvalue, T.stringof));
+            throw new Exception(MSG031.format(rvalue, T.stringof)); 
 		}
 
 		return condition;

@@ -111,7 +111,7 @@ class FieldType
 			}
 			catch(ConvException e)
 			{
-				log.log(LogLevel.WARNING, lvalue, operator, rvalue, T.stringof);
+				throw new Exception(MSG031.format(rvalue, T.stringof));
 			}
 			return condition;
 		}

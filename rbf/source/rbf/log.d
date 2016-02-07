@@ -27,8 +27,8 @@ enum LogLevel { TRACE, INFO, WARNING, ERROR, FATAL }
 struct Log 
 {
 private:
-    File _logHandle;
-    string _trace;
+    File _logHandle;            // handle on log file
+    string _trace;              // to enable trace, need to define RBF_LOG environment variable
 
 public:
 
@@ -37,6 +37,7 @@ public:
     {
         try
         {
+            // append to log file
             _logHandle = File(logFileName, "a");
         }
         catch (ErrnoException)
@@ -58,8 +59,12 @@ public:
         }
     }
 
-    // useful helper
+    // useful helpers
+    void trace(string, A...)(string msg, A args) { log(LogLevel.TRACE, msg, args); }
     void info(string, A...)(string msg, A args) { log(LogLevel.INFO, msg, args); }
+    void warn(string, A...)(string msg, A args) { log(LogLevel.WARNING, msg, args); }
+    void error(string, A...)(string msg, A args) { log(LogLevel.ERROR, msg, args); }
+    void fatal(string, A...)(string msg, A args) { log(LogLevel.FATAL, msg, args); }
 
     // close log file
     ~this() 

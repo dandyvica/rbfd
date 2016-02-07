@@ -56,9 +56,9 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// configuration file passed as arugment? Use it if neccessary
         //---------------------------------------------------------------------------------
-        if (opts.cmdlineConfigFile != "")
+        if (opts.options.cmdlineConfigFile != "")
         {
-            settings = new Config(opts.cmdlineConfigFile);
+            settings = new Config(opts.options.cmdlineConfigFile);
         }
         else
         {
@@ -74,18 +74,18 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// output format is an enum but should match the string in rbf.xml config file
         //---------------------------------------------------------------------------------
-        auto outputFormat = to!string(opts.outputFormat);
+        auto outputFormat = to!string(opts.options.outputFormat);
 
         //---------------------------------------------------------------------------------
 		// use output file name if given or build it
         //---------------------------------------------------------------------------------
-        if (opts.givenOutputFileName != "")
+        if (opts.options.givenOutputFileName != "")
         {
-            opts.outputFileName = opts.givenOutputFileName;
+            opts.outputFileName = opts.options.givenOutputFileName;
         }
         else
         {
-            opts.outputFileName = baseName(opts.inputFileName) ~ "." ~ settings.outputDir[outputFormat].outputFileExtension;
+            opts.outputFileName = baseName(opts.options.inputFileName) ~ "." ~ settings.outputDir[outputFormat].outputFileExtension;
         }
 
         //---------------------------------------------------------------------------------
@@ -99,12 +99,12 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// define new layout corresponding to the requested layout given from the command line
         //---------------------------------------------------------------------------------
-		auto layout = new Layout(settings.layoutDir[opts.inputLayout].file);
+		auto layout = new Layout(settings.layoutDir[opts.options.inputLayout].file);
 
         //---------------------------------------------------------------------------------
 		// layout syntax validation requested from command line ?
         //---------------------------------------------------------------------------------
-		if (opts.bCheckLayout) 
+		if (opts.options.bCheckLayout) 
         {
 			layout.validate;
 		}
@@ -112,7 +112,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// use alternate names if requested
         //---------------------------------------------------------------------------------
-		if (opts.bUseAlternateNames) 
+		if (opts.options.bUseAlternateNames) 
         {
 			settings.outputDir[outputFormat].useAlternateName = true;
 		}
@@ -142,26 +142,26 @@ int main(string[] argv)
 		// create new reader according to what is passed in the command
 		// line and the configuration found in JSON properties file
         //---------------------------------------------------------------------------------
-		auto reader = new Reader(opts.inputFileName, layout);
-        log.info(MSG016, opts.inputFileName, reader.inputFileSize);
+		auto reader = new Reader(opts.options.inputFileName, layout);
+        log.info(MSG016, opts.options.inputFileName, reader.inputFileSize);
 
         //---------------------------------------------------------------------------------
 		// check field patterns?
         //---------------------------------------------------------------------------------
-        reader.checkPattern = opts.bCheckPattern;
+        reader.checkPattern = opts.options.bCheckPattern;
 
         //---------------------------------------------------------------------------------
 		// grep lines?
         //---------------------------------------------------------------------------------
-		if (opts.lineFilter != "") 
+		if (opts.options.lineFilter != "") 
         {
-			reader.lineRegexPattern = opts.lineFilter;
+			reader.lineRegexPattern = opts.options.lineFilter;
 		}
 
         //---------------------------------------------------------------------------------
 		// if verbose option is requested, print out what's possible
         //---------------------------------------------------------------------------------
-		if (opts.bVerbose) 
+		if (opts.options.bVerbose) 
         {
             //---------------------------------------------------------------------------------
 			// print out field type meta info
@@ -208,8 +208,8 @@ int main(string[] argv)
 				opts.outputFileName
 		);
 
-		auto output = (opts.stdOutput) ? "" : outputFileName;
-		writer = writerFactory(output, opts.outputFormat);
+		auto output = (opts.options.stdOutput) ? "" : outputFileName;
+		writer = writerFactory(output, opts.options.outputFormat);
 
         //---------------------------------------------------------------------------------
 		// set writer features read in config and process preliminary steps
@@ -217,10 +217,10 @@ int main(string[] argv)
 		writer.outputFeature = settings.outputDir[outputFormat];
 
         // SQL format adds additonal feature
-        if (opts.outputFormat == OutputFormat.sql) 
+        if (opts.options.outputFormat == OutputFormat.sql) 
         {
-            writer.outputFeature.sqlPreFile  = opts.sqlPreFile;
-            writer.outputFeature.sqlPostFile = opts.sqlPostFile;
+            writer.outputFeature.sqlPreFile  = opts.options.sqlPreFile;
+            writer.outputFeature.sqlPostFile = opts.options.sqlPostFile;
         }
 
         // some writers need preliminary process
@@ -229,7 +229,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// break records?
         //---------------------------------------------------------------------------------
-		if (opts.bBreakRecord || opts.bPrintDuplicatedPattern)
+		if (opts.options.bBreakRecord || opts.options.bPrintDuplicatedPattern)
 		{
             log.info(MSG039);
 
@@ -243,7 +243,7 @@ int main(string[] argv)
                     rec.meta.repeatingPattern.each!(rp => log.info(MSG040, rec.name, rp));
 
                     // we just want to print out repeated fields
-                    if (opts.bPrintDuplicatedPattern)
+                    if (opts.options.bPrintDuplicatedPattern)
                     {
                         foreach (sr; rec.meta.subRecord)
                         {
@@ -255,7 +255,7 @@ int main(string[] argv)
 			}
 
             // in case of just print the duplicated fields, exit
-            if (opts.bPrintDuplicatedPattern) return(3);
+            if (opts.options.bPrintDuplicatedPattern) return(3);
 		}
 
         //---------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// if samples is set, break if line count is reached
             //---------------------------------------------------------------------------------
-			if (opts.samples != 0 && stat.nbReadLines > opts.samples) 
+			if (opts.options.samples != 0 && stat.nbReadLines > opts.options.samples) 
             {
                 break;
             }
@@ -279,7 +279,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
             // don't want a progress bar?
             //---------------------------------------------------------------------------------
-            if (opts.bProgressBar && stat.nbReadRecords % chunkSize == 0)
+            if (opts.options.bProgressBar && stat.nbReadRecords % chunkSize == 0)
             {
                 if (reader.nbGuessedRecords != 0)
                     stat.progressBarStats(reader.nbGuessedRecords);
@@ -301,7 +301,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// don't want to write? Just loop
             //---------------------------------------------------------------------------------
-			if (opts.bJustRead) continue;
+			if (opts.options.bJustRead) continue;
 
             //---------------------------------------------------------------------------------
 			// use our writer to generate the file
@@ -312,7 +312,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// write sub records if any
             //---------------------------------------------------------------------------------
-			if (opts.bBreakRecord)
+			if (opts.options.bBreakRecord)
 			{
 				foreach(subRec; rec.meta.subRecord)
 				{
@@ -339,7 +339,7 @@ int main(string[] argv)
         stat.finalStats();
 		log.info(MSG015, elapsedtime);
 
-		if (!opts.bJustRead)
+		if (!opts.options.bJustRead)
         {
 				stderr.writefln(MSG013, opts.outputFileName, getSize(opts.outputFileName));
         }
@@ -347,7 +347,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
         // if we wasked for checking formats, print out number of bad checks
         //---------------------------------------------------------------------------------
-        if (opts.bCheckPattern)
+        if (opts.options.bCheckPattern)
         {
             stderr.writefln(MSG053, reader.nbBadCheck);
         }
@@ -355,7 +355,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// Detailed statistics on file?
         //---------------------------------------------------------------------------------
-        if (opts.bDetailedStats)
+        if (opts.options.bDetailedStats)
         {
             stat.detailedStats();
         }

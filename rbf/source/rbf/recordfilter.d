@@ -38,9 +38,12 @@ public:
 	this(string recordFilter, string separator)
 	{
         // this is the regex to use to split the condition and recognize field name, operator and value
-
-		//static auto reg = regex(r"(\w+)(\s*)(=|!=|>|<|~|!~|#|!#)(\s*)(.+)$");
-		static auto reg = regex(r"(\w+)(\s*)(\S+)(\s*)(.+)$");
+        // this regex is built dynamically from operator list
+		static auto reg = regex(
+                r"(\w+)\s*(" ~
+                (cast(string[])[ EnumMembers!Operator ]).join('|') ~
+                r")\s*(.+)$"
+        );
 
         // split according to separator
         auto splitted = (separator == std.ascii.newline) ? array(recordFilter.lineSplitter) : recordFilter.split(separator);
@@ -55,7 +58,7 @@ public:
             if (!m.empty)
             {
                 // check if operator is supported
-                auto op = m.captures[3].strip();
+                auto op = m.captures[2].strip();
 
                 if (!canFind(cast(string[])[ EnumMembers!Operator ], op))
                 {
@@ -63,7 +66,7 @@ public:
                 }
 
                 // build list of clauses
-                _recordFitlerClause ~= RecordClause(m.captures[1].strip(), op, m.captures[5].strip());
+                _recordFitlerClause ~= RecordClause(m.captures[1].strip(), op, m.captures[3].strip());
             }
         }
 	}

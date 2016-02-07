@@ -24,6 +24,11 @@ import rbf.writers.writer;
 immutable sqlKeywords = import("sqlkeywords.txt");
 alias compiledSqlStatement = sqlite3_stmt *;
 
+// list of SQL statements used for inserting record data
+immutable SQL_CREATE = "create table if not exists %s (%s);";
+immutable SQL_INSERT = "insert into %s values (%s);";
+immutable SQL_META   = `insert into meta values ("%s", "%s", %d);`;
+
 /*********************************************
  * in this case, each record is insert into a SQL table
  */
@@ -76,7 +81,7 @@ private:
     {
         auto cols = rec[].map!(f => _buildColumnWithinCreateTableStatement(f));
         _tableNames[rec.name] = _buildTableName(rec.name);
-        string stmt = "create table if not exists %s (%s);".format(_tableNames[rec.name], join(cols, ","));
+        string stmt = SQL_CREATE.format(_tableNames[rec.name], join(cols, ","));
         return stmt;
     }
 
@@ -154,7 +159,7 @@ private:
     void _prepareInsertCompiledStatement(Record rec)
     {
         auto bind = array(repeat("?", rec.size));
-        auto stmt = "insert into %s values (%s);".format(_buildTableName(rec.name), bind.join(","));
+        auto stmt = SQL_INSERT.format(_buildTableName(rec.name), bind.join(","));
         log.log(LogLevel.TRACE, MSG028, stmt);
 
         sqlite3_stmt *compiledStmt;
@@ -435,7 +440,7 @@ public:
             sqlite3_reset(_compiledInsertStmt[rec.name]);
 
             // now write meta index
-            auto stmt = `insert into meta values ("%s", "%s", %d);`.format(_tableNames[rec.name], rec.name, ++_recordCounter[rec.name]);
+            auto stmt = SQL_META.format(_tableNames[rec.name], rec.name, ++_recordCounter[rec.name]);
             _executeStmt(stmt);
             if (_sqlCode != SQLITE_OK)
             {

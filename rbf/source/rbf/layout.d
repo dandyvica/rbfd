@@ -417,9 +417,9 @@ public:
 		assert(l["COUN"] == ["CAPITAL"]);
 
 		l = new Layout(test_file);
-		l.keepOnly("CONT: NAME , POPULATION;  COUN: CAPITAL, SUM(NAME)", ";");
+		l.keepOnly("CONT: NAME , POPULATION;  COUN: CAPITAL", ";");
 		assert(l["CONT"] == ["NAME", "POPULATION"]);
-		assert(l["COUN"] == ["CAPITAL", "SUM(NAME)"]);
+		assert(l["COUN"] == ["CAPITAL"]);
 	}
 
 	/**

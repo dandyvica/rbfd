@@ -9,6 +9,13 @@ import std.datetime;
 import std.concurrency;
 import std.regex;
 import std.socket;
+import std.getopt;
+import std.typecons;
+
+struct Cmd {
+    @("i") @(config.required) int a;
+    @("f") string file;
+}
 
 void spawnedFunction()
 {
@@ -74,12 +81,37 @@ string s = " this is a string   ";
     writefln("<%0.*d>", 10, i);
     writefln("<%10.*d>", 10, i);
     writefln("<%*.*s>", 30, 30, s.strip);
-    writefln("<%-*.*s>", 30, 30, s.strip);
+    writefln("<%-*.*s>", 30, 30, sr;.strip);
 
     */
 
+    Cmd cmd;
 
-    daemon_mode();
+    foreach (member; __traits(allMembers, Cmd))
+    {
+        writefln("member = %s ", member);
+        auto attr = tuple(__traits(getAttributes, __traits(getMember, Cmd, member)));
+        writefln("==> %s", attr);
+        if (attr.length == 1)
+        {
+            getopt(argv, config.passThrough, attr[0], &__traits(getMember, cmd, member));
+        }
+        if (attr.length == 2)
+        {
+            getopt(argv, config.required, config.passThrough, attr[0], &__traits(getMember, cmd, member));
+        }
+        /*
+        foreach (attr; __traits(getAttributes, __traits(getMember, Cmd, member)))
+        {
+            //writef("attribute = %s ", attr);
+            //getopt(argv, config.passThrough, attr, &__traits(getMember, cmd, member));
+            writeln(argv);
+        }
+        writeln;
+        */
+    }
+    
+    writeln(cmd);
 }
 
 

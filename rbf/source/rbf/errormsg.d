@@ -41,7 +41,7 @@ immutable MSG027 = "====> configuration file is <%s>";
 immutable MSG028 = "built SQL statement: <%s>";
 immutable MSG029 = "error: sqlite3_prepare_v2() API error, SQL error %d, statement=<%s>, error msg <%s>";
 immutable MSG030 = "error: operator <%s> not supported. Admissible operator list is %s";
-immutable MSG031 = "error: converting value %s %s %s to type %s";
+immutable MSG031 = "error: converting value %s to type %s";
 immutable MSG032 = "error: element name %s already in container";
 immutable MSG033 = "error: index %d is out of bounds for _list[]";
 immutable MSG034 = "record %s is not matching declared length (%d instead of %d)";
