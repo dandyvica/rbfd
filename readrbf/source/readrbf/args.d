@@ -42,6 +42,8 @@ struct CommandLineArgument
 
 	@("r") string recordFilterFile;			                /// if any, name of the record filter file
 	@("fr") string recordFilter;			                /// if any, name of the record filter file
+    
+    @("patch") string fieldsToPatch;                        /// list of fields to patch
 
 	@("fl") string lineFilter;				                /// if any, define a regex to match lines
 
