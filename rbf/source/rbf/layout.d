@@ -17,6 +17,7 @@ import rbf.log;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
+import rbf.options;
 import rbf.nameditems;
 import rbf.stat;
 
@@ -355,11 +356,12 @@ public:
 			string[][string] recordMap;
 
 			// this is a regex to capture calculated fields
-			static auto reg = regex(r"^(\w+)\((\w+)\)$");
+			//static auto reg = regex(r"^(\w+)\((\w+)\)$");
 
 			// build a map from this list. Ex list: "CONT:ID,NAME;COUN:POPULATION"
 			// possibly remove empty data
-			auto recAndFields = list.split(separator).remove!(e => e == "").remove!(e => e.startsWith("#"));
+			//auto recAndFields = list.split(separator).remove!(e => e == "").remove!(e => e.startsWith("#"));
+			auto recAndFields =  splitIntoTags(list, separator);
 
             // loop on found fields
 			foreach (e; recAndFields) 

@@ -16,6 +16,7 @@ import rbf.log;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.record;
+import rbf.options;
 import rbf.nameditems;
 import rbf.stat;
 version (unittest)

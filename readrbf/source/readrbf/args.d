@@ -147,11 +147,12 @@ public:
 			filteredFields = options.fieldFilter;
 		}
 
-		// if record file is specified, load conditions
+		// if record file filter or record filter is specified, load conditions
 		if (options.recordFilterFile != "") 
         {
+            // file should exist though
 			enforce(exists(options.recordFilterFile), MSG042.format(options.recordFilterFile));
-			filteredRecords = new RecordFilter(cast(string)std.file.read(options.recordFilterFile), std.ascii.newline);
+			filteredRecords = new RecordFilter(cast(string)std.file.read(options.recordFilterFile));
 		} 
         else if (options.recordFilter != "") 
         {

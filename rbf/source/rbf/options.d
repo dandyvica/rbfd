@@ -19,14 +19,16 @@ void processCommandLineArguments(T)(string[] argv, ref T cmdLineOptions)
 {
     foreach (member; __traits(allMembers, T))
     {
-        //writefln("member = %s ", member);
+        // get back attributes
         auto attr = tuple(__traits(getAttributes, __traits(getMember, cmdLineOptions, member)));
-        //writefln("==> %s", attr);
+
+        // just one UDA? it's the option string
         if (attr.length == 1)
         {
             getopt(argv, config.passThrough, 
                     attr[0], &__traits(getMember, cmdLineOptions, member));
         }
+        // 2 UDAs ? it's the option string as a mandatory argument
         if (attr.length == 2)
         {
             getopt(argv, config.required, config.passThrough, 
@@ -52,11 +54,12 @@ unittest {
     assert(tags == ["a=1", "b= 3"]);
 }
 
-/*
-Captures!string[] splitIntoAtoms(string data, string separator, Regex!char regex)
+// split data which can be passed from the command line or
+// from a text file into individual match objetcs
+auto splitIntoAtoms(string data, string separator, Regex!char regex)
 {
     // this will kepp all Captures() objects
-    Captures!string[] c;
+    RegexMatch!string[] c;
 
     // first, split into individual tags. Ex: "a=1;b= 3;# this is a comment"
     // into ["a=1", "b= 3"]
@@ -67,6 +70,18 @@ Captures!string[] splitIntoAtoms(string data, string separator, Regex!char regex
     {
         c ~= matchAll(tag, regex);
     }
+
+    // return our array
+    return c;
     
 }
-*/
+unittest {
+    auto s = "a=1;b= 3;# this is a comment";
+    auto c = splitIntoAtoms(s, ";", regex(r"(\w+)\s*=\s*(\w+)"));
+    assert(!c[0].empty);
+    assert(c[0].captures[1] == "a");
+    assert(c[0].captures[2] == "1");
+    assert(!c[1].empty);
+    assert(c[1].captures[1] == "b");
+    assert(c[1].captures[2] == "3");
+}
