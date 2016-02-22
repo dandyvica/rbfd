@@ -22,6 +22,7 @@ import rbf.reader;
 import rbf.writers.writer;
 import rbf.config;
 import rbf.stat;
+import rbf.conv;
 
 import args;
 
@@ -72,6 +73,20 @@ int main(string[] argv)
         log.info(MSG050, totalCPUs);
 
         //---------------------------------------------------------------------------------
+		// define new layout corresponding to the requested layout given from the command line
+        //---------------------------------------------------------------------------------
+		auto layout = new Layout(settings.layoutDir[opts.options.inputLayout].file);
+
+        //---------------------------------------------------------------------------------
+		// if layout conversion is requested, then call convertion function
+        //---------------------------------------------------------------------------------
+        if (opts.options.bConvertLayout)
+        {
+            convertLayout(layout, opts.options.outputFormat, opts.options.stdOutput);
+            return 0;
+        }
+
+        //---------------------------------------------------------------------------------
 		// output format is an enum but should match the string in rbf.xml config file
         //---------------------------------------------------------------------------------
         auto outputFormat = to!string(opts.options.outputFormat);
@@ -95,11 +110,6 @@ int main(string[] argv)
         {
 			throw new Exception(MSG058.format(settings.outputDir.names));
 		}
-
-        //---------------------------------------------------------------------------------
-		// define new layout corresponding to the requested layout given from the command line
-        //---------------------------------------------------------------------------------
-		auto layout = new Layout(settings.layoutDir[opts.options.inputLayout].file);
 
         //---------------------------------------------------------------------------------
 		// layout syntax validation requested from command line ?

@@ -16,38 +16,41 @@ import rbf.config;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
+import rbf.writers.writer : OutputFormat;
 
 enum Format {html, xml, h, csv, temp};		/// output format HTML, ...
 
-void convertLayout(string inputLayout, Format outputFormat, bool stdOutput)
+void convertLayout(Layout layout, OutputFormat outputFormat, bool stdOutput)
 {
 
-    // define new layout and validate it if requested
-    auto layout = new Layout(inputLayout);
-
     // build output file name
-    auto outputFileName = stripExtension(baseName(inputLayout)) ~ "." ~ to!string(outputFormat);
+    auto outputFileName = stripExtension(baseName(layout.meta.file)) ~ "." ~ to!string(outputFormat);
+    writeln(outputFileName);
     File outputHandle = (stdOutput) ? stdout : File(outputFileName, "w");
 
     // depending on output wnated format, call appropriate function
-    final switch(outputFormat)
+    switch(outputFormat)
     {
         case outputFormat.html:
             layout2html(outputHandle, layout);
             break;
         case outputFormat.xml:
             break;
+        case outputFormat.csv:
+            layout2csv(outputHandle, layout);
+            break;
+        default:
+            break;
+            /*
         case outputFormat.h:
             // this is necessary to use alternate name because names can be duplicated
             layout.each!(r => r.buildAlternateNames);
             layout2cstruct(outputHandle, layout);
             break;
-        case outputFormat.csv:
-            layout2csv(outputHandle, layout);
-            break;
         case outputFormat.temp:
             //layout2temp(outputHandle, inputTemplate, layout);
             break;
+            */
     }
 
 }

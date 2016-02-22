@@ -32,7 +32,7 @@ template GenInput(string input)
 // is the command line option. To add another option, just add it here
 struct CommandLineArgument 
 {
-	@("i") @(config.required) string inputFileName;         /// input file name to parse
+	@("i") string inputFileName;                            /// input file name to parse
 	@("l") @(config.required) string inputLayout;		    /// input file layout
 	@("o") OutputFormat outputFormat = OutputFormat.txt;	/// output format HTML, TXT, ...
 	@("of") string givenOutputFileName;		                /// name of the final converted file when given in the command line
@@ -51,13 +51,14 @@ struct CommandLineArgument
 	@("b") bool bJustRead;					                /// if true, don't write data
 	@("p") bool bProgressBar;                               /// print out read record progress bar
 	@("c") bool bCheckLayout;				                /// if true, try to validate layouy by checking length
-	@("O") bool stdOutput;					                /// if true, print to standard output instead of file
+	@("out") bool stdOutput;					            /// if true, print to standard output instead of file
 	@("br") bool bBreakRecord;  			                /// if true, break records into individual sub-records
 	@("check") bool bCheckPattern;  		                /// if true, check if field values are matching pattern
     @("stats") bool bDetailedStats;                         /// if true, print out detailed statistics on file at the end of conversion         
 
 	@("s") ulong samples;					                /// limit to n first lines (n == samples)
     @("ua") bool bUseAlternateNames;                        /// in case of field duplication, append field name with index
+    @("conv") bool bConvertLayout;                          /// in case of field duplication, append field name with index
 
     //@("") bool bAppendMode;                               /// overwrite the output file
     @("dup") bool bPrintDuplicatedPattern;                  /// write out duplicated patterns for each record
@@ -107,18 +108,6 @@ public:
                 // read command line arguments and fetch values in options struct
                 processCommandLineArguments!CommandLineArgument(argv, options);
             }
-            /*
-            catch (ConvException e) 
-            {
-                stderr.writefln(msg043, possibleValues);
-                core.stdc.stdlib.exit(2);
-            }
-            catch (GetOptException e)
-            {
-                stderr.writefln(MSG043, possibleValues);
-                core.stdc.stdlib.exit(2);
-            }
-            */
             catch (Exception e) 
             {
                 writefln("error: %s", e.msg);
