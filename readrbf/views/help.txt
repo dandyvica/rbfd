@@ -24,6 +24,8 @@ OPTIONS
 
        --conf file: use the file given as argument instead of rbf.xml file.
 
+       --conv : convert input layout to the format given by -o
+
        --dup : just print records and fields which are repeated within each record.
 
        -f file : Full path and name of a file to filter fields.
@@ -43,9 +45,9 @@ OPTIONS
        -o format : Name of the output file format. Possible values are: %s. 
 	Defaulted to txt if not specified (ident means that the output file format is the same than the input one).
 
-       -O : Write to standard output only.
-
        --of filename : Convert file to given file name.
+
+       --out : Write to standard output only.
 
        -p : Print out progress status.
 

@@ -93,12 +93,15 @@ public:
 		// print-out help
 		if (argv.length == 1)
 		{
-            //_interactiveMode();
             _printHelp();
 		}
         else if (argv.length == 2 && argv[1] == "-h")
         {
             _printHelp();
+        }
+        else if (argv.length == 2 && argv[1] == "--lazy")
+        {
+            _interactiveMode();
         }
         // deamon mode
         else
@@ -155,28 +158,28 @@ public:
 	@property bool isRecordFilterFileSet() { return options.recordFilterFile != ""; }
 	@property bool isRecordFilterSet()     { return options.recordFilter != ""; }
 
-    /*
     void _interactiveMode()
     {
         string input;
 
         mixin(GenInput!("Input file name (mandatory)"));
-        inputFileName    = input.strip;
-        inputFileName    = inputFileName.replace("'","");
+        options.inputFileName    = input.strip;
+        options.inputFileName    = options.inputFileName.replace("'","");
+        writefln("input file is <%s>", options.inputFileName);
 
         mixin(GenInput!("Layout name (mandatory)"));
-        inputLayout      = input.strip;
+        options.inputLayout      = input.strip;
 
         mixin(GenInput!("Output format (optional but defaulted to: txt)"));
         if (input.strip == "")
         {
-            outputFormat = OutputFormat.txt;
+            options.outputFormat = OutputFormat.txt;
         }
         else
         {
             try
             {
-                outputFormat = to!OutputFormat(input.strip);
+                options.outputFormat = to!OutputFormat(input.strip);
             }
             catch (ConvException e) 
             {
@@ -186,21 +189,20 @@ public:
         }
 
         mixin(GenInput!("Field filter file (optional)"));
-        fieldFilterFile  = input.strip;
+        options.fieldFilterFile  = input.strip;
 
         mixin(GenInput!("Field filter (optional)"));
-        fieldFilter      = input.strip;
+        options.fieldFilter      = input.strip;
 
         mixin(GenInput!("Record filter file (optional)"));
-        recordFilterFile = input.strip;
+        options.recordFilterFile = input.strip;
 
         mixin(GenInput!("Record filter (optional)"));
-        recordFilter     = input.strip;
+        options.recordFilter     = input.strip;
 
         //bVerbose = true;
-        bProgressBar = true;
+        options.bProgressBar = true;
     }
-    */
 
     void _printHelp(string msg="")
     {

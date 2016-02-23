@@ -119,7 +119,7 @@ void layout2html(File html, Layout layout)
 		// fields description
 		html.writeln(`<table class="table table-striped">`);
 		html.writeln(`<thead><tr><th>#</th><th>Field name</th><th>Description</th>`);
-		html.writeln(`<th>Length</th><th>Offset</th></tr></thead>`);
+		html.writeln(`<th>Length</th><th>Type</th><th>Offset</th></tr></thead>`);
 
 		// loop on each field to print out description
 		auto i = 1;
@@ -130,6 +130,7 @@ void layout2html(File html, Layout layout)
 			html.writefln(`<td><strong>%s</strong></td>`,field.name);
 			html.writefln(`<td>%s</td>`, field.description);
 			html.writefln(`<td>%s</td>`, field.length);
+			html.writefln(`<td>%s</td>`, field.type.meta.name);
 			html.writefln(`<td>%s</td>`, field.context.offset+1);
 			html.writeln(`</tr>`);
 
