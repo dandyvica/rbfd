@@ -28,6 +28,7 @@ import args;
 
 // constants
 immutable chunkSize = 1000;         /// print out message every chunkSize record
+immutable CR = "\r";                /// carriage return
 
 int main(string[] argv)
 {
@@ -292,11 +293,16 @@ int main(string[] argv)
             if (opts.options.bProgressBar && stat.nbReadRecords % chunkSize == 0)
             {
                 if (reader.nbGuessedRecords != 0)
+                {
                     stat.progressBarStats(reader.nbGuessedRecords);
-                    //stderr.writef(MSG066, nbReadRecords, reader.nbRecords, 
-                    //        to!float(nbReadRecords)/reader.nbRecords*100, nbMatchedRecords);
+                }
                 else
-                    stderr.writef(MSG065, stat.nbReadRecords);
+                {
+                    writef(MSG065, stat.nbReadRecords);
+                }
+                // go back to beginning of the line
+                write(CR);
+                stdout.flush;
             }
 
             //---------------------------------------------------------------------------------

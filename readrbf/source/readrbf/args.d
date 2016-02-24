@@ -25,7 +25,7 @@ immutable IAformat = "%-50.50s : ";
 // useful mixin to generate input
 template GenInput(string input)
 {
-    const char[] GenInput = `writef(IAformat, "` ~ input ~ `".leftJustify(50,'.')); input = readln();`;
+    const char[] GenInput = `writefln(IAformat, "` ~ input ~ `".leftJustify(50,'.')); input = readln();`;
 }
 
 // list of all command line parameters. The user defined attribute
@@ -153,24 +153,30 @@ public:
 
 	}
 
+    // useful helpers
 	@property bool isFieldFilterFileSet()  { return options.fieldFilterFile != ""; }
 	@property bool isFieldFilterSet()      { return options.fieldFilter != ""; }
 	@property bool isRecordFilterFileSet() { return options.recordFilterFile != ""; }
 	@property bool isRecordFilterSet()     { return options.recordFilter != ""; }
 
+    // start interactive mode to prompt data from user
     void _interactiveMode()
     {
         string input;
 
+        // prompt for input file
         mixin(GenInput!("Input file name (mandatory)"));
         options.inputFileName    = input.strip;
         options.inputFileName    = options.inputFileName.replace("'","");
         writefln("input file is <%s>", options.inputFileName);
 
+        // prompt for input layout
         mixin(GenInput!("Layout name (mandatory)"));
         options.inputLayout      = input.strip;
 
-        mixin(GenInput!("Output format (optional but defaulted to: txt)"));
+        // prompt for output format
+        writefln("Output format, possible value are: %s", possibleValues);
+        input = readln();
         if (input.strip == "")
         {
             options.outputFormat = OutputFormat.txt;
@@ -188,6 +194,7 @@ public:
             }
         }
 
+        // optional 
         mixin(GenInput!("Field filter file (optional)"));
         options.fieldFilterFile  = input.strip;
 
@@ -204,6 +211,7 @@ public:
         options.bProgressBar = true;
     }
 
+    // just print out help message with all possible options
     void _printHelp(string msg="")
     {
         writeln(helpString.format(possibleValues));

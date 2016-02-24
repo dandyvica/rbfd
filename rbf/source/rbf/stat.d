@@ -23,17 +23,18 @@ struct Statistics
 
     Counter[string] nbRecs;            // keep number of records in the file per record
 
-    void finalStats(File fh=stderr)
+    void finalStats(File fh=stdout)
     {
 		fh.writefln(MSG014, nbReadLines, nbReadRecords, nbWrittenRecords);
     }
 
-    void progressBarStats(Counter nbGuessedRecords, File fh=stderr)
+    void progressBarStats(Counter nbGuessedRecords, File fh=stdout)
     {
         fh.writef(MSG066, nbReadRecords, nbGuessedRecords, to!float(nbReadRecords)/nbGuessedRecords*100, nbMatchedRecords);
+        fh.flush;
     }
 
-    void detailedStats(File fh=stderr)
+    void detailedStats(File fh=stdout)
     {
         fh.writeln;
 

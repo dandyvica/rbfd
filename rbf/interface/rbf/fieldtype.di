@@ -1,4 +1,4 @@
-// D import file generated from 'source/rbf/fieldtype.d'
+// D import file generated from 'source\rbf\fieldtype.d'
 module rbf.fieldtype;
 pragma (msg, "========> Compiling module ", "rbf.fieldtype");
 import std.stdio;
@@ -12,7 +12,22 @@ import std.traits;
 import rbf.errormsg;
 import rbf.log;
 import rbf.field : TVALUE;
-static TVALUE overpunch(TVALUE s);
+static TVALUE overpunch(TVALUE s)
+{
+	static string posTable = makeTrans("{ABCDEFGHI}", "01234567890");
+	static string negTable = makeTrans("JKLMNOPQR", "123456789");
+	auto trans = s;
+	if (s.indexOfAny("{ABCDEFGHI}") != -1)
+	{
+		trans = translate(s, posTable);
+	}
+	else
+		if (s.indexOfAny("JKLMNOPQR") != -1)
+		{
+			trans = "-" ~ translate(s, negTable);
+		}
+	return trans;
+}
 alias CmpFunc = bool delegate(const TVALUE, const Operator, const TVALUE);
 alias FmtFunc = string delegate(const char[] value, const size_t length);
 alias Conv = TVALUE function(TVALUE);
@@ -50,9 +65,58 @@ class FieldType
 	public 
 	{
 		FieldTypeMeta meta;
-		this(string nickName, string declaredType);
-		@property bool isNumeric();
-		bool isFieldFilterMatched(TVALUE lvalue, string op, TVALUE rvalue);
+		this(string nickName, string declaredType)
+		{
+			with (meta)
+			{
+				stringType = declaredType;
+				type = to!AtomicType(stringType);
+				name = nickName;
+				final switch (type)
+				{
+					case AtomicType.decimal:
+					{
+						filterTestCallback = &matchFilter!double;
+						formatterCallback = &formatter!double;
+						meta.pattern = "[\\d.]+";
+						meta.format = "%0*.*g";
+						break;
+					}
+					case AtomicType.integer:
+					{
+						filterTestCallback = &matchFilter!ulong;
+						formatterCallback = &formatter!ulong;
+						meta.pattern = "\\d+";
+						meta.format = "%0*.*d";
+						break;
+					}
+					case AtomicType.date:
+					{
+						filterTestCallback = &matchFilter!string;
+						formatterCallback = &formatter!string;
+						meta.pattern = "\\d+";
+						meta.format = "%-*.*s";
+						break;
+					}
+					case AtomicType.string:
+					{
+						filterTestCallback = &matchFilter!string;
+						formatterCallback = &formatter!string;
+						meta.pattern = "[\\w/\\*\\.,\\-]+";
+						meta.format = "%-*.*s";
+						break;
+					}
+				}
+			}
+		}
+		@property bool isNumeric()
+		{
+			return meta.type == AtomicType.decimal || meta.type == AtomicType.integer;
+		}
+		bool isFieldFilterMatched(TVALUE lvalue, string op, TVALUE rvalue)
+		{
+			return meta.filterTestCallback(lvalue, cast(Operator)op, rvalue);
+		}
 		static string testFilter(T)(string op)
 		{
 			return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
