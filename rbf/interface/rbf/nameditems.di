@@ -1,4 +1,4 @@
-// D import file generated from 'source\rbf\nameditems.d'
+// D import file generated from 'source/rbf/nameditems.d'
 module rbf.nameditems;
 pragma (msg, "========> Compiling module ", "rbf.nameditems");
 import std.stdio;

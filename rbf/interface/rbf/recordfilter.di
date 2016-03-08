@@ -1,4 +1,4 @@
-// D import file generated from 'source\rbf\recordfilter.d'
+// D import file generated from 'source/rbf/recordfilter.d'
 module rbf.recordfilter;
 import std.stdio;
 import std.file;

@@ -1,4 +1,4 @@
-// D import file generated from 'source\rbf\fieldtype.d'
+// D import file generated from 'source/rbf/fieldtype.d'
 module rbf.fieldtype;
 pragma (msg, "========> Compiling module ", "rbf.fieldtype");
 import std.stdio;
