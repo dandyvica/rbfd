@@ -35,6 +35,7 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 			}
 			alias TLIST = T[];
 			alias TMAP = T[][TNAME];
+			alias TUNIQUE = T[TNAME];
 			static if (allowDuplicates)
 			{
 				alias TRETURN = TLIST;
@@ -53,6 +54,7 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 			}
 			TLIST _list;
 			TMAP _map;
+			TUNIQUE _unique;
 			public 
 			{
 				static if (Meta.length > 0)
@@ -148,6 +150,25 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 
 					_list ~= element;
 					_map[element.name] ~= element;
+					static if (allowDuplicates)
+					{
+						if (_map[element.name].length == 1)
+						{
+							_unique[element.name] = element;
+						}
+						else
+							if (_map[element.name].length == 2)
+							{
+								_unique[element.name ~ "1"] = _map[element.name][0];
+								_unique.remove(element.name);
+								_unique[element.name ~ "2"] = element;
+							}
+							else
+							{
+								_unique[element.name ~ to!string(_map.length)] = element;
+							}
+					}
+
 					static if (__traits(hasMember, T, "length"))
 					{
 						_length += element.length;
@@ -177,7 +198,7 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 				}
 				T get(TNAME name, ushort index = 0)
 				{
-					enforce(name in this, MSG001.format(name));
+					enforce(name in this, MSG001.format(name, this.name));
 					enforce(0 <= index && index < _map[name].length, MSG005.format(name, index));
 					static if (!allowDuplicates)
 					{
@@ -185,6 +206,11 @@ class NamedItemsContainer(T, bool allowDuplicates, Meta...)
 					}
 
 					return _map[name][index];
+				}
+				T getUnique(TNAME name)
+				{
+					enforce(name in _unique, MSG079.format(name, this.name));
+					return _unique[name];
 				}
 				void remove(TNAME name)
 				{

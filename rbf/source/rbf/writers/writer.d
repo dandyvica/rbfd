@@ -24,10 +24,11 @@ import rbf.writers.sqlite3writer;
 import rbf.writers.xmlwriter;
 import rbf.writers.xlsx1writer;
 import rbf.writers.xlsx2writer;
+import rbf.writers.templatewriter;
 
 // list of all possible output formats. For those formats, the settings XML file
 // should define their 
-enum OutputFormat { box, csv, html, ident, sql, tag, txt, excel1, excel2, xml }
+enum OutputFormat { box, csv, html, ident, sql, tag, txt, excel1, excel2, xml, temp }
 
 /*********************************************
  * writer base class for writing to various ouput formats
@@ -78,7 +79,6 @@ public:
 	abstract void prepare(Layout layout);
 	abstract void build(string outputFileName);
 	abstract void write(Record rec);
-	//abstract void write(Field rec);
 
 	void open() 
     {
@@ -102,13 +102,14 @@ Writer writerFactory(in string output, in OutputFormat fmt)
 	{
 		case OutputFormat.box   : return new BoxWriter(output);
 		case OutputFormat.csv   : return new CSVWriter(output);
+		case OutputFormat.excel1: return new XLSX1Writer(output);
+		case OutputFormat.excel2: return new XLSX2Writer(output);
 		case OutputFormat.html  : return new HTMLWriter(output);
 		case OutputFormat.ident : return new IdentWriter(output);
 		case OutputFormat.sql   : return new Sqlite3Writer(output);
 		case OutputFormat.tag   : return new TAGWriter(output);
+		case OutputFormat.temp  : return new TemplateWriter(output);
 		case OutputFormat.txt   : return new TXTWriter(output);
-		case OutputFormat.excel1: return new XLSX1Writer(output);
-		case OutputFormat.excel2: return new XLSX2Writer(output);
 		case OutputFormat.xml   : return new XmlWriter(output);
 	}
 }

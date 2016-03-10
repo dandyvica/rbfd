@@ -76,6 +76,8 @@ struct OutputFeature
 
     Orientation orientation;      /// whether print by row or colums
 
+    string templateFile;          /// template file when using output mode temp
+
     // SQL specific
     struct
     {
@@ -210,6 +212,9 @@ public:
                 // save SQL attributes
                 of.sqlInsertPool = to!ushort(attr.get("pool", SQL_INSERT_POOL));
                 of.addDataSource = to!bool(attr.get("addSource", "false"));
+
+                // save temp attributes
+                of.templateFile = attr.get("templateFile", "rbf.template");
 
             }
             this._outputDirectory ~= of;

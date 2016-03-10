@@ -13,23 +13,8 @@ import rbf.layout;
 import rbf.writers.writer;
 class TAGWriter : Writer
 {
-	this(in string outputFileName)
-	{
-		super(outputFileName);
-	}
-	override void prepare(Layout layout)
-	{
-	}
-	override void build(string outputFileName)
-	{
-	}
-	override void write(Record rec)
-	{
-		_fh.writef("%s:", rec.name);
-		foreach (field; rec)
-		{
-			_fh.writef("%s=\"%s\" ", field.name, field.value);
-		}
-		_fh.writeln();
-	}
+	this(in string outputFileName);
+	override void prepare(Layout layout);
+	override void build(string outputFileName);
+	override void write(Record rec);
 }

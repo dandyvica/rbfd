@@ -47,6 +47,10 @@ struct CommandLineArgument
 
 	@("fl") string lineFilter;				                /// if any, define a regex to match lines
 
+	@("trigger") string trigger;				            /// if any, record name which triggers write for templates
+    @("tempfile") string templateFile;                      /// when using the temp output mode, using this file as template
+
+
 	@("v") bool bVerbose;					                /// if true, print out lots of data
 	@("b") bool bJustRead;					                /// if true, don't write data
 	@("p") bool bProgressBar;                               /// print out read record progress bar

@@ -50,6 +50,7 @@ protected:
 	// aliases for managing core container data
 	alias TLIST   = T[];
 	alias TMAP	  = T[][TNAME];
+	alias TUNIQUE = T[TNAME];
 
 	// useful type alias whether the container accepts duplicates or not
 	static if (allowDuplicates) 
@@ -67,6 +68,7 @@ protected:
 	TLIST _list;				/// track all fields within a dynamic array
 	TMAP _map;					/// and as several instance of the same field can exist,
 								/// need to keep track of all instances
+    TUNIQUE _unique;            /// in that list, all elements are unique including those duplicated
 
 public:
     // optional data
@@ -173,6 +175,33 @@ public:
 		_list ~= element;
 		_map[element.name] ~= element;
 
+        // and build unique list only in case of duplicates
+		static if (allowDuplicates) 
+        {
+            // if one element for the moment
+            if (_map[element.name].length == 1)
+            {
+                _unique[element.name] = element;
+            }
+            else if (_map[element.name].length == 2)
+            {
+                // in that case, need to rename the first one
+                _unique[element.name ~ "1"] = _map[element.name][0];
+
+                // delete the original one
+                _unique.remove(element.name);
+
+                // and add the second
+                _unique[element.name ~ "2"] = element;
+            }
+            // in other cases, just append element index
+            else
+            {
+                _unique[element.name ~ to!string(_map.length)] = element;
+            }
+
+		}
+
 		// added one element, so length is greater
 		static if (__traits(hasMember, T, "length")) _length += element.length;
 	}
@@ -248,7 +277,7 @@ public:
 	*/
 	T get(TNAME name, ushort index = 0)
     {
-		enforce(name in this, MSG001.format(name));
+		enforce(name in this, MSG001.format(name, this.name));
 		enforce(0 <= index && index < _map[name].length, MSG005.format(name,index));
 
 		static if (!allowDuplicates) 
@@ -257,6 +286,12 @@ public:
 		}
 
 		return _map[name][index];
+	}
+
+	T getUnique(TNAME name)
+    {
+		enforce(name in _unique, MSG079.format(name, this.name));
+		return _unique[name];
 	}
 
     //----------------------------------------------------------------------------

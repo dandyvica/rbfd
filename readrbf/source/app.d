@@ -129,6 +129,14 @@ int main(string[] argv)
 		}
 
         //---------------------------------------------------------------------------------
+		// save template file if any
+        //---------------------------------------------------------------------------------
+		if (opts.options.templateFile != "") 
+        {
+			settings.outputDir[outputFormat].templateFile = opts.options.templateFile;
+		}
+
+        //---------------------------------------------------------------------------------
 		// need to get rid of some fields ?
         //---------------------------------------------------------------------------------
 		if (opts.isFieldFilterFileSet) 
@@ -226,6 +234,7 @@ int main(string[] argv)
 		// set writer features read in config and process preliminary steps
         //---------------------------------------------------------------------------------
 		writer.outputFeature = settings.outputDir[outputFormat];
+        writefln("tempfile=%s", writer.outputFeature.templateFile);
 
         // SQL format adds additonal feature
         if (opts.options.outputFormat == OutputFormat.sql) 
@@ -322,7 +331,12 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// use our writer to generate the file
             //---------------------------------------------------------------------------------
-			writer.write(rec);
+
+            // when using the template option, only write when record name is triggered
+            if (opts.options.outputFormat != OutputFormat.temp || rec.name == opts.options.trigger) 
+            {
+    			writer.write(rec);
+            }
 			stat.nbWrittenRecords++;
 
             //---------------------------------------------------------------------------------

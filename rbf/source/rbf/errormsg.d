@@ -88,3 +88,6 @@ immutable MSG074 = "info: reading external SQL statement file <%s>";
 immutable MSG075 = "info: triggering pre-sql file <%s>";
 immutable MSG076 = "info: triggering post-sql file <%s>";
 immutable MSG077 = "info: field filter requested, keeping only <%s>";
+immutable MSG078 = "error: template file <%s> not found";
+immutable MSG079 = "error: element name <%s> is not in unique list of record/container <%s>";
+immutable MSG080 = "info: using template file <%s>";
