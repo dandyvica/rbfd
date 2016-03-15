@@ -9,7 +9,12 @@
 	"targetPath": "lib",
 	"targetType": "staticLibrary",
 	"dflags-dmd": ["-H"],
-	"postBuildCommands": ["mv *writer.di ./interface/rbf/writers","mv xlsx*.di ./interface/rbf/writers", "mv *.di ./interface/rbf"],
+	"postBuildCommands": [
+        "mv xmlcore.di ./interface/rbf/builders",
+        "mv *writer.di ./interface/rbf/writers",
+        "mv xlsx*.di ./interface/rbf/writers", 
+        "mv *.di ./interface/rbf"
+    ],
     "buildTypes": {
         "unittest": {
             "buildOptions": ["unittests", "debugMode", "debugInfo"],

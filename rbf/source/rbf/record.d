@@ -18,6 +18,7 @@ import std.container.array;
 import rbf.field;
 import rbf.nameditems;
 import rbf.recordfilter;
+import rbf.builders.xmlcore;
 
 struct RecordMeta 
 {
@@ -339,6 +340,30 @@ public:
 		return true;
 	}
 
+    /// build XML tag definition
+    string asXML()
+    {
+        Attribute[] attributes;
+
+        // build attribute elements for mandatory attributes of <field> tag
+        attributes ~= Attribute("name", name);
+        attributes ~= Attribute("description", meta.description);
+
+        // build XML main <record> tag
+        auto tag = buildXmlTag("record", attributes, false);
+
+        // add fields
+        foreach (f; this)
+        {
+            tag ~= std.ascii.newline ~ "\t" ~ f.asXML;
+        }
+
+        // end tag gracefully
+        tag ~= std.ascii.newline ~ buildXmlTag("record", [], true);
+
+        return tag;
+
+    }
 }
 
 
@@ -355,7 +380,6 @@ unittest {
 
 	// main test
 	auto rec = new Record("RECORD_A", "This is my main and top record");
-
 	auto ft = new FieldType("A/N", "string");
 
 	rec ~= new Field("FIELD1", "Desc1", ft, 10);
@@ -367,6 +391,15 @@ unittest {
 	// test properties
 	assert(rec.name == "RECORD_A");
 	assert(rec.meta.description == "This is my main and top record");
+
+    // test asXML
+    assert(rec.asXML == `<record name="RECORD_A" description="This is my main and top record">
+	<field name="FIELD1" description="Desc1" length="10" type="A/N"/>
+	<field name="FIELD2" description="Desc2" length="10" type="A/N"/>
+	<field name="FIELD3" description="Desc3" length="10" type="A/N"/>
+	<field name="FIELD2" description="Desc2" length="10" type="A/N"/>
+	<field name="FIELD2" description="Desc2" length="10" type="A/N"/>
+</record>`);
 
 	// set value
 	auto s = "AAAAAAAAAABBBBBBBBBBCCCCCCCCCCDDDDDDDDDDEEEEEEEEEE";

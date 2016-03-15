@@ -14,6 +14,7 @@ import std.variant;
 import rbf.errormsg;
 import rbf.element;
 import rbf.fieldtype;
+import rbf.builders.xmlcore;
 
 /***********************************
  * type used to hold values read from file
@@ -199,6 +200,27 @@ public:
 	/// read/write property for the sign field
 	@property auto sign() { return _valueSign; }
 	@property void sign(in byte new_sign) { _valueSign = new_sign; }
+
+    /// build XML tag definition
+    string asXML()
+    {
+        Attribute[] attributes;
+
+        // build attribute elements for mandatory attributes of <field> tag
+        attributes ~= Attribute("name", name);
+        attributes ~= Attribute("description", description);
+        attributes ~= Attribute("length", to!string(length));
+        attributes ~= Attribute("type", type.meta.name);
+
+        // build XML
+        return buildXmlTag("field", attributes);
+    }
+	unittest 
+    {
+		auto field1 = new Field("IDENTITY", "Person's name", new FieldType("CHAR","string"), 30);
+        writeln(field1.asXML);
+		assert(field1.asXML == `<field name="IDENTITY" description="Person's name" length="30" type="CHAR"/>`);
+	}
 
 	/**
 	 * return a string of Field attributes

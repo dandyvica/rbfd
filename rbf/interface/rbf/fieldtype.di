@@ -12,6 +12,7 @@ import std.traits;
 import rbf.errormsg;
 import rbf.log;
 import rbf.field : TVALUE;
+import rbf.builders.xmlcore;
 static TVALUE overpunch(TVALUE s);
 alias CmpFunc = bool delegate(const TVALUE, const Operator, const TVALUE);
 alias FmtFunc = string delegate(const char[] value, const size_t length);
@@ -122,5 +123,6 @@ class FieldType
 			T convertedValue = value != "" ? to!T(value) : T.init;
 			return meta.format.format(length, length, convertedValue);
 		}
+		string asXML();
 	}
 }

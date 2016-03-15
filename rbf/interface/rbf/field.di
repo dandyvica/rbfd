@@ -13,6 +13,7 @@ import std.variant;
 import rbf.errormsg;
 import rbf.element;
 import rbf.fieldtype;
+import rbf.builders.xmlcore;
 alias TVALUE = string;
 pragma (msg, "========> TVALUE = ", TVALUE.stringof);
 struct ContextualInfo
@@ -64,6 +65,7 @@ class Field : Element!(string, size_t, ContextualInfo)
 				return _valueSign;
 			}
 			@property void sign(in byte new_sign);
+			string asXML();
 			override string toString();
 			auto contextualInfo()
 			{

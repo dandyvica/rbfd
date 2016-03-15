@@ -12,6 +12,7 @@ import std.container.array;
 import rbf.field;
 import rbf.nameditems;
 import rbf.recordfilter;
+import rbf.builders.xmlcore;
 struct RecordMeta
 {
 	string name;
@@ -63,6 +64,7 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 		}
 		override string toString();
 		bool matchRecordFilter(RecordFilter filter);
+		string asXML();
 	}
 }
 import std.exception;

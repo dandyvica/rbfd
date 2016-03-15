@@ -23,6 +23,7 @@ import std.traits;
 import rbf.errormsg;
 import rbf.log;
 import rbf.field: TVALUE;
+import rbf.builders.xmlcore;
 
 
 // this converter method is necessary because of the overpunch legacy way
@@ -271,6 +272,20 @@ public:
             
     }
 
+    /// build XML tag definition
+    string asXML()
+    {
+        Attribute[] attributes;
+
+        // build attribute elements for mandatory attributes of <field> tag
+        attributes ~= Attribute("name", meta.name);
+        attributes ~= Attribute("type", meta.stringType);
+        //<fieldtype name="N" type="integer" preconv="overpunch"/>
+
+        // build XML main <record> tag
+        return buildXmlTag("fieldtype", attributes, true);
+
+    }
 }
 ///
 unittest {
@@ -281,5 +296,7 @@ unittest {
 	map["I"].meta.pattern = r"\d+";
 	map["A/N"] = new FieldType("A/N","string");
 	map["A/N"].meta.pattern = r"\w+";
+
+    assert(map["A/N"].asXML == `<fieldtype name="A/N" type="string"/>`);
 
 }
