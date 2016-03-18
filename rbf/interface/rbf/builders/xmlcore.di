@@ -6,24 +6,32 @@ import std.conv;
 import std.string;
 import std.regex;
 import std.algorithm;
-import std.typecons;
 import std.exception;
-import std.typecons;
-import std.variant;
-struct Attribute
+struct Sanitizer
+{
+	bool capitalize;
+	bool uppercase;
+	string[] replaceRegex;
+}
+struct XmlAttribute
 {
 	string name;
 	string value;
+	Sanitizer nameSanitizer;
+	Sanitizer valueSanitizer;
+	void sanitizeName();
+	void sanitizeValue();
+	private string _sanitize(string stringToSanitize, Sanitizer options);
 }
-auto buildXmlTag(string tagName, Attribute[] attributes, bool emptyTag = true)
+auto buildXmlTag(string tagName, XmlAttribute[] attributes, bool emptyTag = true)
 {
 	if (attributes == [])
 		return "</%s>".format(tagName);
-	string[] builtAttributes;
+	string[] builtXmlAttributes;
 	foreach (attr; attributes)
 	{
-		builtAttributes ~= "%s=\"%s\"".format(attr.name, attr.value);
+		builtXmlAttributes ~= "%s=\"%s\"".format(attr.name, attr.value);
 	}
-	auto tag = "<%s %s".format(tagName, builtAttributes.join(" "));
+	auto tag = "<%s %s".format(tagName, builtXmlAttributes.join(" "));
 	return emptyTag ? tag ~ "/>" : tag ~ ">";
 }

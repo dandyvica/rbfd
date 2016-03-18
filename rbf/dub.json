@@ -10,7 +10,7 @@
 	"targetType": "staticLibrary",
 	"dflags-dmd": ["-H"],
 	"postBuildCommands": [
-        "mv xmlcore.di ./interface/rbf/builders",
+        "mv xml*.di ./interface/rbf/builders",
         "mv *writer.di ./interface/rbf/writers",
         "mv xlsx*.di ./interface/rbf/writers", 
         "mv *.di ./interface/rbf"

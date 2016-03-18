@@ -275,11 +275,11 @@ public:
     /// build XML tag definition
     string asXML()
     {
-        Attribute[] attributes;
+        XmlAttribute[] attributes;
 
         // build attribute elements for mandatory attributes of <field> tag
-        attributes ~= Attribute("name", meta.name);
-        attributes ~= Attribute("type", meta.stringType);
+        attributes ~= XmlAttribute("name", meta.name);
+        attributes ~= XmlAttribute("type", meta.stringType);
         //<fieldtype name="N" type="integer" preconv="overpunch"/>
 
         // build XML main <record> tag

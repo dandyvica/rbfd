@@ -343,11 +343,11 @@ public:
     /// build XML tag definition
     string asXML()
     {
-        Attribute[] attributes;
+        XmlAttribute[] attributes;
 
         // build attribute elements for mandatory attributes of <field> tag
-        attributes ~= Attribute("name", name);
-        attributes ~= Attribute("description", meta.description);
+        attributes ~= XmlAttribute("name", name);
+        attributes ~= XmlAttribute("description", meta.description);
 
         // build XML main <record> tag
         auto tag = buildXmlTag("record", attributes, false);

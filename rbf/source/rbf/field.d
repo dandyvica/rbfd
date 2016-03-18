@@ -204,13 +204,13 @@ public:
     /// build XML tag definition
     string asXML()
     {
-        Attribute[] attributes;
+        XmlAttribute[] attributes;
 
         // build attribute elements for mandatory attributes of <field> tag
-        attributes ~= Attribute("name", name);
-        attributes ~= Attribute("description", description);
-        attributes ~= Attribute("length", to!string(length));
-        attributes ~= Attribute("type", type.meta.name);
+        attributes ~= XmlAttribute("name", name);
+        attributes ~= XmlAttribute("description", description);
+        attributes ~= XmlAttribute("length", to!string(length));
+        attributes ~= XmlAttribute("type", type.meta.name);
 
         // build XML
         return buildXmlTag("field", attributes);
