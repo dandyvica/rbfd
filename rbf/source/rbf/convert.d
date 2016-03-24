@@ -1,4 +1,5 @@
-module rbf.conv;
+module rbf.convert;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.file;
@@ -16,43 +17,40 @@ import rbf.config;
 import rbf.field;
 import rbf.record;
 import rbf.layout;
-import rbf.writers.writer : OutputFormat;
 
-enum Format {html, xml, h, csv, temp};		/// output format HTML, ...
+string inputLayoutFileName;		        	/// input file layout
+string inputTemplate;                       /// template string to fill
+enum Format {html, xml, include, csv, temp};		/// output format HTML, ...
+Format outputFormat;
 
-void convertLayout(Layout layout, OutputFormat outputFormat, bool stdOutput)
+void convertLayout(string inputLayoutFileName, Format outputFormat, string inputTemplate)
 {
+    // define new layout and validate it if requested
+    auto layout = new Layout(inputLayoutFileName);
 
-    // build output file name
-    auto outputFileName = stripExtension(baseName(layout.meta.file)) ~ "." ~ to!string(outputFormat);
-    writeln(outputFileName);
-    File outputHandle = (stdOutput) ? stdout : File(outputFileName, "w");
+    // send to stdout
+    File outputHandle = stdout;
 
     // depending on output wnated format, call appropriate function
-    switch(outputFormat)
+    final switch(outputFormat)
     {
         case outputFormat.html:
             layout2html(outputHandle, layout);
             break;
         case outputFormat.xml:
             break;
-        case outputFormat.csv:
-            layout2csv(outputHandle, layout);
-            break;
-        default:
-            break;
-            /*
-        case outputFormat.h:
+        case outputFormat.include:
             // this is necessary to use alternate name because names can be duplicated
             layout.each!(r => r.buildAlternateNames);
             layout2cstruct(outputHandle, layout);
             break;
-        case outputFormat.temp:
-            //layout2temp(outputHandle, inputTemplate, layout);
+        case outputFormat.csv:
+            layout2csv(outputHandle, layout);
             break;
-            */
+        case outputFormat.temp:
+            layout2temp(outputHandle, inputTemplate, layout);
+            break;
     }
-
 }
 
 // write out layout as a CSV-list of records and fields
@@ -119,7 +117,7 @@ void layout2html(File html, Layout layout)
 		// fields description
 		html.writeln(`<table class="table table-striped">`);
 		html.writeln(`<thead><tr><th>#</th><th>Field name</th><th>Description</th>`);
-		html.writeln(`<th>Length</th><th>Type</th><th>Offset</th></tr></thead>`);
+		html.writeln(`<th>Length</th><th>Offset</th></tr></thead>`);
 
 		// loop on each field to print out description
 		auto i = 1;
@@ -130,7 +128,6 @@ void layout2html(File html, Layout layout)
 			html.writefln(`<td><strong>%s</strong></td>`,field.name);
 			html.writefln(`<td>%s</td>`, field.description);
 			html.writefln(`<td>%s</td>`, field.length);
-			html.writefln(`<td>%s</td>`, field.type.meta.name);
 			html.writefln(`<td>%s</td>`, field.context.offset+1);
 			html.writeln(`</tr>`);
 

@@ -495,11 +495,11 @@ public:
 			if (rec.length != meta.length) 
             {
 				validates = false;
-                log.log(LogLevel.WARNING, MSG034, rec.name, rec.length, meta.length);
+                writeln(MSG034.format(rec.name, rec.length, meta.length));
 			}
 		}
 		if (validates) 
-                log.log(LogLevel.INFO, MSG035, meta.file);
+                writeln(MSG035.format(meta.file));
 	}
 
 	/**

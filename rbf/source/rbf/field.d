@@ -94,6 +94,29 @@ public:
 	}
 
 	/**
+ 	 * create a new field object
+	 *
+	 * Params:
+	 *	attr = associative array having keys "name", "description", "type", "length" with corresponding values
+	 *
+	 */
+	this(string[string] attr)
+	{
+        // name & description keys should exists
+        enforce("name" in attr, MSG084);
+        enforce("description" in attr, MSG085);
+        enforce("length" in attr, MSG086);
+        enforce("type" in attr, MSG087);
+
+        // just call regular ctor
+        this(attr["name"], attr["description"], new FieldType(attr["type"], "string"), to!size_t(attr["length"]));
+	}
+	///
+	unittest {
+		auto field1 = new Field(["name":"FIELD1", "description":"Field description", "type":"AN", "length":"15"]);
+		assert(field1 == tuple("FIELD1", "Field description", "AN", 15UL));
+	}
+	/**
  	 * create a new field object from a CSV string
      * this is another ctor which might be useful
 	 *

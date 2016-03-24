@@ -13,17 +13,17 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.config;
-import rbf.writers.csvwriter;
-import rbf.writers.txtwriter;
 import rbf.writers.boxwriter;
+import rbf.writers.csvwriter;
 import rbf.writers.htmlwriter;
-import rbf.writers.tagwriter;
 import rbf.writers.identwriter;
 import rbf.writers.sqlite3writer;
-import rbf.writers.xmlwriter;
+import rbf.writers.tagwriter;
+import rbf.writers.templatewriter;
+import rbf.writers.txtwriter;
 import rbf.writers.xlsx1writer;
 import rbf.writers.xlsx2writer;
-import rbf.writers.templatewriter;
+import rbf.writers.xsdwriter;
 enum OutputFormat 
 {
 	box,

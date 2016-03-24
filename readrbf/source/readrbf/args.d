@@ -15,8 +15,12 @@ import std.typecons;
 
 import rbf.errormsg;
 import rbf.recordfilter;
+import rbf.layout;
+import rbf.log;
 import rbf.options;
+import rbf.convert;
 import rbf.writers.writer : OutputFormat;
+import rbf.builders.xmltextbuilder;
 
 immutable helpString = import("help.txt");
 immutable authorString = import("author.txt");
@@ -54,7 +58,6 @@ struct CommandLineArgument
 	@("v") bool bVerbose;					                /// if true, print out lots of data
 	@("b") bool bJustRead;					                /// if true, don't write data
 	@("p") bool bProgressBar;                               /// print out read record progress bar
-	@("c") bool bCheckLayout;				                /// if true, try to validate layouy by checking length
 	@("out") bool stdOutput;					            /// if true, print to standard output instead of file
 	@("br") bool bBreakRecord;  			                /// if true, break records into individual sub-records
 	@("check") bool bCheckPattern;  		                /// if true, check if field values are matching pattern
@@ -62,17 +65,24 @@ struct CommandLineArgument
 
 	@("s") ulong samples;					                /// limit to n first lines (n == samples)
     @("ua") bool bUseAlternateNames;                        /// in case of field duplication, append field name with index
-    @("conv") bool bConvertLayout;                          /// in case of field duplication, append field name with index
 
     //@("") bool bAppendMode;                               /// overwrite the output file
     @("dup") bool bPrintDuplicatedPattern;                  /// write out duplicated patterns for each record
 
     @("conf") string cmdlineConfigFile;                     /// we can also provide configuration file from command line
 
+    @("buildxml") string xmlConfigFile;                     /// we can also provide configuration file from command line
+
     @("presql") string sqlPreFile;                          /// name of the SQL statement file to run after creating tables but 
                                                             /// before starting to insert data
 
     @("postsql") string sqlPostFile;                        /// name of the SQL statement file to run after inserting data
+
+	@("validate") string layoutFile;				        /// used to validate the layout XML file
+
+	@("convert") string layoutFileToConvert;                /// name of the layout file to convert
+	@("convertfmt") Format convFormat;                      
+
 }
 
 /***********************************
@@ -106,6 +116,49 @@ public:
         else if (argv.length == 2 && argv[1] == "--lazy")
         {
             _interactiveMode();
+        }
+        else if (argv.length == 3 && argv[1] == "--buildxml")
+        {
+            auto r = new RbfTextBuilder(argv[2]);
+            r.processInputFile;
+            core.stdc.stdlib.exit(2);
+        }
+        else if (argv.length == 3 && argv[1] == "--validate")
+        {
+            // new log to stdout
+            log = Log(stdout);
+    		auto layout = new Layout(argv[2]);
+			layout.validate;
+            core.stdc.stdlib.exit(2);
+        }
+        else if (argv[1] == "--convert" || argv[1] == "--format")
+        {
+            // specific options here
+            struct CommandLineArgumentConvert 
+            {
+                @("convert") @(config.required) string layoutFileToConvert;  /// name of the layout file to convert
+                @("format") @(config.required) Format convFormat = Format.html;             /// output format                     
+                @("template") string templateFile;
+            }
+            CommandLineArgumentConvert convOptions;
+
+            // new log to stdout
+            log = Log(stderr);
+
+            // process arguments
+            processCommandLineArguments!CommandLineArgumentConvert(argv, convOptions);
+
+            // check arguments
+            if (convOptions.convFormat == Format.temp && convOptions.templateFile == "")
+            {
+                stderr.writeln(MSG090);
+            }
+            else
+            {
+                // call conversion function
+                convertLayout(convOptions.layoutFileToConvert,  convOptions.convFormat, convOptions.templateFile);
+            }
+            core.stdc.stdlib.exit(2);
         }
         // deamon mode
         else

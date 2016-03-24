@@ -1,4 +1,4 @@
-module rbf.writers.xmlwriter;
+module rbf.writers.xsdwriter;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;

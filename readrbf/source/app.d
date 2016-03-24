@@ -22,7 +22,6 @@ import rbf.reader;
 import rbf.writers.writer;
 import rbf.config;
 import rbf.stat;
-import rbf.conv;
 
 import args;
 
@@ -79,15 +78,6 @@ int main(string[] argv)
 		auto layout = new Layout(settings.layoutDir[opts.options.inputLayout].file);
 
         //---------------------------------------------------------------------------------
-		// if layout conversion is requested, then call convertion function
-        //---------------------------------------------------------------------------------
-        if (opts.options.bConvertLayout)
-        {
-            convertLayout(layout, opts.options.outputFormat, opts.options.stdOutput);
-            return 0;
-        }
-
-        //---------------------------------------------------------------------------------
 		// output format is an enum but should match the string in rbf.xml config file
         //---------------------------------------------------------------------------------
         auto outputFormat = to!string(opts.options.outputFormat);
@@ -115,10 +105,12 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// layout syntax validation requested from command line ?
         //---------------------------------------------------------------------------------
+        /*
 		if (opts.options.bCheckLayout) 
         {
 			layout.validate;
 		}
+        */
 
         //---------------------------------------------------------------------------------
 		// use alternate names if requested

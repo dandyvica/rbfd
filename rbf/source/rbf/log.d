@@ -1,4 +1,5 @@
 module rbf.log;
+pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.file;
@@ -46,6 +47,12 @@ public:
             writefln(MSG068, defaultLogFile);
         }
         _trace = environment.get("RBF_TRACE", "");
+    }
+
+    // another ctor if we want to output elsewhere
+    this(File fh)
+    {
+        _logHandle = fh;
     }
 
     // log with flexible list of arguments

@@ -16,7 +16,7 @@ class Element(T,U,Context...)
 private:
 
 	immutable T _name;					    /// name of the element
-	immutable T _description;	  			/// description of the element
+	T _description;	  	            		/// description of the element
 	immutable U _length;		      		/// length (in bytes) of the element
 	U _cellLength1; 						/// max(name,length)
 	U _cellLength2; 						/// max(name,length,description)
@@ -84,6 +84,9 @@ public:
 		auto element1 = new Element!(string, ulong)("FIELD1", "This is element #1", 15);
 		assert(element1.description == "This is element #1");
 	}
+
+	/// write property for description attribute
+	@property void description(string newDesc) { _description = newDesc; }
 
 	/// read property for field length
 	@property U length() { return _length; }

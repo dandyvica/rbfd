@@ -9,6 +9,7 @@ import std.array;
 import std.regex;
 import std.range;
 import std.container.array;
+import rbf.errormsg;
 import rbf.field;
 import rbf.nameditems;
 import rbf.recordfilter;
@@ -29,6 +30,7 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 	public 
 	{
 		this(in string name, in string description);
+		this(string[string] attr);
 		@property void value(TVALUE s);
 		@property string rawValue();
 		@property string value();

@@ -9,13 +9,19 @@ import std.algorithm;
 import std.exception;
 class RbfBuilder
 {
-	File _fh;
 	struct
 	{
 		Regex!char _fieldRegex;
+		string _fieldRegexChar;
 		Regex!char _recordRegex;
+		string _recordRegexChar;
 	}
-	this(string fn);
+	this();
 	@property void fieldRegex(in string re);
+	@property string fieldRegex();
 	@property void recordRegex(in string re);
+	@property string recordRegex();
+	string[string] isRecordMatched(string s);
+	string[string] isFieldMatched(string s);
+	private string[string] _isMatchingRegex(string s, Regex!char re);
 }

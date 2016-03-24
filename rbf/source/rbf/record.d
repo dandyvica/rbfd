@@ -15,6 +15,7 @@ import std.regex;
 import std.range;
 import std.container.array;
 
+import rbf.errormsg;
 import rbf.field;
 import rbf.nameditems;
 import rbf.recordfilter;
@@ -54,7 +55,7 @@ public:
     this(in string name, in string description)
     {
         // name shouldn't be empty but description could be
-        enforce(name != "", "record name should not be empty!");
+        enforce(name != "", MSG081);
 
         // pre-allocate array of fields by calling the container's ctor
         super(name);
@@ -62,6 +63,26 @@ public:
         // fill container name/desc
         this.meta.name = name;
         this.meta.description = description;
+    }
+
+	/**
+	 * creates a new record object
+	 *
+	 * Params:
+	 *	attr = associative array having keys "name", "description" with corresponding values
+	 *
+	 * Examples:
+	 * --------------
+	 * auto record = new Record(["name":"FIELD1", "description":"Field1 description"]);
+	 * --------------
+	 */
+    this(string[string] attr)
+    {
+        // name & description keys should exists
+        enforce("name" in attr, MSG082);
+        enforce("description" in attr, MSG083);
+
+        this(attr["name"], attr["description"]);
     }
 
 	/**
@@ -380,6 +401,7 @@ unittest {
 
 	// main test
 	auto rec = new Record("RECORD_A", "This is my main and top record");
+	auto rec1 = new Record(["name":"RECORD_A", "description":"This is my main and top record"]);
 	auto ft = new FieldType("A/N", "string");
 
 	rec ~= new Field("FIELD1", "Desc1", ft, 10);
@@ -391,6 +413,9 @@ unittest {
 	// test properties
 	assert(rec.name == "RECORD_A");
 	assert(rec.meta.description == "This is my main and top record");
+
+	assert(rec1.name == "RECORD_A");
+	assert(rec1.meta.description == "This is my main and top record");
 
     // test asXML
     assert(rec.asXML == `<record name="RECORD_A" description="This is my main and top record">

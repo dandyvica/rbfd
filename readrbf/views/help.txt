@@ -16,9 +16,9 @@ DESCRIPTION
 OPTIONS
        -b : Benchmark: don't write output file but just read input file.
 
-       --br : Break records: try to break record into individual repeated sub-records for better text presentation.
+       --buildxml file: build rbf XML file from input file.
 
-       -c : Validate layout structure.
+       --br : Break records: try to break record into individual repeated sub-records for better text presentation.
 
        --check : check whether field patterns are matched.
 
@@ -68,4 +68,6 @@ OPTIONS
        --ua : use alternate field names instead of regular field names. 
 
        -v : Verbose: print out options.
+
+       --validate : Validate layout structure.
 

@@ -11,9 +11,31 @@ import std.exception;
 // list all possible options when sanitizing data
 struct Sanitizer
 {
+    bool strip;                 /// strip string
     bool capitalize;            /// capitilize string 
     bool uppercase;             /// convert to uppercase
-    string[] replaceRegex;      /// replace matching the regex
+    string[][] replaceRegex;      /// replace matching the regex
+
+    string sanitize(string stringToSanitize)
+    {
+        // copy input string
+        auto s = stringToSanitize.strip;
+
+        // sanitize data according to options
+        if (strip) s = s.strip;
+        if (capitalize) s = s.capitalize;
+        if (uppercase) s = s.toUpper;
+
+        // replace chars
+        foreach (r; replaceRegex)
+        {
+            // replace string
+            s = replaceAll(s, regex(r[0]), r[1]);
+        }
+
+        // return sanitized string
+        return s;
+    }
 }
 
 // defined a structure for attributes
@@ -22,39 +44,6 @@ struct XmlAttribute
     // core data
     string name;
     string value;
-
-    // sanitizing options
-    Sanitizer nameSanitizer;
-    Sanitizer valueSanitizer;
-
-    // sanitize methods
-    void sanitizeName()
-    {
-        name = _sanitize(name, nameSanitizer);
-    }
-
-    // sanitize methods
-    void sanitizeValue()
-    {
-        value = _sanitize(value, valueSanitizer);
-    }
-
-private:
-    string _sanitize(string stringToSanitize, Sanitizer options)
-    {
-        // copy input string
-        auto s = stringToSanitize.strip;
-
-        // sanitize data according to options
-        with(options)
-        {
-            if (capitalize) s = s.capitalize;
-            if (uppercase) s = s.toUpper;
-        }
-
-        // return sanitized string
-        return s;
-    }
 }
 
 

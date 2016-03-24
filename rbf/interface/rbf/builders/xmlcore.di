@@ -9,19 +9,16 @@ import std.algorithm;
 import std.exception;
 struct Sanitizer
 {
+	bool strip;
 	bool capitalize;
 	bool uppercase;
-	string[] replaceRegex;
+	string[][] replaceRegex;
+	string sanitize(string stringToSanitize);
 }
 struct XmlAttribute
 {
 	string name;
 	string value;
-	Sanitizer nameSanitizer;
-	Sanitizer valueSanitizer;
-	void sanitizeName();
-	void sanitizeValue();
-	private string _sanitize(string stringToSanitize, Sanitizer options);
 }
 auto buildXmlTag(string tagName, XmlAttribute[] attributes, bool emptyTag = true)
 {
