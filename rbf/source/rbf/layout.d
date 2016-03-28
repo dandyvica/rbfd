@@ -118,7 +118,7 @@ public:
 
 		// save layout metadata
 		meta.file = xmlFile;
-		meta.name = baseName(xmlFile);
+		meta.name = baseName(xmlFile, ".xml");
 
 		// open XML file and load it into a string
 		string xmlData = cast(string)std.file.read(xmlFile);

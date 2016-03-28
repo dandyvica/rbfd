@@ -226,7 +226,6 @@ int main(string[] argv)
 		// set writer features read in config and process preliminary steps
         //---------------------------------------------------------------------------------
 		writer.outputFeature = settings.outputDir[outputFormat];
-        writefln("tempfile=%s", writer.outputFeature.templateFile);
 
         // SQL format adds additonal feature
         if (opts.options.outputFormat == OutputFormat.sql) 

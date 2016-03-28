@@ -144,16 +144,29 @@ void layout2html(File html, Layout layout)
 // write out XML layout structure as as C-union
 void layout2cstruct(File output, Layout layout) 
 {
+    // inclusion watchguard
+    output.writefln("#ifndef %s_H", layout.meta.name.toUpper); 
+    output.writefln("#define %s_H", layout.meta.name.toUpper); 
+    output.writeln;
+
+    // print out defines for each record name
+	foreach (rec; &layout.sorted) 
+    {
+        output.writefln(`#define RECORD_%s "%s"       // %s`, rec.name, rec.name, rec.meta.description);
+    }
+    output.writeln;
+
     // each record is converted as a C structure
 	foreach (rec; &layout.sorted) 
     {
         // structure header
+		output.writefln("// %s", rec.meta.description);
 		output.writefln("typedef struct RECORD_%s_T {", rec.name);
 
         // each field is a structure member
         foreach (f; rec)
         {
-    		output.writefln("\tchar %s[%d];", f.context.alternateName, f.length);
+    		output.writefln("\tchar %s[%d];    // %s", f.context.alternateName, f.length, f.description);
         }
 
         // end structure
@@ -165,9 +178,10 @@ void layout2cstruct(File output, Layout layout)
 	output.writeln("union {");
 	foreach (rec; &layout.sorted) 
     {
-        output.writefln("\tRECORD_%s_T rec_%s;", rec.name, rec.name);
+        output.writefln("\tRECORD_%s_T rec_%s; // %s", rec.name, rec.name, rec.meta.description);
     }
-	output.writeln("};");
+	output.writefln("} %s_T;", layout.meta.name.toUpper);
     output.writeln;
+    output.writefln("#endif"); 
 
 }
