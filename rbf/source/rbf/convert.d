@@ -166,7 +166,7 @@ void layout2cstruct(File output, Layout layout)
         // each field is a structure member
         foreach (f; rec)
         {
-    		output.writefln("\tchar %s[%d];    // %s", f.context.alternateName, f.length, f.description);
+    		output.writefln("\tchar %s[%d];\t\t// %s", f.context.alternateName, f.length, f.description);
         }
 
         // end structure
@@ -175,7 +175,7 @@ void layout2cstruct(File output, Layout layout)
 	}
 
     // now write union
-	output.writeln("union {");
+	output.writefln("typedef union %s_T {", layout.meta.name.toUpper);
 	foreach (rec; &layout.sorted) 
     {
         output.writefln("\tRECORD_%s_T rec_%s; // %s", rec.name, rec.name, rec.meta.description);
