@@ -111,8 +111,8 @@ void layout2html(File html, Layout layout)
 		//auto rec = fmt[recName];
 
 		// record description
-		html.writefln(`<h2><span class="label label-primary">%s-%s</span></h2>`,
-			rec.name, rec.meta.description);
+		html.writefln(`<h2><span class="label label-primary">%s-%s-%d</span></h2>`,
+			rec.name, rec.meta.description, rec.length);
 
 		// fields description
 		html.writeln(`<table class="table table-striped">`);

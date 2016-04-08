@@ -234,6 +234,9 @@ int main(string[] argv)
             writer.outputFeature.sqlPostFile = opts.options.sqlPostFile;
         }
 
+        // add additional parameters
+        writer.outputFeature.useRawValue = opts.options.useRawValue;
+
         // some writers need preliminary process
 		writer.prepare(layout);
 

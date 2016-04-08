@@ -27,10 +27,13 @@ class CSVWriter : Writer
 	override void prepare(Layout layout) {}
     override void build(string outputFileName) {}
 
-	override void write(Record rec)
-	{
-		//_fh.write(join(rec.fieldValues, outputFeature.fsep), "\n");
-		_fh.writeln(join(rec.fieldValues, outputFeature.fieldSeparator));
+    override void write(Record rec)
+    {
+        // finally write out values
+        if (outputFeature.useRawValue) 
+            _fh.writeln(join(rec.fieldRawValues, outputFeature.fieldSeparator));
+        else
+            _fh.writeln(join(rec.fieldValues, outputFeature.fieldSeparator));
 	}
 
 }

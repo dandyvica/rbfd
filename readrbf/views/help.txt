@@ -59,6 +59,8 @@ OPTIONS
 
        -r file : Full path and name of a file to filter records.
 
+       --raw : use raw values instead of blank stripped values
+
        -s n : Only convert the n-first records.
 
        --stats: print out detailed statistics on file at the end of conversion.

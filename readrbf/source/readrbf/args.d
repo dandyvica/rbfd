@@ -80,8 +80,7 @@ struct CommandLineArgument
 
 	@("validate") string layoutFile;				        /// used to validate the layout XML file
 
-	@("convert") string layoutFileToConvert;                /// name of the layout file to convert
-	@("convertfmt") Format convFormat;                      
+    @("raw") bool useRawValue;                              /// use raw string values instead of stripped values
 
 }
 

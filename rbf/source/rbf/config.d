@@ -78,6 +78,8 @@ struct OutputFeature
 
     string templateFile;          /// template file when using output mode temp
 
+    bool useRawValue;            /// true if we want to use raw values instead of stripped values
+
     // SQL specific
     struct
     {

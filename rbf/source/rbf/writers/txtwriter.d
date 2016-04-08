@@ -106,7 +106,10 @@ public:
         }
 
         // finally write out values
-        rec.each!(f => 	_write!"value"(f));
+        if (outputFeature.useRawValue) 
+            rec.each!(f => 	_write!"rawValue"(f));
+        else
+            rec.each!(f => 	_write!"value"(f));
         _fh.writeln();
 
         // save record name

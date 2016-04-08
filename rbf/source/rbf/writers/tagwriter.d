@@ -33,7 +33,7 @@ class TAGWriter : Writer
 		_fh.writef("%s:", rec.name);
 		foreach (field; rec) 
         {
-			_fh.writef(`%s="%s" `,field.name, field.value);
+			_fh.writef(`%s="%s" `,field.name, (outputFeature.useRawValue ? field.rawValue: field.value));
 		}
 		_fh.writeln();
 	}
