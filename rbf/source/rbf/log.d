@@ -69,7 +69,7 @@ public:
     // useful helpers
     void trace(string, A...)(string msg, A args) { log(LogLevel.TRACE, msg, args); }
     void info(string, A...)(string msg, A args) { log(LogLevel.INFO, msg, args); }
-    void warn(string, A...)(string msg, A args) { log(LogLevel.WARNING, msg, args); }
+    void warning(string, A...)(string msg, A args) { log(LogLevel.WARNING, msg, args); }
     void error(string, A...)(string msg, A args) { log(LogLevel.ERROR, msg, args); }
     void fatal(string, A...)(string msg, A args) { log(LogLevel.FATAL, msg, args); }
 

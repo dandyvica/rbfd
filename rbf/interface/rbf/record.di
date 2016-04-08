@@ -24,6 +24,7 @@ struct RecordMeta
 	string ruler;
 	ulong sourceLineNumber;
 	bool section;
+	typeof(Field.length) declateLength;
 }
 class Record : NamedItemsContainer!(Field, true, RecordMeta)
 {

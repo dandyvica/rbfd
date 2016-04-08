@@ -204,6 +204,12 @@ public:
 			// create a Record object and store it into our record aa
             auto record = new Record(recName, xml.tag.attr["description"]);
 
+            // if any, fill-in declared length
+            if ("length" in  xml.tag.attr)
+            {
+                record.meta.declateLength = to!TLENGTH(xml.tag.attr["length"]);
+            }
+
             // sometimes, we need to keep track of the occurence of some records. We use this
             // XML attribute for this purpose
             record.meta.section = to!bool(xml.tag.attr.get("section", "false"));
@@ -490,17 +496,34 @@ public:
 	void validate() 
     {
 		bool validates = true;
-		foreach (rec; this) 
+
+        // if reclength is defined, compare each record length with record length which should be equal
+        if (meta.length != 0)
         {
-			if (rec.length != meta.length) 
+            foreach (rec; this) 
             {
-				validates = false;
-                writeln(MSG034.format(rec.name, rec.length, meta.length));
-			}
-		}
-		if (validates) 
-                writeln(MSG035.format(meta.file));
-	}
+                if (rec.length != meta.length) 
+                {
+                    validates = false;
+                    log.warning(MSG034, rec.name, rec.length, meta.length);
+                }
+            }
+        }
+        // in that case, reclenth is either not defined or set to 0, meaning each record has a different length
+        else
+        {
+            foreach (rec; this) 
+            {
+                if (rec.length != rec.meta.declateLength) 
+                {
+                    validates = false;
+                    log.warning(MSG034, rec.name, rec.length, rec.meta.declateLength);
+                }
+            }
+        }
+        if (validates) 
+            log.info(MSG035, meta.file);
+    }
 
 	/**
 	 * return true if field is in any record of the layout file
