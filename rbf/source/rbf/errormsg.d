@@ -28,7 +28,7 @@ immutable MSG014 = "info: lines: %d read, records: %d read, %d written";
 immutable MSG015 = "elapsed time = %s";
 immutable MSG016 = "opening input file <%s>, size = %d bytes";
 immutable MSG017 = "read rate = %.0f records per second";
-immutable MSG018 = "line# <%d>, record name <%s> not found";
+immutable MSG018 = "line# <%d>, record name <%s> not found, %d first bytes of the line=<%s>";
 immutable MSG019 = "creating output file <%s>";
 immutable MSG020 = "conversion error, line# <%d>, record <%s>, field <%s> value <%s> to type <%s>, resetting to NULL";
 immutable MSG021 = "creating tables, SQL pool size = %d";

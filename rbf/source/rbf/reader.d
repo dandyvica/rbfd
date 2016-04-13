@@ -145,7 +145,7 @@ public:
             recordName = _layout.buildFieldNameWhenRoot(recordName, _sectionName);
             if (recordName !in _layout)
             {
-                log.log(LogLevel.WARNING, MSG018, stat.nbReadLines, recordName);
+                log.warning(MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
                 return null;
             }
         }
