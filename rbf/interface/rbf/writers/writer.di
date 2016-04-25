@@ -50,14 +50,84 @@ abstract class Writer
 			public 
 			{
 				OutputFeature outputFeature;
-				this(in string outputFileName, in bool create = true);
+				this(in string outputFileName, in bool create = true)
+				{
+					_outputFileName = outputFileName;
+					if (outputFileName != "")
+					{
+						_outputFileName = outputFileName;
+						if (create)
+						{
+							_fh = File(_outputFileName, "w");
+							log.log(LogLevel.INFO, MSG019, outputFileName);
+						}
+					}
+					else
+						_fh = stdout;
+				}
 				abstract void prepare(Layout layout);
 				abstract void build(string outputFileName);
 				abstract void write(Record rec);
-				void open();
-				void close();
+				void open()
+				{
+					_fh = File(_outputFileName, "w");
+				}
+				void close()
+				{
+					if (_outputFileName != "")
+						_fh.close();
+				}
 			}
 		}
 	}
 }
-Writer writerFactory(in string output, in OutputFormat fmt);
+Writer writerFactory(in string output, in OutputFormat fmt)
+{
+	final switch (fmt)
+	{
+		case OutputFormat.box:
+		{
+			return new BoxWriter(output);
+		}
+		case OutputFormat.csv:
+		{
+			return new CSVWriter(output);
+		}
+		case OutputFormat.excel1:
+		{
+			return new XLSX1Writer(output);
+		}
+		case OutputFormat.excel2:
+		{
+			return new XLSX2Writer(output);
+		}
+		case OutputFormat.html:
+		{
+			return new HTMLWriter(output);
+		}
+		case OutputFormat.ident:
+		{
+			return new IdentWriter(output);
+		}
+		case OutputFormat.sql:
+		{
+			return new Sqlite3Writer(output);
+		}
+		case OutputFormat.tag:
+		{
+			return new TAGWriter(output);
+		}
+		case OutputFormat.temp:
+		{
+			return new TemplateWriter(output);
+		}
+		case OutputFormat.txt:
+		{
+			return new TXTWriter(output);
+		}
+		case OutputFormat.xml:
+		{
+			return new XmlWriter(output);
+		}
+	}
+}

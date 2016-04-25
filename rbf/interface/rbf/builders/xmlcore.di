@@ -13,7 +13,21 @@ struct Sanitizer
 	bool capitalize;
 	bool uppercase;
 	string[][] replaceRegex;
-	string sanitize(string stringToSanitize);
+	string sanitize(string stringToSanitize)
+	{
+		auto s = stringToSanitize.strip;
+		if (strip)
+			s = s.strip;
+		if (capitalize)
+			s = s.capitalize;
+		if (uppercase)
+			s = s.toUpper;
+		foreach (r; replaceRegex)
+		{
+			s = replaceAll(s, regex(r[0]), r[1]);
+		}
+		return s;
+	}
 }
 struct XmlAttribute
 {

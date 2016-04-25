@@ -117,19 +117,23 @@ void layout2html(File html, Layout layout)
 		// fields description
 		html.writeln(`<table class="table table-striped">`);
 		html.writeln(`<thead><tr><th>#</th><th>Field name</th><th>Description</th>`);
-		html.writeln(`<th>Length</th><th>Offset</th></tr></thead>`);
+		html.writeln(`<th>Type</th><th>Length</th><th>Offsets</th></tr></thead>`);
 
 		// loop on each field to print out description
 		auto i = 1;
 		foreach (field; rec) 
         {
-			html.writeln(`<tr>`);
-			html.writefln(`<td>%s</td>`,i++);
-			html.writefln(`<td><strong>%s</strong></td>`,field.name);
-			html.writefln(`<td>%s</td>`, field.description);
-			html.writefln(`<td>%s</td>`, field.length);
-			html.writefln(`<td>%s</td>`, field.context.offset+1);
-			html.writeln(`</tr>`);
+            with(field)
+            {
+                html.writeln(`<tr>`);
+                html.writefln(`<td>%s</td>`,i++);
+                html.writefln(`<td><strong>%s</strong></td>`,name);
+                html.writefln(`<td>%s</td>`, description);
+                html.writefln(`<td>%s</td>`, type.meta.name);
+                html.writefln(`<td>%s</td>`, length);
+                html.writefln(`<td>%d-%d</td>`, context.lowerBound+1, context.upperBound);
+                html.writeln(`</tr>`);
+            }
 
 		}
 		html.writeln(`</table>`);

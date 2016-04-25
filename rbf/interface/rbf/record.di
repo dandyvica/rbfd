@@ -30,13 +30,48 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 {
 	public 
 	{
-		this(in string name, in string description);
-		this(string[string] attr);
-		@property void value(TVALUE s);
-		@property string rawValue();
-		@property string value();
-		@property string[] fieldNames();
-		@property string[] fieldAlternateNames();
+		this(in string name, in string description)
+		{
+			enforce(name != "", MSG081);
+			super(name);
+			this.meta.name = name;
+			this.meta.description = description;
+		}
+		this(string[string] attr)
+		{
+			enforce("name" in attr, MSG082);
+			enforce("description" in attr, MSG083);
+			this(attr["name"], attr["description"]);
+		}
+		@property void value(TVALUE s)
+		{
+			if (s.length < _length)
+			{
+				s = s.leftJustify(_length);
+			}
+			else
+				if (s.length > _length)
+				{
+					s = s[0.._length];
+				}
+			this.each!((f) => f.value = s[f.context.lowerBound..f.context.upperBound]);
+		}
+		@property string rawValue()
+		{
+			return fieldRawValues.join("");
+		}
+		@property string value()
+		{
+			return fieldValues.join("");
+		}
+		@property string[] fieldNames()
+		{
+			mixin(NamedItemsContainer!(Field, true).getMembersData("name"));
+		}
+		@property string[] fieldAlternateNames()
+		{
+			mixin(NamedItemsContainer!(Field, true).getMembersData("context.alternateName"));
+		}
 		auto @property fieldValues()
 		{
 			mixin(NamedItemsContainer!(Field, true).getMembersData("value"));
@@ -45,13 +80,78 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 		{
 			mixin(NamedItemsContainer!(Field, true).getMembersData("rawValue"));
 		}
-		@property string[] fieldDescriptions();
-		@property TVALUE concat(string name);
-		string findNameByIndex(in ulong i);
-		void recalculateIndex();
-		void buildAlternateNames();
-		void identifyRepeatedFields();
-		void findRepeatedFields(string[] fieldList);
+		@property string[] fieldDescriptions()
+		{
+			mixin(NamedItemsContainer!(Field, true).getMembersData("description"));
+		}
+		@property TVALUE concat(string name)
+		{
+			auto values = array(this[name].map!((f) => f.value));
+			return values.reduce!((a, b) => a ~ b);
+		}
+		string findNameByIndex(in ulong i)
+		{
+			foreach (f; this)
+			{
+				if (f.context.index == i)
+					return f.name;
+			}
+			return "";
+		}
+		void recalculateIndex()
+		{
+			auto i = 0;
+			this.each!((f) => f.context.index = i++);
+		}
+		void buildAlternateNames()
+		{
+			foreach (f; this)
+			{
+				auto list = this[f.name];
+				if (list.length > 1)
+				{
+					auto i = 1;
+					foreach (f1; list)
+					{
+						f1.context.alternateName = "%s%d".format(f1.name, i++);
+					}
+				}
+			}
+		}
+		void identifyRepeatedFields()
+		{
+			string s;
+			foreach (f; this)
+			{
+				auto i = _map[f.name][0].context.index;
+				s ~= "<%d>".format(i);
+			}
+			auto pattern = ctRegex!"((<\\d+>)+?)\\1+";
+			auto match = matchAll(s, pattern);
+			foreach (m; match)
+			{
+				auto result = matchAll(m[1], "<(\\d+)>");
+				auto a = array(result.map!((r) => findNameByIndex(to!ulong(r[1]))));
+				meta.repeatingPattern ~= a;
+			}
+		}
+		void findRepeatedFields(string[] fieldList)
+		{
+			auto indexOfFirstField = array(this[fieldList[0]].map!((f) => f.context.index));
+			immutable l = fieldList.length;
+			foreach (i; indexOfFirstField)
+			{
+				if (i + l > size)
+					break;
+				auto recName = join(fieldList, ";");
+				meta.subRecord ~= new Record(recName, "subRecord");
+				auto a = this[i..i + l];
+				if (array(this[i..i + l].map!((f) => f.name)) == fieldList)
+				{
+					meta.subRecord[$ - 1] ~= a;
+				}
+			}
+		}
 		void opOpAssign(string op)(Field field) if (op == "~")
 		{
 			field.context.index = this.size;
@@ -65,9 +165,47 @@ class Record : NamedItemsContainer!(Field, true, RecordMeta)
 		{
 			fieldList.each!((f) => super.opOpAssign!"~"(f));
 		}
-		override string toString();
-		bool matchRecordFilter(RecordFilter filter);
-		string asXML();
+		override string toString()
+		{
+			auto s = "\x0aname=<%s>, description=<%s>, length=<%u>, skip=<%s>\x0a".format(name, meta.description, length, meta.skipRecord);
+			foreach (field; this)
+			{
+				s ~= field.toString();
+				s ~= "\x0a";
+			}
+			return s;
+		}
+		bool matchRecordFilter(RecordFilter filter)
+		{
+			foreach (RecordClause c; filter)
+			{
+				if (!(c.fieldName in this))
+				{
+					return false;
+				}
+				bool condition = false;
+				foreach (Field field; this[c.fieldName])
+				{
+					condition |= field.type.isFieldFilterMatched(field.value, c.operator, c.value);
+				}
+				if (!condition)
+					return false;
+			}
+			return true;
+		}
+		string asXML()
+		{
+			XmlAttribute[] attributes;
+			attributes ~= XmlAttribute("name", name);
+			attributes ~= XmlAttribute("description", meta.description);
+			auto tag = buildXmlTag("record", attributes, false);
+			foreach (f; this)
+			{
+				tag ~= std.ascii.newline ~ "\x09" ~ f.asXML;
+			}
+			tag ~= std.ascii.newline ~ buildXmlTag("record", [], true);
+			return tag;
+		}
 	}
 }
 import std.exception;
