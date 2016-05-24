@@ -1,4 +1,2 @@
-rbf/interface/rbf/*.di
-rbf/interface/rbf/writers/*.di
-rbf/test/test.*
-readrbf/views/help.1
+.dub/*
+bin/*
