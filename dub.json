@@ -7,7 +7,7 @@
 	"targetPath": "bin",
 	"targetType": "executable",
 	"libs-linux": ["sqlite3"],
-	"libs-windows": ["..\\..\\..\\tools\\sqlite3\\sqlite3"],
+	"libs-windows": ["..\\..\\tools\\sqlite3\\sqlite3"],
 	"importPaths": ["source"],
 	"stringImportPaths": ["./views", "../../data/local/conf"],
 	"lflags-linux": ["-L/usr/lib/x86_64-linux-gnu"],
