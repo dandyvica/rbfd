@@ -102,3 +102,5 @@ immutable MSG088 = "error: XMl configuration file <%s> not found";
 immutable MSG089 = "error: input file <%s> for XML file creation not found";
 immutable MSG090 = "error: unknown sanitizing option for tag <%s> and attribute <%s>";
 immutable MSG091 = "error: no template file provided";
+immutable MSG092 = "PostgreSQL lib version <%d>";
+immutable MSG093 = "error: PostgreSQL error %d when opening db %s, SQL msg %s";

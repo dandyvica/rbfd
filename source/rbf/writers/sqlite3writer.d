@@ -20,14 +20,13 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
+import rbf.writers.sqlcommon;
 
-immutable sqlKeywords = import("sqlkeywords.txt");
 alias compiledSqlStatement = sqlite3_stmt *;
 
-// list of SQL statements used for inserting record data
-immutable SQL_CREATE = "create table if not exists %s (%s);";
-immutable SQL_INSERT = "insert into %s values (%s);";
 immutable SQL_META   = `insert into meta values ("%s", "%s", %d);`;
+immutable SQL_LAYOUT = "CREATE TABLE IF NOT EXISTS LAYOUT (RECNAME TEXT, RECDESC TEXT, RECLENGTH INTEGER, 
+            FNAME TEXT, FDESC TEXT, FTYPE TEXT, FLENGTH INTEGER, FINDEX INTEGER, FOFFSET INTEGER);";
 
 /*********************************************
  * in this case, each record is insert into a SQL table
@@ -41,79 +40,8 @@ private:
     int _sqlCode;                                     /// sqlite3 API return code
     compiledSqlStatement[string] _compiledInsertStmt; /// list of pre-build INSERT statements
     typeof(outputFeature.sqlInsertPool) _trxCounter;  /// pool counter for grouping INSERTs
-    string[] _sqlKeywordsList;                        /// list of all SQLITE3 reserved keywords
     ushort[string] _recordCounter;                    /// aa to store the sequence of each record
     string[string] _tableNames;                       /// aa to store record names vs table names
-
-    Layout _layout;                                   /// saved layout
-
-    string _recordName;
-
-    File _rebuiltFileHandle;
-
-	/**
- 	 * as SQL table names can't start with a number, if it's the case, just as R in front
-     * of the record name
-	 *
-	 * Params:
-	 * 	recordName = record name
-	 *
-	 */
-    string _buildTableName(string recordName)
-    {
-        // is record name a reserved keywords? In that case, add 'R' in front of the record name
-        if (_sqlKeywordsList.canFind(recordName) || recordName[0].isDigit)
-            return "R" ~ recordName;
-        else
-            return recordName;
-    }
-
-
-	/** 
-     * Build the SQL statement used to create tables matching record
-     * only create the table if it's not already existing
-	 *
-	 * Params:
-	 * 	rec = Record object
-	 *
-	 */
-    string _buildCreateTableStatement(Record rec)
-    {
-        auto cols = rec[].map!(f => _buildColumnWithinCreateTableStatement(f));
-        _tableNames[rec.name] = _buildTableName(rec.name);
-        string stmt = SQL_CREATE.format(_tableNames[rec.name], join(cols, ","));
-        return stmt;
-    }
-
-	/** 
-     * Build the SQL colunm statement used in SQL create statement
-     * The statement is highly dependant of the field type
-	 *
-	 * Params:
-	 * 	f = Field object
-	 *
-	 */
-    string _buildColumnWithinCreateTableStatement(Field f)
-    {
-        string colStmt;
-
-        final switch (f.type.meta.type)
-        {
-            case AtomicType.decimal:
-                colStmt = f.context.alternateName ~ " FLOAT";
-                break;
-            case AtomicType.integer:
-                colStmt = f.context.alternateName ~ " INTEGER";
-                break;
-            case AtomicType.date:
-                colStmt = f.context.alternateName ~ " DATE";
-                break;
-            case AtomicType.string:
-                colStmt = "%s VARCHAR(%d)".format(f.context.alternateName, f.length);
-                break;
-        }
-        return colStmt;
-    }
 
 	/** 
      * SQL statement execution. Throws an exception if an SQL error is returned
@@ -132,24 +60,6 @@ private:
     }
 
 	/** 
-     * SQL statement execution 2nd version. Throws an exception if an SQL error is returned
-	 *
-	 * Params:
-	 * 	stmt = SQL statement 
-     *  callback = Sqlite3 callback func to be called
-     *  outerThis = pointer on "this" object (allows to pass context to callback)
-	 *
-	 */
-    void _executeStmt(string stmt, sqlite3_callback cb, Sqlite3Writer outerThis = null)
-    {
-        _sqlCode = sqlite3_exec(_db, toStringz(stmt), cb, cast(void*)outerThis, null); 
-        if (_sqlCode != SQLITE_OK) 
-        {
-            stderr.writeln(MSG063.format(stmt, _sqlCode, fromStringz(sqlite3_errmsg(_db))));
-        }
-    }
-
-	/** 
      * Build INSERT statements in advance because it's only depending on record
 	 *
 	 * Params:
@@ -159,7 +69,7 @@ private:
     void _prepareInsertCompiledStatement(Record rec)
     {
         auto bind = array(repeat("?", rec.size));
-        auto stmt = SQL_INSERT.format(_buildTableName(rec.name), bind.join(","));
+        auto stmt = SQL_INSERT.format(SqlCommon.buildTableName(rec.name), bind.join(","));
         log.log(LogLevel.TRACE, MSG028, stmt);
 
         sqlite3_stmt *compiledStmt;
@@ -227,35 +137,6 @@ private:
             }
         }
     }
-
-
-/*
-    void _readRecordTable(char[] tableName, char[] recName, uint rowID)
-    {
-        extern(C) int _buildRecord(void *param, int argc, char **argv, char **azColName)
-        {
-            auto outerThis = cast(Sqlite3Writer)param;
-            Record rec = outerThis._layout[outerThis._recordName];
-            foreach (i; 0..argc)
-            {
-               rec[i].setFormattedValue(fromStringz(argv[i]));
-            }
-            outerThis._rebuiltFileHandle.writeln(rec.rawValue);
-            return 0;
-        }
-
-        // new to save record name to pass it back from this object
-        _recordName = recName.idup;
-
-        // now select correct line using rowID
-        string stmt = "select *  from %s where rowid = %d;".format(tableName, rowID);
-        _executeStmt(stmt, &_buildRecord, this);
-
-        // close file
-        //_rebuiltFileHandle.close;
-    }
-    */
-
 
 	/** 
      * Read external SQL statements file and execute all statements
@@ -346,13 +227,6 @@ public:
     {
         auto nbTables = 0;
 
-        // save layout for future use
-        _layout = layout;
-
-        // build the list of SQL reserved keywords: it's used to check whether a record name is a reserved keyword
-        _sqlKeywordsList = array(sqlKeywords.lineSplitter);
-        _sqlKeywordsList = array(_sqlKeywordsList.filter!(f => f != ""));
-
         // creation of all tables
         log.log(LogLevel.INFO, MSG021, outputFeature.sqlInsertPool);
 
@@ -364,7 +238,7 @@ public:
             if (rec.meta.skipRecord) continue;
 
             // build statement
-            auto stmt = _buildCreateTableStatement(rec);
+            auto stmt = SqlCommon.buildCreateTableStatement(rec);
             log.log(LogLevel.TRACE, MSG028, stmt);
 
             // execute statement
@@ -378,15 +252,8 @@ public:
             _prepareInsertCompiledStatement(rec);
         }
 
-        // now create the meta-index record table to keep track of rowIDs and
-        // allow file reconstruction
-        auto stmt = "create table if not exists META (TABLENAME TEXT, RECNAME TEXT, SEQNUM INTEGER);";
-        _executeStmt(stmt);
-
-        // create layout table which could be useful is some situation
-        stmt = "create table if not exists LAYOUT (RECNAME TEXT, RECDESC TEXT, RECLENGTH INTEGER, 
-            FNAME TEXT, FDESC TEXT, FTYPE TEXT, FLENGTH INTEGER, FINDEX INTEGER, FOFFSET INTEGER);";
-        _executeStmt(stmt);
+        // create layout table which could be useful in some situation
+        _executeStmt(SQL_LAYOUT);
 
         // log tables creation
         log.log(LogLevel.INFO, MSG025, "META");
@@ -467,42 +334,7 @@ public:
 
     }
 
-	/** 
-     * Read SQLlite database to re-create record-based file
-	 *
-	 * Params:
-	 * 	rebuiltFileName = file name of the new file
-	 *
-	 */
     override void build(string rebuiltFileName) {}
-    /*
-    override void build(string rebuiltFileName)
-    {
-        // callback read by SQLite3 API
-        extern(C) int _readMeta(void *param, int argc, char **argv, char **azColName)
-        {
-            // get context from caller
-            auto outerThis = cast(Sqlite3Writer)param;
-
-            // convert from C-strings
-            auto tableName  = fromStringz(argv[0]);
-            auto recName    = fromStringz(argv[1]);
-            auto rowID      = fromStringz(argv[2]);
-
-            // build SQL stmt to read record data
-            outerThis._readRecordTable(tableName, recName, to!uint(rowID));
-            return 0;
-        }
-
-        // save new file name to pass it through this
-        _rebuiltFileHandle = File(rebuiltFileName, "w");
-        log.log(LogLevel.INFO, MSG019, rebuiltFileName);
-
-        // select all records to rebuild the initial file
-        auto stmt = "select * from meta";
-        _executeStmt(stmt, &_readMeta, this);
-    }
-    */
 
 	/** 
      * Close DB. First finish pending operations

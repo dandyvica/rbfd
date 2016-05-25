@@ -19,6 +19,7 @@ import rbf.writers.csvwriter;
 import rbf.writers.htmlwriter;
 import rbf.writers.identwriter;
 import rbf.writers.sqlite3writer;
+import rbf.writers.sqlpostgres;
 import rbf.writers.tagwriter;
 import rbf.writers.templatewriter;
 import rbf.writers.txtwriter;
@@ -28,7 +29,7 @@ import rbf.writers.xsdwriter;
 
 // list of all possible output formats. For those formats, the settings XML file
 // should define their 
-enum OutputFormat { box, csv, html, ident, sql, tag, txt, excel1, excel2, xml, temp }
+enum OutputFormat { box, csv, html, ident, sql, postgres, tag, txt, excel1, excel2, xml, temp }
 
 /*********************************************
  * writer base class for writing to various ouput formats
@@ -107,6 +108,7 @@ Writer writerFactory(in string output, in OutputFormat fmt)
 		case OutputFormat.html  : return new HTMLWriter(output);
 		case OutputFormat.ident : return new IdentWriter(output);
 		case OutputFormat.sql   : return new Sqlite3Writer(output);
+		case OutputFormat.postgres : return new SqlPGWriter(output);
 		case OutputFormat.tag   : return new TAGWriter(output);
 		case OutputFormat.temp  : return new TemplateWriter(output);
 		case OutputFormat.txt   : return new TXTWriter(output);
