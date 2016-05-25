@@ -28,6 +28,9 @@ void convertLayout(string inputLayoutFileName, Format outputFormat, string input
     // define new layout and validate it if requested
     auto layout = new Layout(inputLayoutFileName);
 
+    // extract root filename
+    auto outputFileName = baseName(inputLayoutFileName, ".xml");
+
     // send to stdout
     File outputHandle = stdout;
 
@@ -35,20 +38,24 @@ void convertLayout(string inputLayoutFileName, Format outputFormat, string input
     final switch(outputFormat)
     {
         case outputFormat.html:
-            layout2html(outputHandle, layout);
+            outputFileName ~= ".html";
+            layout2html(File(outputFileName, "w"), layout);
             break;
         case outputFormat.xml:
             break;
         case outputFormat.include:
             // this is necessary to use alternate name because names can be duplicated
+            outputFileName ~= ".h";
             layout.each!(r => r.buildAlternateNames);
-            layout2cstruct(outputHandle, layout);
+            layout2cstruct(File(outputFileName, "w"), layout);
             break;
         case outputFormat.csv:
-            layout2csv(outputHandle, layout);
+            outputFileName ~= ".csv";
+            layout2csv(File(outputFileName, "w"), layout);
             break;
         case outputFormat.temp:
-            layout2temp(outputHandle, inputTemplate, layout);
+            outputFileName ~= ".txt";
+            layout2temp(File(outputFileName, "w"), inputTemplate, layout);
             break;
     }
 }
