@@ -45,9 +45,13 @@ package:
 	File _fh; 						/// file handle on output file if any
 	string _previousRecordName;		/// sometimes, we need to keep track of the previous record written
                                     /// useful to gracefully end ascii tables
+    bool useFile = true;            /// in some situations (e.g.: PostgreSQL), we don't write into a file
+                                    /// but rather a DB. So we don't use a file
 
 public:
 
+    Config configFromXMLFile;       /// configuration already read from configuration file
+    string inputFileName;
 	OutputFeature outputFeature;    /// specific data for chosen output format
 
 
@@ -73,8 +77,12 @@ public:
             }
 		}
 		else
+        {
 			_fh = stdout;
+        }
 	}
+
+    this() { useFile = false; }
 
 	// should be implemented by derived classes
 	abstract void prepare(Layout layout);
@@ -83,12 +91,12 @@ public:
 
 	void open() 
     {
-		_fh = File(_outputFileName, "w");
+		if (useFile) _fh = File(_outputFileName, "w");
 	}
 	void close() 
     {
 		// close handle if not stdout
-		if (_outputFileName != "") _fh.close();
+		if (_outputFileName != "" && useFile) _fh.close();
 	}
 
 }

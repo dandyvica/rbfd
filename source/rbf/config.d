@@ -88,6 +88,7 @@ struct OutputFeature
         string sqlPreFile;        /// name of the SQL file containing statements run before inserting data
         string sqlPostFile;       /// name of the SQL file containing statements run after inserting data
         bool addDataSource;       /// whether the input file name is added as a source for data in SQL output
+        string connectionString;  /// PostgreSQL connection string
     }
 }
 alias OutputDir = NamedItemsContainer!(OutputFeature, false);
@@ -98,7 +99,7 @@ alias OutputDir = NamedItemsContainer!(OutputFeature, false);
 class Config {
 
 private:
-	LayoutDir _layoutDirectory;		/// list of all settings
+	LayoutDir _layoutDirectory;		/// list of all settings i.e all layout configuration (path, etc)
 	OutputDir _outputDirectory;		/// list of all output formats
 
 public:
@@ -176,23 +177,6 @@ public:
             auto fdesc = xml.tag.attr.get("fdesc", "false");
 
             // save layout metadata
-            /*
-            this._outputDirectory ~= OutputFeature(
-                    xml.tag.attr["name"],
-                    xml.tag.attr.get("outputDir", ""),
-                    xml.tag.attr.get("fsep", "|"),
-                    xml.tag.attr.get("lsep", ""),
-                    to!Orientation(xml.tag.attr.get("orientation", "horizontal")),
-                    //xml.tag.attr.get("zipper", ""),
-                    (fdesc == "true") ? true : false,
-                    to!bool(xml.tag.attr.get("useAlternateName", "false")),
-                    xml.tag.attr.get("alternateNameFmt", "%s(%d)"),
-                    to!ushort(xml.tag.attr.get("pool", "30")),
-                    xml.tag.attr.get("extension", to!string(xml.tag.attr["name"])),
-                    to!bool(xml.tag.attr.get("addSource", "false")),
-            );
-            */
-
             OutputFeature of;
 
             with (xml.tag)
@@ -215,6 +199,7 @@ public:
                 // save SQL attributes
                 of.sqlInsertPool = to!ushort(attr.get("pool", SQL_INSERT_POOL));
                 of.addDataSource = to!bool(attr.get("addSource", "false"));
+                of.connectionString = attr.get("conn_string", "");
 
                 // save temp attributes
                 of.templateFile = attr.get("templateFile", "rbf.template");
@@ -231,8 +216,8 @@ public:
 
     }
 
-	@property LayoutDir layoutDir() { return _layoutDirectory; }
-	@property OutputDir outputDir() { return _outputDirectory; }
+	@property LayoutDir layoutList() { return _layoutDirectory; }
+	@property OutputDir outputList() { return _outputDirectory; }
 
 private:
         

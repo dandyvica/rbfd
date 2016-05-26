@@ -32,15 +32,8 @@ immutable CR = "\r";                /// carriage return
 
 int main(string[] argv)
 {
-	// number of records read
-	//auto nbReadRecords    = 0;
-	//auto nbWrittenRecords = 0;
-	//auto nbMatchedRecords = 0;
-
-    //auto tid = spawn(&spawnedFunction);
-
     // settings class for storing whole configuration
-    Config settings;
+    Config configFromXMLFile;
 
     //---------------------------------------------------------------------------------
 	// need to known how much time spent
@@ -53,18 +46,19 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// manage arguments passed from the command line
         //---------------------------------------------------------------------------------
-		auto opts = CommandLineOption(argv);
+		auto cmdLineOptions = CommandLineOption(argv);
 
         //---------------------------------------------------------------------------------
 		// configuration file passed as arugment? Use it if neccessary
         //---------------------------------------------------------------------------------
-        if (opts.options.cmdlineConfigFile != "")
+        if (cmdLineOptions.cmdLineArgs.cmdlineConfigFile != "")
         {
-            settings = new Config(opts.options.cmdlineConfigFile);
+            configFromXMLFile = new Config(cmdLineOptions.cmdLineArgs.cmdlineConfigFile);
         }
         else
         {
-		    settings = new Config();
+            // take the default configuration file
+		    configFromXMLFile = new Config();
         }
 
         //---------------------------------------------------------------------------------
@@ -76,38 +70,38 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// define new layout corresponding to the requested layout given from the command line
         //---------------------------------------------------------------------------------
-		auto layout = new Layout(settings.layoutDir[opts.options.inputLayout].file);
+		auto layout = new Layout(configFromXMLFile.layoutList[cmdLineOptions.cmdLineArgs.inputLayout].file);
 
         //---------------------------------------------------------------------------------
 		// output format is an enum but should match the string in rbf.xml config file
         //---------------------------------------------------------------------------------
-        auto outputFormat = to!string(opts.options.outputFormat);
+        auto outputFormat = to!string(cmdLineOptions.cmdLineArgs.outputFormat);
 
         //---------------------------------------------------------------------------------
 		// use output file name if given or build it
         //---------------------------------------------------------------------------------
-        if (opts.options.givenOutputFileName != "")
+        if (cmdLineOptions.cmdLineArgs.givenOutputFileName != "")
         {
-            opts.outputFileName = opts.options.givenOutputFileName;
+            cmdLineOptions.outputFileName = cmdLineOptions.cmdLineArgs.givenOutputFileName;
         }
         else
         {
-            opts.outputFileName = baseName(opts.options.inputFileName) ~ "." ~ settings.outputDir[outputFormat].outputFileExtension;
+            cmdLineOptions.outputFileName = baseName(cmdLineOptions.cmdLineArgs.inputFileName) ~ "." ~ configFromXMLFile.outputList[outputFormat].outputFileExtension;
         }
 
         //---------------------------------------------------------------------------------
 		// check if œoutput format is valid
         //---------------------------------------------------------------------------------
-		if (outputFormat !in settings.outputDir) 
+		if (outputFormat !in configFromXMLFile.outputList) 
         {
-			throw new Exception(MSG058.format(settings.outputDir.names));
+			throw new Exception(MSG058.format(configFromXMLFile.outputList.names));
 		}
 
         //---------------------------------------------------------------------------------
 		// layout syntax validation requested from command line ?
         //---------------------------------------------------------------------------------
         /*
-		if (opts.options.bCheckLayout) 
+		if (cmdLineOptions.cmdLineArgs.bCheckLayout) 
         {
 			layout.validate;
 		}
@@ -116,64 +110,64 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// use alternate names if requested
         //---------------------------------------------------------------------------------
-		if (opts.options.bUseAlternateNames) 
+		if (cmdLineOptions.cmdLineArgs.bUseAlternateNames) 
         {
-			settings.outputDir[outputFormat].useAlternateName = true;
+			configFromXMLFile.outputList[outputFormat].useAlternateName = true;
 		}
 
         //---------------------------------------------------------------------------------
 		// save template file if any
         //---------------------------------------------------------------------------------
-		if (opts.options.templateFile != "") 
+		if (cmdLineOptions.cmdLineArgs.templateFile != "") 
         {
-			settings.outputDir[outputFormat].templateFile = opts.options.templateFile;
+			configFromXMLFile.outputList[outputFormat].templateFile = cmdLineOptions.cmdLineArgs.templateFile;
 		}
 
         //---------------------------------------------------------------------------------
 		// need to get rid of some fields ?
         //---------------------------------------------------------------------------------
-		if (opts.isFieldFilterFileSet) 
+		if (cmdLineOptions.isFieldFilterFileSet) 
         {
             //---------------------------------------------------------------------------------
 			// only keep specified fields
             //---------------------------------------------------------------------------------
-			layout.keepOnly(opts.filteredFields, newline);
+			layout.keepOnly(cmdLineOptions.filteredFields, newline);
             log.info(MSG026, layout.size);
 		}
         // list of records/fields given from the command line
-		if (opts.isFieldFilterSet) 
+		if (cmdLineOptions.isFieldFilterSet) 
         {
             //---------------------------------------------------------------------------------
 			// only keep specified fields
             //---------------------------------------------------------------------------------
-			layout.keepOnly(opts.filteredFields, ";");
+			layout.keepOnly(cmdLineOptions.filteredFields, ";");
             log.info(MSG026, layout.size);
 		}
 
         //---------------------------------------------------------------------------------
 		// create new reader according to what is passed in the command
-		// line and the configuration found in JSON properties file
+		// line and the configuration found in XML properties file
         //---------------------------------------------------------------------------------
-		auto reader = new Reader(opts.options.inputFileName, layout);
-        log.info(MSG016, opts.options.inputFileName, reader.inputFileSize);
+		auto reader = new Reader(cmdLineOptions.cmdLineArgs.inputFileName, layout);
+        log.info(MSG016, cmdLineOptions.cmdLineArgs.inputFileName, reader.inputFileSize);
 
         //---------------------------------------------------------------------------------
 		// check field patterns?
         //---------------------------------------------------------------------------------
-        reader.checkPattern = opts.options.bCheckPattern;
+        reader.checkPattern = cmdLineOptions.cmdLineArgs.bCheckPattern;
 
         //---------------------------------------------------------------------------------
 		// grep lines?
         //---------------------------------------------------------------------------------
-		if (opts.options.lineFilter != "") 
+		if (cmdLineOptions.cmdLineArgs.lineFilter != "") 
         {
-			reader.lineRegexPattern = opts.options.lineFilter;
+			reader.lineRegexPattern = cmdLineOptions.cmdLineArgs.lineFilter;
 		}
 
         //---------------------------------------------------------------------------------
 		// if verbose option is requested, print out what's possible
         //---------------------------------------------------------------------------------
-		if (opts.options.bVerbose) 
+		if (cmdLineOptions.cmdLineArgs.bVerbose) 
         {
             //---------------------------------------------------------------------------------
 			// print out field type meta info
@@ -183,16 +177,16 @@ int main(string[] argv)
             {
 				printMembers!(FieldTypeMeta)(t.meta);
 			}
-			printMembers!(CommandLineOption)(opts);
-			printMembers!(OutputFeature)(settings.outputDir[outputFormat]);
+			printMembers!(CommandLineOption)(cmdLineOptions);
+			printMembers!(OutputFeature)(configFromXMLFile.outputList[outputFormat]);
 		}
 
         //---------------------------------------------------------------------------------
 		// verify record filter arguments: if field name is not found in layout, stop
         //---------------------------------------------------------------------------------
-        if (opts.isRecordFilterFileSet || opts.isRecordFilterSet)
+        if (cmdLineOptions.isRecordFilterFileSet || cmdLineOptions.isRecordFilterSet)
         {
-            foreach(rf; opts.filteredRecords)
+            foreach(rf; cmdLineOptions.filteredRecords)
             {
                 if (!layout.isFieldInLayout(rf.fieldName))
                 {
@@ -216,27 +210,29 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		Writer writer;
 		auto outputFileName = buildNormalizedPath(
-				settings.outputDir[outputFormat].outputDirectory,
-				opts.outputFileName
+				configFromXMLFile.outputList[outputFormat].outputDirectory,
+				cmdLineOptions.outputFileName
 		);
 
-		auto output = (opts.options.stdOutput) ? "" : outputFileName;
-		writer = writerFactory(output, opts.options.outputFormat);
+		auto output = (cmdLineOptions.cmdLineArgs.stdOutput) ? "" : outputFileName;
+		writer = writerFactory(output, cmdLineOptions.cmdLineArgs.outputFormat);
 
         //---------------------------------------------------------------------------------
 		// set writer features read in config and process preliminary steps
         //---------------------------------------------------------------------------------
-		writer.outputFeature = settings.outputDir[outputFormat];
+		writer.outputFeature = configFromXMLFile.outputList[outputFormat];
+		writer.configFromXMLFile = configFromXMLFile;
+        writer.inputFileName = cmdLineOptions.cmdLineArgs.inputFileName;
 
-        // SQL format adds additonal feature
-        if (opts.options.outputFormat == OutputFormat.sql) 
+        // SQL format adds additonal feature for SQL
+        if  (cmdLineOptions.cmdLineArgs.outputFormat == OutputFormat.sql || cmdLineOptions.cmdLineArgs.outputFormat == OutputFormat.postgres) 
         {
-            writer.outputFeature.sqlPreFile  = opts.options.sqlPreFile;
-            writer.outputFeature.sqlPostFile = opts.options.sqlPostFile;
+            writer.outputFeature.sqlPreFile  = cmdLineOptions.cmdLineArgs.sqlPreFile;
+            writer.outputFeature.sqlPostFile = cmdLineOptions.cmdLineArgs.sqlPostFile;
         }
 
         // add additional parameters
-        writer.outputFeature.useRawValue = opts.options.useRawValue;
+        writer.outputFeature.useRawValue = cmdLineOptions.cmdLineArgs.useRawValue;
 
         // some writers need preliminary process
 		writer.prepare(layout);
@@ -244,7 +240,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// break records?
         //---------------------------------------------------------------------------------
-		if (opts.options.bBreakRecord || opts.options.bPrintDuplicatedPattern)
+		if (cmdLineOptions.cmdLineArgs.bBreakRecord || cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
 		{
             log.info(MSG039);
 
@@ -258,7 +254,7 @@ int main(string[] argv)
                     rec.meta.repeatingPattern.each!(rp => log.info(MSG040, rec.name, rp));
 
                     // we just want to print out repeated fields
-                    if (opts.options.bPrintDuplicatedPattern)
+                    if (cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
                     {
                         foreach (sr; rec.meta.subRecord)
                         {
@@ -270,7 +266,7 @@ int main(string[] argv)
 			}
 
             // in case of just print the duplicated fields, exit
-            if (opts.options.bPrintDuplicatedPattern) return(3);
+            if (cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern) return(3);
 		}
 
         //---------------------------------------------------------------------------------
@@ -286,7 +282,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// if samples is set, break if line count is reached
             //---------------------------------------------------------------------------------
-			if (opts.options.samples != 0 && stat.nbReadLines > opts.options.samples) 
+			if (cmdLineOptions.cmdLineArgs.samples != 0 && stat.nbReadLines > cmdLineOptions.cmdLineArgs.samples) 
             {
                 break;
             }
@@ -294,7 +290,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
             // don't want a progress bar?
             //---------------------------------------------------------------------------------
-            if (opts.options.bProgressBar && stat.nbReadRecords % chunkSize == 0)
+            if (cmdLineOptions.cmdLineArgs.bProgressBar && stat.nbReadRecords % chunkSize == 0)
             {
                 if (reader.nbGuessedRecords != 0)
                 {
@@ -312,23 +308,23 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// do we filter out records?
             //---------------------------------------------------------------------------------
-			if (opts.isRecordFilterFileSet || opts.isRecordFilterSet)
+			if (cmdLineOptions.isRecordFilterFileSet || cmdLineOptions.isRecordFilterSet)
 			{
-				if (!rec.matchRecordFilter(opts.filteredRecords)) continue;
+				if (!rec.matchRecordFilter(cmdLineOptions.filteredRecords)) continue;
                 stat.nbMatchedRecords++;
 			}
 
             //---------------------------------------------------------------------------------
 			// don't want to write? Just loop
             //---------------------------------------------------------------------------------
-			if (opts.options.bJustRead) continue;
+			if (cmdLineOptions.cmdLineArgs.bJustRead) continue;
 
             //---------------------------------------------------------------------------------
 			// use our writer to generate the file
             //---------------------------------------------------------------------------------
 
             // when using the template option, only write when record name is triggered
-            if (opts.options.outputFormat != OutputFormat.temp || rec.name == opts.options.trigger) 
+            if (cmdLineOptions.cmdLineArgs.outputFormat != OutputFormat.temp || rec.name == cmdLineOptions.cmdLineArgs.trigger) 
             {
     			writer.write(rec);
             }
@@ -337,7 +333,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// write sub records if any
             //---------------------------------------------------------------------------------
-			if (opts.options.bBreakRecord)
+			if (cmdLineOptions.cmdLineArgs.bBreakRecord)
 			{
 				foreach(subRec; rec.meta.subRecord)
 				{
@@ -364,15 +360,15 @@ int main(string[] argv)
         stat.finalStats();
 		log.info(MSG015, elapsedtime);
 
-		if (!opts.options.bJustRead)
+		if (!cmdLineOptions.cmdLineArgs.bJustRead)
         {
-				stderr.writefln(MSG013, opts.outputFileName, getSize(opts.outputFileName));
+				stderr.writefln(MSG013, cmdLineOptions.outputFileName, getSize(cmdLineOptions.outputFileName));
         }
 
         //---------------------------------------------------------------------------------
         // if we wasked for checking formats, print out number of bad checks
         //---------------------------------------------------------------------------------
-        if (opts.options.bCheckPattern)
+        if (cmdLineOptions.cmdLineArgs.bCheckPattern)
         {
             stderr.writefln(MSG053, reader.nbBadCheck);
         }
@@ -380,7 +376,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// Detailed statistics on file?
         //---------------------------------------------------------------------------------
-        if (opts.options.bDetailedStats)
+        if (cmdLineOptions.cmdLineArgs.bDetailedStats)
         {
             stat.detailedStats();
         }

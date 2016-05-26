@@ -57,7 +57,7 @@ immutable MSG043 = "error: unknown output mode. Should be in the following list:
 immutable MSG044 = "error: break record options is only compatible with txt/box output formats";
 immutable MSG045 = "zip command failed, rc = <%d>";
 immutable MSG046 = "error: INSERT statement, error code = <%d>, error msg <%s>";
-immutable MSG047 = "error: database create error: %s";
+immutable MSG047 = "error: database create error: <%s>";
 immutable MSG048 = "error: SQL error %d when opening file %d, SQL msg %s";
 immutable MSG049 = "worksheet name = <%s>";
 immutable MSG050 = "starting conversion, nbCpus = %d";
@@ -102,5 +102,6 @@ immutable MSG088 = "error: XMl configuration file <%s> not found";
 immutable MSG089 = "error: input file <%s> for XML file creation not found";
 immutable MSG090 = "error: unknown sanitizing option for tag <%s> and attribute <%s>";
 immutable MSG091 = "error: no template file provided";
-immutable MSG092 = "PostgreSQL lib version <%d>";
-immutable MSG093 = "error: PostgreSQL error %d when opening db %s, SQL msg %s";
+immutable MSG092 = "PostgreSQL lib version <%d>, connection string = <%s>";
+immutable MSG093 = "error: PostgreSQL error <%d> when opening db <%s>, SQL msg <%s>";
+immutable MSG094 = "error: PostgreSQL insert error <%d>, SQL msg <%s>";

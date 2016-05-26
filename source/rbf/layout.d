@@ -48,6 +48,7 @@ struct LayoutMeta
 	string[] skipField;						    /// list of field names (comma separated) to systematically skip when reading
 	MapperFunc mapper;						    /// function which identifies a record name from a string
 	string mapperDefinition;			        /// mapper as declared in the XML file
+    string schema;                              /// PostgreSQL schema name if any
 }
 
 /***********************************
@@ -141,6 +142,7 @@ public:
             meta.layoutVersion     = xml.tag.attr.get("version", "");
             meta.ignoreLinePattern = xml.tag.attr.get("ignoreLine", "");
             meta.description       = xml.tag.attr.get("description","");
+            meta.schema            = xml.tag.attr.get("schema","");
 
             // build skip list if any
             auto fields = xml.tag.attr.get("skipField","");

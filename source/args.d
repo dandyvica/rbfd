@@ -93,7 +93,7 @@ struct CommandLineOption {
 
 public:
 
-    CommandLineArgument options;                        /// list of arguments
+    CommandLineArgument cmdLineArgs;                    /// list of arguments
 	string filteredFields;				                /// if any list of fields to filter out
 	RecordFilter filteredRecords;                       /// if any, list of clauses to filter records
 	string outputFileName;		                		/// name of the final converted file
@@ -167,7 +167,7 @@ public:
             try 
             {
                 // read command line arguments and fetch values in options struct
-                processCommandLineArguments!CommandLineArgument(argv, options);
+                processCommandLineArguments!CommandLineArgument(argv, cmdLineArgs);
             }
             catch (Exception e) 
             {
@@ -177,9 +177,9 @@ public:
         }
 
         // break record option is not compatible with some output formats
-        if (options.bBreakRecord)
+        if (cmdLineArgs.bBreakRecord)
         {
-            if (options.outputFormat != OutputFormat.txt && options.outputFormat != OutputFormat.box)
+            if (cmdLineArgs.outputFormat != OutputFormat.txt && cmdLineArgs.outputFormat != OutputFormat.box)
             {
                 stderr.writefln(MSG044);
                 exit(3);
@@ -188,34 +188,34 @@ public:
 
 		// if a filter file is selected, use it. Same for field filter entered in the command line
 		// append the suffix
-		if (options.fieldFilterFile != "") 
+		if (cmdLineArgs.fieldFilterFile != "") 
         {
-			enforce(exists(options.fieldFilterFile), MSG041.format(options.fieldFilterFile));
-			filteredFields = cast(string)std.file.read(options.fieldFilterFile);
-		} else if (options.fieldFilter != "") 
+			enforce(exists(cmdLineArgs.fieldFilterFile), MSG041.format(cmdLineArgs.fieldFilterFile));
+			filteredFields = cast(string)std.file.read(cmdLineArgs.fieldFilterFile);
+		} else if (cmdLineArgs.fieldFilter != "") 
         {
-			filteredFields = options.fieldFilter;
+			filteredFields = cmdLineArgs.fieldFilter;
 		}
 
 		// if record file filter or record filter is specified, load conditions
-		if (options.recordFilterFile != "") 
+		if (cmdLineArgs.recordFilterFile != "") 
         {
             // file should exist though
-			enforce(exists(options.recordFilterFile), MSG042.format(options.recordFilterFile));
-			filteredRecords = new RecordFilter(cast(string)std.file.read(options.recordFilterFile));
+			enforce(exists(cmdLineArgs.recordFilterFile), MSG042.format(cmdLineArgs.recordFilterFile));
+			filteredRecords = new RecordFilter(cast(string)std.file.read(cmdLineArgs.recordFilterFile));
 		} 
-        else if (options.recordFilter != "") 
+        else if (cmdLineArgs.recordFilter != "") 
         {
-			filteredRecords = new RecordFilter(options.recordFilter, ";");
+			filteredRecords = new RecordFilter(cmdLineArgs.recordFilter, ";");
 		}
 
 	}
 
     // useful helpers
-	@property bool isFieldFilterFileSet()  { return options.fieldFilterFile != ""; }
-	@property bool isFieldFilterSet()      { return options.fieldFilter != ""; }
-	@property bool isRecordFilterFileSet() { return options.recordFilterFile != ""; }
-	@property bool isRecordFilterSet()     { return options.recordFilter != ""; }
+	@property bool isFieldFilterFileSet()  { return cmdLineArgs.fieldFilterFile != ""; }
+	@property bool isFieldFilterSet()      { return cmdLineArgs.fieldFilter != ""; }
+	@property bool isRecordFilterFileSet() { return cmdLineArgs.recordFilterFile != ""; }
+	@property bool isRecordFilterSet()     { return cmdLineArgs.recordFilter != ""; }
 
     // start interactive mode to prompt data from user
     void _interactiveMode()
@@ -224,26 +224,26 @@ public:
 
         // prompt for input file
         mixin(GenInput!("Input file name (mandatory)"));
-        options.inputFileName    = input.strip;
-        options.inputFileName    = options.inputFileName.replace("'","");
-        writefln("input file is <%s>", options.inputFileName);
+        cmdLineArgs.inputFileName    = input.strip;
+        cmdLineArgs.inputFileName    = cmdLineArgs.inputFileName.replace("'","");
+        writefln("input file is <%s>", cmdLineArgs.inputFileName);
 
         // prompt for input layout
         mixin(GenInput!("Layout name (mandatory)"));
-        options.inputLayout      = input.strip;
+        cmdLineArgs.inputLayout      = input.strip;
 
         // prompt for output format
         writefln("Output format, possible value are: %s", possibleValues);
         input = readln();
         if (input.strip == "")
         {
-            options.outputFormat = OutputFormat.txt;
+            cmdLineArgs.outputFormat = OutputFormat.txt;
         }
         else
         {
             try
             {
-                options.outputFormat = to!OutputFormat(input.strip);
+                cmdLineArgs.outputFormat = to!OutputFormat(input.strip);
             }
             catch (ConvException e) 
             {
@@ -254,19 +254,19 @@ public:
 
         // optional 
         mixin(GenInput!("Field filter file (optional)"));
-        options.fieldFilterFile  = input.strip;
+        cmdLineArgs.fieldFilterFile  = input.strip;
 
         mixin(GenInput!("Field filter (optional)"));
-        options.fieldFilter      = input.strip;
+        cmdLineArgs.fieldFilter      = input.strip;
 
         mixin(GenInput!("Record filter file (optional)"));
-        options.recordFilterFile = input.strip;
+        cmdLineArgs.recordFilterFile = input.strip;
 
         mixin(GenInput!("Record filter (optional)"));
-        options.recordFilter     = input.strip;
+        cmdLineArgs.recordFilter     = input.strip;
 
         //bVerbose = true;
-        options.bProgressBar = true;
+        cmdLineArgs.bProgressBar = true;
     }
 
     // just print out help message with all possible options

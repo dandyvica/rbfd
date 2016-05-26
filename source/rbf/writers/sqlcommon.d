@@ -23,6 +23,7 @@ immutable sqlKeywords = import("sqlkeywords.txt");
 
 // list of SQL statements used for inserting record data
 immutable SQL_CREATE = "create table if not exists %s (%s);";
+immutable SQL_CREATE2 = "create table if not exists %s (ID INTEGER, %s);";
 immutable SQL_INSERT = "insert into %s values (%s);";
 immutable SQL_META   = `insert into meta values ("%s", "%s", %d);`;
 
@@ -53,6 +54,29 @@ class SqlCommon
             return recordName;
     }
 
+	/**
+ 	 * buld the list of all table names 
+	 *
+	 * Params:
+	 * 	layout = Layout object
+	 *
+	 */
+    static auto buildAllTableNames(Layout layout)
+    {
+        string[string] tableNames;
+
+        // no schema? simple table names though
+        if (layout.meta.schema == "")
+        {
+            foreach (rec; layout) { tableNames[rec.name] = SqlCommon.buildTableName(rec.name); }
+        }
+        else
+        {
+            foreach (rec; layout) { tableNames[rec.name] = layout.meta.schema ~ "." ~ SqlCommon.buildTableName(rec.name); }
+        }
+
+        return tableNames;
+    }
 
 	/** 
      * Build the SQL statement used to create tables matching record
@@ -62,10 +86,16 @@ class SqlCommon
 	 * 	rec = Record object
 	 *
 	 */
-    static string buildCreateTableStatement(Record rec)
+    static string buildCreateTableStatement(Record rec, string schema="")
     {
         auto cols = rec[].map!(f => buildColumnWithinCreateTableStatement(f));
-        string stmt = SQL_CREATE.format(buildTableName(rec.name), join(cols, ","));
+        string stmt;
+
+        // create with prepend schema if any
+        if (schema == "")
+            stmt = SQL_CREATE.format(buildTableName(rec.name), join(cols, ","));
+        else
+            stmt = SQL_CREATE2.format(schema ~ "." ~ buildTableName(rec.name), join(cols, ","));
         return stmt;
     }
 
