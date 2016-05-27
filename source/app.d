@@ -223,6 +223,7 @@ int main(string[] argv)
 		writer.outputFeature = configFromXMLFile.outputList[outputFormat];
 		writer.configFromXMLFile = configFromXMLFile;
         writer.inputFileName = cmdLineOptions.cmdLineArgs.inputFileName;
+        writer.cmdLineOptions = cmdLineOptions;
 
         // SQL format adds additonal feature for SQL
         if  (cmdLineOptions.cmdLineArgs.outputFormat == OutputFormat.sql || cmdLineOptions.cmdLineArgs.outputFormat == OutputFormat.postgres) 
@@ -360,7 +361,7 @@ int main(string[] argv)
         stat.finalStats();
 		log.info(MSG015, elapsedtime);
 
-		if (!cmdLineOptions.cmdLineArgs.bJustRead)
+		if (!cmdLineOptions.cmdLineArgs.bJustRead && cmdLineOptions.cmdLineArgs.outputFormat != OutputFormat.postgres)
         {
 				stderr.writefln(MSG013, cmdLineOptions.outputFileName, getSize(cmdLineOptions.outputFileName));
         }

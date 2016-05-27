@@ -43,7 +43,8 @@ version(Windows)
 }
 
 // settings defaults
-immutable SQL_INSERT_POOL = "3000";
+immutable SQL_INSERT_POOL         = "3000";
+immutable SQL_GROUPED_INSERT_POOL = "100";
 
 /*********************************************
  * Orientation for printing out data:
@@ -84,7 +85,8 @@ struct OutputFeature
     // SQL specific
     struct
     {
-        ushort sqlInsertPool;     /// used to group INSERTs into a single transaction
+        ulong sqlInsertPool;     /// used to group INSERTs into a single SQL transaction
+        ulong sqlGroupedInsertPool;    /// used to group INSERTs into a single INSERT transaction
         string sqlPreFile;        /// name of the SQL file containing statements run before inserting data
         string sqlPostFile;       /// name of the SQL file containing statements run after inserting data
         bool addDataSource;       /// whether the input file name is added as a source for data in SQL output
@@ -197,9 +199,10 @@ public:
                 of.orientation = to!Orientation(attr.get("orientation", "horizontal"));
 
                 // save SQL attributes
-                of.sqlInsertPool = to!ushort(attr.get("pool", SQL_INSERT_POOL));
-                of.addDataSource = to!bool(attr.get("addSource", "false"));
-                of.connectionString = attr.get("conn_string", "");
+                of.sqlInsertPool        = to!ulong(attr.get("pool", SQL_INSERT_POOL));
+                of.sqlGroupedInsertPool = to!ulong(attr.get("insert_pool", SQL_GROUPED_INSERT_POOL));
+                of.addDataSource        = to!bool(attr.get("addSource", "false"));
+                of.connectionString     = attr.get("conn_string", "");
 
                 // save temp attributes
                 of.templateFile = attr.get("templateFile", "rbf.template");

@@ -116,6 +116,9 @@ private:
                     case AtomicType.date:
                         _sqlCode = sqlite3_bind_text(_compiledInsertStmt[rec.name], to!int(f.context.index+1), toStringz(f.value), -1, SQLITE_TRANSIENT);
                         break;
+                    case AtomicType.time:
+                        _sqlCode = sqlite3_bind_text(_compiledInsertStmt[rec.name], to!int(f.context.index+1), toStringz(f.value), -1, SQLITE_TRANSIENT);
+                        break;
                     case AtomicType.string:
                         _sqlCode = sqlite3_bind_text(_compiledInsertStmt[rec.name], to!int(f.context.index+1), toStringz(f.value), -1, SQLITE_TRANSIENT);
                         break;
@@ -225,6 +228,9 @@ public:
 	 */
 	override void prepare(Layout layout) 
     {
+        // build table names to reuse if any
+        _tableNames = SqlCommon.buildAllTableNames(layout);
+
         auto nbTables = 0;
 
         // creation of all tables
@@ -256,7 +262,6 @@ public:
         _executeStmt(SQL_LAYOUT);
 
         // log tables creation
-        log.log(LogLevel.INFO, MSG025, "META");
         log.log(LogLevel.INFO, MSG025, "LAYOUT");
         log.log(LogLevel.INFO, MSG022, nbTables+1);
 
@@ -308,12 +313,14 @@ public:
             sqlite3_reset(_compiledInsertStmt[rec.name]);
 
             // now write meta index
+            /*
             auto stmt = SQL_META.format(_tableNames[rec.name], rec.name, ++_recordCounter[rec.name]);
             _executeStmt(stmt);
             if (_sqlCode != SQLITE_OK)
             {
                 stderr.writeln(MSG046.format(_sqlCode, fromStringz(sqlite3_errmsg(_db))));
             }
+            */
         }
 
         // it's time to clear bindings

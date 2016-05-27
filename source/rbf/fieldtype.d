@@ -61,6 +61,7 @@ enum AtomicType {
 	decimal,
 	integer,
 	date,
+    time,
 	string
 }
 
@@ -141,6 +142,14 @@ public:
                     meta.format  = "%0*.*d";
 					break;
 				case AtomicType.date:
+					filterTestCallback = &matchFilter!string;
+                    formatterCallback  = &formatter!string;
+
+                    // default pattern and format string for this type
+                    meta.pattern = `\d+`;
+                    meta.format  = "%-*.*s";
+					break;
+				case AtomicType.time:
 					filterTestCallback = &matchFilter!string;
                     formatterCallback  = &formatter!string;
 

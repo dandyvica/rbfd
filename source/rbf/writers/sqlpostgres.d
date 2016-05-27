@@ -43,7 +43,8 @@ private:
 
     string[string] _insertStmt;         /// list of SQL INSERT statements for each record
     string[string] _tableNames;         /// aa to store record names vs table names
-    typeof(outputFeature.sqlInsertPool) _trxCounter;  /// pool counter for grouping INSERTs
+    typeof(outputFeature.sqlInsertPool) _trxCounter;     /// pool counter for grouping INSERTs
+    string[][string] _groupedInsert;
     string _lastSeq;
 
     // connect to PG
@@ -71,29 +72,10 @@ private:
     // build all INSERT statements
     void _buildInsertStatements(Layout layout)
     {
+        immutable SQL_INSERT_WITH_ID = "INSERT INTO %s VALUES (%s,%s)";
         foreach (rec; layout)
         {
-            auto bind = array(repeat("?", rec.size));
-            auto stmt = SQL_INSERT.format(SqlCommon.buildTableName(rec.name), bind.join(","));
-
-            _insertStmt[rec.name] = stmt;
-            writeln(stmt);
-        }
-    }
-
-    // build table names
-    void _buildTableNames(Layout layout)
-    {
-    }
-
-    //
-    void _executeStmt(string stmt)
-    {
-        auto rc = rbfExecStmt(stmt.toStringz);
-        if (rc != 1)
-        {
-            auto error_msg = fromStringz(rbfGetErrorMsg()).dup.strip;
-            log.log(LogLevel.FATAL, MSG094, rc, error_msg);
+            _insertStmt[rec.name] = SQL_INSERT_WITH_ID.format(_tableNames[rec.name], _lastSeq, "%s");
         }
     }
 
@@ -111,11 +93,16 @@ private:
     // create meta index table to keep track of inserted files and dates
     void _createMeta(Layout layout)
     {
-        auto boxInsert = "INSERT INTO BOXES VALUES(DEFAULT,'%s','%s',current_timestamp)";
+        auto boxInsert = "INSERT INTO BOXES VALUES(DEFAULT,'%s','%s','%s',current_timestamp)";
         // create table nd insert data for this insert
         _executeStmt("BEGIN TRANSACTION");
-        _executeStmt("CREATE TABLE IF NOT EXISTS BOXES (ID SERIAL PRIMARY KEY, FILENAME TEXT, DOMAIN TEXT, INSERT_DATE TIMESTAMP)");
-        _executeStmt(boxInsert.format(inputFileName, layout.meta.schema));
+        _executeStmt("CREATE TABLE IF NOT EXISTS BOXES 
+                (ID SERIAL PRIMARY KEY, FILENAME TEXT, LAYOUT_FILE TEXT, DOMAIN TEXT, INSERT_DATE TIMESTAMP)");
+        _executeStmt(boxInsert.format(
+                    cmdLineOptions.cmdLineArgs.inputFileName,
+                    layout.meta.file, 
+                    layout.meta.schema)
+        );
 
         // get back ID
         _lastSeq = fromStringz(rbfGetSeq()).idup;
@@ -148,8 +135,22 @@ private:
             // one more table created
             nbTables++;
 
+            // add table comment
+            stmt = "COMMENT ON TABLE %s IS '%s'".format(_tableNames[rec.name], rec.meta.description);
+            _executeStmt(stmt);
+
+            // add column comment
+            foreach (f; rec)
+            {
+                stmt = "COMMENT ON COLUMN %s.%s IS '%s'".format(_tableNames[rec.name], f.context.alternateName, f.description);
+                _executeStmt(stmt);
+            }
+
             // prepare further INSERT statements
             //_prepareInsertCompiledStatement(rec);
+            _groupedInsert[rec.name] = [];
+            _groupedInsert[rec.name].reserve(outputFeature.sqlGroupedInsertPool);
+
         }
 
         // log tables creation
@@ -157,6 +158,56 @@ private:
 
         // create all tables now!
         _executeStmt("COMMIT TRANSACTION");
+    }
+
+    // build all the values to insert
+    auto _buildInsertValues(Record rec)
+    {
+        string[] fields;
+        foreach (f; rec)
+        {
+            // if any case, if value is "", just set value to NULL
+            if (f.value == "") 
+            {
+                fields ~= "NULL";
+            }
+            else
+            {
+                // depending on type, inserting data in not straightforward
+                final switch (f.type.meta.type)
+                {
+                    case AtomicType.decimal:
+                        fields ~= "%s".format(f.value);
+                        break;
+                    case AtomicType.integer:
+                        fields ~= "%s".format(f.value);
+                        break;
+                    case AtomicType.date:
+                        fields ~= "'%s'".format(f.value);
+                        break;
+                    case AtomicType.time:
+                        fields ~= "'%s'".format(f.value);
+                        break;
+                    case AtomicType.string:
+                        fields ~= "'%s'".format(f.value);
+                        break;
+                }
+            }
+
+        }
+
+        return "(%s,%s)".format(_lastSeq, fields.join(","));
+    }
+
+    // execute a PG SQL statement
+    void _executeStmt(string stmt)
+    {
+        auto rc = rbfExecStmt(stmt.toStringz);
+        if (rc != 1)
+        {
+            auto error_msg = fromStringz(rbfGetErrorMsg()).dup.strip;
+            log.log(LogLevel.FATAL, MSG094, rc, stmt, error_msg);
+        }
     }
 
 
@@ -181,9 +232,6 @@ public:
         // first, connect to PG
         _connect();
 
-        // build INSERT statements to be used
-        _buildInsertStatements(layout);
-
         // build table names to reuse if any
         _tableNames = SqlCommon.buildAllTableNames(layout);
 
@@ -196,6 +244,8 @@ public:
         // create table for keeping track of all that stuff
         _createMeta(layout);
 
+        // build INSERT statements to be used
+        _buildInsertStatements(layout);
     }
 
     override void build(string outputFileName) {}
@@ -210,25 +260,21 @@ public:
             _executeStmt("BEGIN TRANSACTION");
         }
 
-        auto stmt = "INSERT INTO " ~ _tableNames[rec.name] ~ " VALUES(" ~ _lastSeq ~ ", %s)";
-        // for each field, loop to build SQL statement
-
-        string[] fields;
-        foreach (f; rec)
+        // build grouped statements per record
+        _groupedInsert[rec.name] ~= _buildInsertValues(rec);
+        if (_groupedInsert[rec.name].length == outputFeature.sqlGroupedInsertPool)
         {
-           if (f.type.meta.type == AtomicType.string)
-           {
-               fields ~= "'%s'".format(f.value);
-           }
-           else
-           {
-               fields ~= "%s".format(f.value);
-           }
+            auto largeInsert = "INSERT INTO %s VALUES %s".format(_tableNames[rec.name], _groupedInsert[rec.name].join(","));
+            _executeStmt(largeInsert);
+            _groupedInsert.clear;
         }
 
-        // now end and isnert
-        auto finalInsert = stmt.format(fields.join(","));
+
+        // build insert values (after the VALUES keyword of INSERT stmt and insert
+        /*
+        auto finalInsert =  "INSERT INTO %s VALUES %s".format(_tableNames[rec.name], _buildInsertValues(rec)); 
         _executeStmt(finalInsert);
+        */
 
         // TRX one more
         _trxCounter++;
@@ -249,6 +295,16 @@ public:
 	 */
     override void close() 
     {
+        // first execute pending grouped inserts
+        foreach (recname; _groupedInsert.byKey)
+        {
+            if (_groupedInsert[recname] != [])
+            {
+                auto largeInsert = "INSERT INTO %s VALUES %s".format(_tableNames[recname], _groupedInsert[recname].join(","));
+                _executeStmt(largeInsert);
+            }
+        }
+
         // excute pending transaction
         if (_trxCounter !=0) _executeStmt("COMMIT TRANSACTION");
 

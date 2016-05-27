@@ -27,6 +27,8 @@ import rbf.writers.xlsx1writer;
 import rbf.writers.xlsx2writer;
 import rbf.writers.xsdwriter;
 
+import args;
+
 // list of all possible output formats. For those formats, the settings XML file
 // should define their 
 enum OutputFormat { box, csv, html, ident, sql, postgres, tag, txt, excel1, excel2, xml, temp }
@@ -51,6 +53,7 @@ package:
 public:
 
     Config configFromXMLFile;       /// configuration already read from configuration file
+    CommandLineOption cmdLineOptions;
     string inputFileName;
 	OutputFeature outputFeature;    /// specific data for chosen output format
 

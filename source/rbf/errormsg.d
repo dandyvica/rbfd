@@ -104,4 +104,4 @@ immutable MSG090 = "error: unknown sanitizing option for tag <%s> and attribute 
 immutable MSG091 = "error: no template file provided";
 immutable MSG092 = "PostgreSQL lib version <%d>, connection string = <%s>";
 immutable MSG093 = "error: PostgreSQL error <%d> when opening db <%s>, SQL msg <%s>";
-immutable MSG094 = "error: PostgreSQL insert error <%d>, SQL msg <%s>";
+immutable MSG094 = "error: PostgreSQL exec error <%d>, stmt=<%s>, SQL msg <%s>";

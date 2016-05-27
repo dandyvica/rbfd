@@ -19,13 +19,16 @@ import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
 
+// list of SQL reserved keywords: this is used to check whether the record name could be used
+// as a table name, and is not reserved for SQL
 immutable sqlKeywords = import("sqlkeywords.txt");
 
 // list of SQL statements used for inserting record data
-immutable SQL_CREATE = "create table if not exists %s (%s);";
-immutable SQL_CREATE2 = "create table if not exists %s (ID INTEGER, %s);";
-immutable SQL_INSERT = "insert into %s values (%s);";
-immutable SQL_META   = `insert into meta values ("%s", "%s", %d);`;
+immutable SQL_CREATE = "CREATE TABLE IF NOT EXISTS %s (%s);";
+immutable SQL_CREATE_WITH_ID = "CREATE TABLE IF NOT EXISTS %s (ID INTEGER, %s);";
+immutable SQL_INSERT = "INSERT INTO %s VALUES (%s);";
+//immutable SQL_INSERT_WITH_ID = "INSERT INTO %s VALUES (%d,%s);";
+immutable SQL_META   = `INSERT INTO META VALUES ("%s", "%s", %d);`;
 
 /*********************************************
  * generic class for managing SQL statement
@@ -95,7 +98,7 @@ class SqlCommon
         if (schema == "")
             stmt = SQL_CREATE.format(buildTableName(rec.name), join(cols, ","));
         else
-            stmt = SQL_CREATE2.format(schema ~ "." ~ buildTableName(rec.name), join(cols, ","));
+            stmt = SQL_CREATE_WITH_ID.format(schema ~ "." ~ buildTableName(rec.name), join(cols, ","));
         return stmt;
     }
 
@@ -118,6 +121,9 @@ class SqlCommon
                 break;
             case AtomicType.integer:
                 colStmt = f.context.alternateName ~ " INTEGER";
+                break;
+            case AtomicType.time:
+                colStmt = f.context.alternateName ~ " TIME";
                 break;
             case AtomicType.date:
                 colStmt = f.context.alternateName ~ " DATE";
