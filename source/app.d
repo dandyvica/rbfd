@@ -21,10 +21,10 @@ import rbf.recordfilter;
 import rbf.layout;
 import rbf.reader;
 import rbf.writers.writer;
-import rbf.config;
 import rbf.stat;
-
-import args;
+import rbf.config;
+import rbf.settings;
+import rbf.args;
 
 // constants
 immutable chunkSize = 1000;         /// print out message every chunkSize record
@@ -33,7 +33,7 @@ immutable CR = "\r";                /// carriage return
 int main(string[] argv)
 {
     // settings class for storing whole configuration
-    Config configFromXMLFile;
+    Settings settings;
 
     //---------------------------------------------------------------------------------
 	// need to known how much time spent
@@ -42,24 +42,8 @@ int main(string[] argv)
 
 	try 
     {
-
-        //---------------------------------------------------------------------------------
-		// manage arguments passed from the command line
-        //---------------------------------------------------------------------------------
-		auto cmdLineOptions = CommandLineOption(argv);
-
-        //---------------------------------------------------------------------------------
-		// configuration file passed as arugment? Use it if neccessary
-        //---------------------------------------------------------------------------------
-        if (cmdLineOptions.cmdLineArgs.cmdlineConfigFile != "")
-        {
-            configFromXMLFile = new Config(cmdLineOptions.cmdLineArgs.cmdlineConfigFile);
-        }
-        else
-        {
-            // take the default configuration file
-		    configFromXMLFile = new Config();
-        }
+        // get global settings from config file and args
+        settings.manage(argv);
 
         //---------------------------------------------------------------------------------
 		// start logging data
@@ -70,77 +54,26 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// define new layout corresponding to the requested layout given from the command line
         //---------------------------------------------------------------------------------
-		auto layout = new Layout(configFromXMLFile.layoutList[cmdLineOptions.cmdLineArgs.inputLayout].file);
-
-        //---------------------------------------------------------------------------------
-		// output format is an enum but should match the string in rbf.xml config file
-        //---------------------------------------------------------------------------------
-        auto outputFormat = to!string(cmdLineOptions.cmdLineArgs.outputFormat);
-
-        //---------------------------------------------------------------------------------
-		// use output file name if given or build it
-        //---------------------------------------------------------------------------------
-        if (cmdLineOptions.cmdLineArgs.givenOutputFileName != "")
-        {
-            cmdLineOptions.outputFileName = cmdLineOptions.cmdLineArgs.givenOutputFileName;
-        }
-        else
-        {
-            cmdLineOptions.outputFileName = baseName(cmdLineOptions.cmdLineArgs.inputFileName) ~ "." ~ configFromXMLFile.outputList[outputFormat].outputFileExtension;
-        }
-
-        //---------------------------------------------------------------------------------
-		// check if œoutput format is valid
-        //---------------------------------------------------------------------------------
-		if (outputFormat !in configFromXMLFile.outputList) 
-        {
-			throw new Exception(MSG058.format(configFromXMLFile.outputList.names));
-		}
-
-        //---------------------------------------------------------------------------------
-		// layout syntax validation requested from command line ?
-        //---------------------------------------------------------------------------------
-        /*
-		if (cmdLineOptions.cmdLineArgs.bCheckLayout) 
-        {
-			layout.validate;
-		}
-        */
-
-        //---------------------------------------------------------------------------------
-		// use alternate names if requested
-        //---------------------------------------------------------------------------------
-		if (cmdLineOptions.cmdLineArgs.bUseAlternateNames) 
-        {
-			configFromXMLFile.outputList[outputFormat].useAlternateName = true;
-		}
-
-        //---------------------------------------------------------------------------------
-		// save template file if any
-        //---------------------------------------------------------------------------------
-		if (cmdLineOptions.cmdLineArgs.templateFile != "") 
-        {
-			configFromXMLFile.outputList[outputFormat].templateFile = cmdLineOptions.cmdLineArgs.templateFile;
-		}
+		auto layout = new Layout(settings.layoutConfiguration.file);
 
         //---------------------------------------------------------------------------------
 		// need to get rid of some fields ?
         //---------------------------------------------------------------------------------
-		if (cmdLineOptions.isFieldFilterFileSet) 
+		if (settings.cmdLineOptions.isFieldFilterFileSet) 
         {
             //---------------------------------------------------------------------------------
 			// only keep specified fields
             //---------------------------------------------------------------------------------
-			layout.keepOnly(cmdLineOptions.filteredFields, newline);
+			layout.keepOnly(settings.cmdLineOptions.filteredFields, newline);
             log.info(MSG026, layout.size);
 		}
         // list of records/fields given from the command line
-		if (cmdLineOptions.isFieldFilterSet) 
+		if (settings.cmdLineOptions.isFieldFilterSet) 
         {
             //---------------------------------------------------------------------------------
 			// only keep specified fields
             //---------------------------------------------------------------------------------
-			layout.keepOnly(cmdLineOptions.filteredFields, ";");
+			layout.keepOnly(settings.cmdLineOptions.filteredFields, ";");
             log.info(MSG026, layout.size);
 		}
 
@@ -148,26 +81,26 @@ int main(string[] argv)
 		// create new reader according to what is passed in the command
 		// line and the configuration found in XML properties file
         //---------------------------------------------------------------------------------
-		auto reader = new Reader(cmdLineOptions.cmdLineArgs.inputFileName, layout);
-        log.info(MSG016, cmdLineOptions.cmdLineArgs.inputFileName, reader.inputFileSize);
+		auto reader = new Reader(settings.cmdLineOptions.cmdLineArgs.inputFileName, layout);
+        log.info(MSG016, settings.cmdLineOptions.cmdLineArgs.inputFileName, reader.inputFileSize);
 
         //---------------------------------------------------------------------------------
 		// check field patterns?
         //---------------------------------------------------------------------------------
-        reader.checkPattern = cmdLineOptions.cmdLineArgs.bCheckPattern;
+        reader.checkPattern = settings.cmdLineOptions.cmdLineArgs.bCheckPattern;
 
         //---------------------------------------------------------------------------------
 		// grep lines?
         //---------------------------------------------------------------------------------
-		if (cmdLineOptions.cmdLineArgs.lineFilter != "") 
+		if (settings.cmdLineOptions.cmdLineArgs.lineFilter != "") 
         {
-			reader.lineRegexPattern = cmdLineOptions.cmdLineArgs.lineFilter;
+			reader.lineRegexPattern = settings.cmdLineOptions.cmdLineArgs.lineFilter;
 		}
 
         //---------------------------------------------------------------------------------
 		// if verbose option is requested, print out what's possible
         //---------------------------------------------------------------------------------
-		if (cmdLineOptions.cmdLineArgs.bVerbose) 
+		if (settings.cmdLineOptions.cmdLineArgs.bVerbose) 
         {
             //---------------------------------------------------------------------------------
 			// print out field type meta info
@@ -177,16 +110,16 @@ int main(string[] argv)
             {
 				printMembers!(FieldTypeMeta)(t.meta);
 			}
-			printMembers!(CommandLineOption)(cmdLineOptions);
-			printMembers!(OutputFeature)(configFromXMLFile.outputList[outputFormat]);
+			printMembers!(CommandLineOption)(settings.cmdLineOptions);
+			printMembers!(OutputConfiguration)(settings.outputConfiguration);
 		}
 
         //---------------------------------------------------------------------------------
 		// verify record filter arguments: if field name is not found in layout, stop
         //---------------------------------------------------------------------------------
-        if (cmdLineOptions.isRecordFilterFileSet || cmdLineOptions.isRecordFilterSet)
+        if (settings.cmdLineOptions.isRecordFilterFileSet || settings.cmdLineOptions.isRecordFilterSet)
         {
-            foreach(rf; cmdLineOptions.filteredRecords)
+            foreach(rf; settings.cmdLineOptions.filteredRecords)
             {
                 if (!layout.isFieldInLayout(rf.fieldName))
                 {
@@ -209,31 +142,12 @@ int main(string[] argv)
 		// create new writer to generate outputFileName matching the outputFormat
         //---------------------------------------------------------------------------------
 		Writer writer;
-		auto outputFileName = buildNormalizedPath(
-				configFromXMLFile.outputList[outputFormat].outputDirectory,
-				cmdLineOptions.outputFileName
-		);
-
-		auto output = (cmdLineOptions.cmdLineArgs.stdOutput) ? "" : outputFileName;
-		writer = writerFactory(output, cmdLineOptions.cmdLineArgs.outputFormat);
+		writer = writerFactory(settings.output, settings.cmdLineOptions.cmdLineArgs.outputFormat);
 
         //---------------------------------------------------------------------------------
 		// set writer features read in config and process preliminary steps
         //---------------------------------------------------------------------------------
-		writer.outputFeature = configFromXMLFile.outputList[outputFormat];
-		writer.configFromXMLFile = configFromXMLFile;
-        writer.inputFileName = cmdLineOptions.cmdLineArgs.inputFileName;
-        writer.cmdLineOptions = cmdLineOptions;
-
-        // SQL format adds additonal feature for SQL
-        if  (cmdLineOptions.cmdLineArgs.outputFormat == OutputFormat.sql || cmdLineOptions.cmdLineArgs.outputFormat == OutputFormat.postgres) 
-        {
-            writer.outputFeature.sqlPreFile  = cmdLineOptions.cmdLineArgs.sqlPreFile;
-            writer.outputFeature.sqlPostFile = cmdLineOptions.cmdLineArgs.sqlPostFile;
-        }
-
-        // add additional parameters
-        writer.outputFeature.useRawValue = cmdLineOptions.cmdLineArgs.useRawValue;
+        writer.settings = settings;
 
         // some writers need preliminary process
 		writer.prepare(layout);
@@ -241,7 +155,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// break records?
         //---------------------------------------------------------------------------------
-		if (cmdLineOptions.cmdLineArgs.bBreakRecord || cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
+		if (settings.cmdLineOptions.cmdLineArgs.bBreakRecord || settings.cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
 		{
             log.info(MSG039);
 
@@ -255,7 +169,7 @@ int main(string[] argv)
                     rec.meta.repeatingPattern.each!(rp => log.info(MSG040, rec.name, rp));
 
                     // we just want to print out repeated fields
-                    if (cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
+                    if (settings.cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
                     {
                         foreach (sr; rec.meta.subRecord)
                         {
@@ -267,7 +181,7 @@ int main(string[] argv)
 			}
 
             // in case of just print the duplicated fields, exit
-            if (cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern) return(3);
+            if (settings.cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern) return(3);
 		}
 
         //---------------------------------------------------------------------------------
@@ -283,7 +197,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// if samples is set, break if line count is reached
             //---------------------------------------------------------------------------------
-			if (cmdLineOptions.cmdLineArgs.samples != 0 && stat.nbReadLines > cmdLineOptions.cmdLineArgs.samples) 
+			if (settings.cmdLineOptions.cmdLineArgs.samples != 0 && stat.nbReadLines > settings.cmdLineOptions.cmdLineArgs.samples) 
             {
                 break;
             }
@@ -291,7 +205,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
             // don't want a progress bar?
             //---------------------------------------------------------------------------------
-            if (cmdLineOptions.cmdLineArgs.bProgressBar && stat.nbReadRecords % chunkSize == 0)
+            if (settings.cmdLineOptions.cmdLineArgs.bProgressBar && stat.nbReadRecords % chunkSize == 0)
             {
                 if (reader.nbGuessedRecords != 0)
                 {
@@ -309,23 +223,23 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// do we filter out records?
             //---------------------------------------------------------------------------------
-			if (cmdLineOptions.isRecordFilterFileSet || cmdLineOptions.isRecordFilterSet)
+			if (settings.cmdLineOptions.isRecordFilterFileSet || settings.cmdLineOptions.isRecordFilterSet)
 			{
-				if (!rec.matchRecordFilter(cmdLineOptions.filteredRecords)) continue;
+				if (!rec.matchRecordFilter(settings.cmdLineOptions.filteredRecords)) continue;
                 stat.nbMatchedRecords++;
 			}
 
             //---------------------------------------------------------------------------------
 			// don't want to write? Just loop
             //---------------------------------------------------------------------------------
-			if (cmdLineOptions.cmdLineArgs.bJustRead) continue;
+			if (settings.cmdLineOptions.cmdLineArgs.bJustRead) continue;
 
             //---------------------------------------------------------------------------------
 			// use our writer to generate the file
             //---------------------------------------------------------------------------------
 
             // when using the template option, only write when record name is triggered
-            if (cmdLineOptions.cmdLineArgs.outputFormat != OutputFormat.temp || rec.name == cmdLineOptions.cmdLineArgs.trigger) 
+            if (settings.cmdLineOptions.cmdLineArgs.outputFormat != OutputFormat.temp || rec.name == settings.cmdLineOptions.cmdLineArgs.trigger) 
             {
     			writer.write(rec);
             }
@@ -334,7 +248,7 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
 			// write sub records if any
             //---------------------------------------------------------------------------------
-			if (cmdLineOptions.cmdLineArgs.bBreakRecord)
+			if (settings.cmdLineOptions.cmdLineArgs.bBreakRecord)
 			{
 				foreach(subRec; rec.meta.subRecord)
 				{
@@ -361,15 +275,16 @@ int main(string[] argv)
         stat.finalStats();
 		log.info(MSG015, elapsedtime);
 
-		if (!cmdLineOptions.cmdLineArgs.bJustRead && cmdLineOptions.cmdLineArgs.outputFormat != OutputFormat.postgres)
+		if (!settings.cmdLineOptions.cmdLineArgs.bJustRead && 
+             settings.cmdLineOptions.cmdLineArgs.outputFormat != OutputFormat.postgres)
         {
-				stderr.writefln(MSG013, cmdLineOptions.outputFileName, getSize(cmdLineOptions.outputFileName));
+				stderr.writefln(MSG013, settings.cmdLineOptions.outputFileName, getSize(settings.cmdLineOptions.outputFileName));
         }
 
         //---------------------------------------------------------------------------------
         // if we wasked for checking formats, print out number of bad checks
         //---------------------------------------------------------------------------------
-        if (cmdLineOptions.cmdLineArgs.bCheckPattern)
+        if (settings.cmdLineOptions.cmdLineArgs.bCheckPattern)
         {
             stderr.writefln(MSG053, reader.nbBadCheck);
         }
@@ -377,7 +292,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// Detailed statistics on file?
         //---------------------------------------------------------------------------------
-        if (cmdLineOptions.cmdLineArgs.bDetailedStats)
+        if (settings.cmdLineOptions.cmdLineArgs.bDetailedStats)
         {
             stat.detailedStats();
         }

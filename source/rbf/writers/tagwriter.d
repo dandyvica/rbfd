@@ -33,7 +33,7 @@ class TAGWriter : Writer
 		_fh.writef("%s:", rec.name);
 		foreach (field; rec) 
         {
-			_fh.writef(`%s="%s" `,field.name, (outputFeature.useRawValue ? field.rawValue: field.value));
+			_fh.writef(`%s="%s" `,field.name, (settings.outputConfiguration.useRawValue ? field.rawValue: field.value));
 		}
 		_fh.writeln();
 	}
@@ -51,7 +51,7 @@ unittest {
 	auto reader = new Reader("./test/world.data", layout);
 
 	auto writer = writerFactory("./test/world_data.tag", OutputFormat.tag);
-	writer.outputFeature.fieldSeparator = " ";
+	writer.settings.outputConfiguration.fieldSeparator = " ";
 
 	foreach (rec; reader) { writer.write(rec); }
 

@@ -46,7 +46,7 @@ class HTMLWriter : Writer
     // vertical = one whole table per record
 	override void write(Record rec)
 	{
-		if (outputFeature.orientation == Orientation.horizontal)
+		if (settings.outputConfiguration.orientation == Orientation.horizontal)
 			_writeH(rec);
 		else
 			_writeV(rec);

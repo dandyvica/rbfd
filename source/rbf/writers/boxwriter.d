@@ -50,7 +50,7 @@ public:
 	// preparation step beodre printing out records
 	override void prepare(Layout layout) {
 		// as seperator is known at that time, build formatting string
-		_fmt = "%%-*s%s".format(outputFeature.fieldSeparator);
+		_fmt = "%%-*s%s".format(settings.outputConfiguration.fieldSeparator);
 	}
 
 	override void write(Record rec)
@@ -115,10 +115,10 @@ unittest {
 	auto reader = new Reader("./test/world.data", layout);
 
 	auto writer = writerFactory("./test/world_data.txt", OutputFormat.box);
-	writer.outputFeature.fieldSeparator   = "!";
-	writer.outputFeature.fieldDescription = true;
-	writer.outputFeature.lineSeparator    = "$";
-	writer.outputFeature.useAlternateName = true;
+	writer.settings.outputConfiguration.fieldSeparator   = "!";
+	writer.settings.outputConfiguration.fieldDescription = true;
+	writer.settings.outputConfiguration.lineSeparator    = "$";
+	writer.settings.outputConfiguration.useAlternateName = true;
 
 	writer.prepare(layout);
 

@@ -48,13 +48,13 @@ class TemplateWriter : Writer
          _layout = layout; 
 
 		// check for template file existence
-		enforce(exists(outputFeature.templateFile), MSG078.format(outputFeature.templateFile));
+		enforce(exists(settings.outputConfiguration.templateFile), MSG078.format(settings.outputConfiguration.templateFile));
 
         // open file and load data into string
-		_tempData = cast(string)std.file.read(outputFeature.templateFile);
+		_tempData = cast(string)std.file.read(settings.outputConfiguration.templateFile);
 
         // build the list of records/fields located in this file
-        foreach (line; File(outputFeature.templateFile, "r").byLine())
+        foreach (line; File(settings.outputConfiguration.templateFile, "r").byLine())
         {
             // find out if tags are found in the template
             foreach (m; matchAll(line, reg))
@@ -72,7 +72,7 @@ class TemplateWriter : Writer
                 }
             }
         }
-        log.info(MSG080, outputFeature.templateFile);
+        log.info(MSG080, settings.outputConfiguration.templateFile);
 	}
 
     override void build(string outputFileName) {}
@@ -94,7 +94,7 @@ class TemplateWriter : Writer
                 tag = TAG.format(e.key,f);
 
                 // if we use alternate names, fetch fields from unique list
-                if (outputFeature.useAlternateName)
+                if (settings.outputConfiguration.useAlternateName)
                 {
                     data = _layout[e.key].getUnique(f).value;
                 }
@@ -125,7 +125,7 @@ unittest {
 	auto reader = new Reader("./test/world.data", layout);
 
 	auto writer = writerFactory("./test/world_data.csv", OutputFormat.csv);
-	writer.outputFeature.fieldSeparator = "-";
+	writer.settings.outputConfiguration.fieldSeparator = "-";
 
 	foreach (rec; reader) { writer.write(rec); }
 

@@ -60,10 +60,10 @@ struct SettingCore
 {
 	mixin  LayoutCore;
 }
-alias LayoutDir = NamedItemsContainer!(SettingCore, false);
+alias LayoutList = NamedItemsContainer!(SettingCore, false);
 
 // holds definition of output format features
-struct OutputFeature 
+struct OutputConfiguration 
 {
     string name;		          /// name of the output format (e.g.: "txt")
     string outputDirectory;		  /// location of output file
@@ -93,16 +93,16 @@ struct OutputFeature
         string connectionString;  /// PostgreSQL connection string
     }
 }
-alias OutputDir = NamedItemsContainer!(OutputFeature, false);
+alias OutputList = NamedItemsContainer!(OutputConfiguration, false);
 
 /***********************************
 	* class for reading XML definition file
  */
-class Config {
+class ConfigFromXMLFile {
 
 private:
-	LayoutDir _layoutDirectory;		/// list of all settings i.e all layout configuration (path, etc)
-	OutputDir _outputDirectory;		/// list of all output formats
+	LayoutList _layoutList;		/// list of all settings i.e all layout configuration (path, etc)
+	OutputList _outputList;		/// list of all output formats
 
 public:
 
@@ -115,8 +115,8 @@ public:
     {
 
         // define new container for layouts and formats
-        _layoutDirectory = new LayoutDir("layouts");
-        _outputDirectory = new OutputDir("outputs");
+        _layoutList = new LayoutList("layouts");
+        _outputList = new OutputList("outputs");
 
         // settings file depending on whether we found the file in the current directory,
         // given by an environment variable, or to a fixed location based on the OS type
@@ -164,7 +164,7 @@ public:
             }
 
             // save layout metadata
-            this._layoutDirectory ~= SettingCore(
+            this._layoutList ~= SettingCore(
                     xml.tag.attr["name"],
                     xml.tag.attr["description"],
                     layoutFilePath,                    /// this is where the layout definition file is found
@@ -179,7 +179,7 @@ public:
             auto fdesc = xml.tag.attr.get("fdesc", "false");
 
             // save layout metadata
-            OutputFeature of;
+            OutputConfiguration of;
 
             with (xml.tag)
             {
@@ -208,7 +208,7 @@ public:
                 of.templateFile = attr.get("templateFile", "rbf.template");
 
             }
-            this._outputDirectory ~= of;
+            this._outputList ~= of;
         };
 
         // real parsing of the XML tags
@@ -219,8 +219,8 @@ public:
 
     }
 
-	@property LayoutDir layoutList() { return _layoutDirectory; }
-	@property OutputDir outputList() { return _outputDirectory; }
+	@property LayoutList layoutList() { return _layoutList; }
+	@property OutputList outputList() { return _outputList; }
 
 private:
         
@@ -272,15 +272,15 @@ private:
 ///
 unittest {
 	writeln("========> testing ", __FILE__);
-	auto c = new Config("./test/config.xml");
+	auto c = new ConfigFromXMLFile("./test/config.xml");
 
-  assert(c.layoutDir["A"].name == "A");
-  assert(c.layoutDir["B"].description == "Desc B");
-  assert(c.layoutDir["C"].file.canFind("layout/c.xml"));
-  assert(c.layoutDir["world"].file.canFind("test/world_data.xml"));
+  assert(c.layoutList["A"].name == "A");
+  assert(c.layoutList["B"].description == "Desc B");
+  assert(c.layoutList["C"].file.canFind("layout/c.xml"));
+  assert(c.layoutList["world"].file.canFind("test/world_data.xml"));
 
-  assert(c.outputDir["txt"].name == "txt");
-  assert(c.outputDir["txt"].outputDirectory == "/tmp/");
-  assert(c.outputDir["txt"].fieldSeparator == "*");
-  assert(!c.outputDir["txt"].fieldDescription);
+  assert(c.outputList["txt"].name == "txt");
+  assert(c.outputList["txt"].OutputListectory == "/tmp/");
+  assert(c.outputList["txt"].fieldSeparator == "*");
+  assert(!c.outputList["txt"].fieldDescription);
 }

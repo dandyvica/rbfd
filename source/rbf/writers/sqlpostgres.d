@@ -43,17 +43,17 @@ private:
 
     string[string] _insertStmt;         /// list of SQL INSERT statements for each record
     string[string] _tableNames;         /// aa to store record names vs table names
-    typeof(outputFeature.sqlInsertPool) _trxCounter;     /// pool counter for grouping INSERTs
+    typeof(settings.outputConfiguration.sqlInsertPool) _trxCounter;     /// pool counter for grouping INSERTs
     string[][string] _groupedInsert;
     string _lastSeq;
 
     // connect to PG
     void _connect()
     {
-        log.log(LogLevel.INFO, MSG092, PQlibVersion(), outputFeature.connectionString);
+        log.log(LogLevel.INFO, MSG092, PQlibVersion(), settings.outputConfiguration.connectionString);
 
         // connect to PG
-        rbfPGConnect(toStringz(outputFeature.connectionString));
+        rbfPGConnect(toStringz(settings.outputConfiguration.connectionString));
 
         auto status = rbfGetPGStatus();
         if (status != 0)
@@ -65,7 +65,7 @@ private:
             rbfPGExit();
 
             log.log(LogLevel.FATAL, MSG047, error_msg);
-            throw new Exception(MSG093.format(status, outputFeature.connectionString, error_msg));
+            throw new Exception(MSG093.format(status, settings.outputConfiguration.connectionString, error_msg));
         }
     }
 
@@ -99,7 +99,7 @@ private:
         _executeStmt("CREATE TABLE IF NOT EXISTS BOXES 
                 (ID SERIAL PRIMARY KEY, FILENAME TEXT, LAYOUT_FILE TEXT, DOMAIN TEXT, INSERT_DATE TIMESTAMP)");
         _executeStmt(boxInsert.format(
-                    cmdLineOptions.cmdLineArgs.inputFileName,
+                    settings.cmdLineOptions.cmdLineArgs.inputFileName,
                     layout.meta.file, 
                     layout.meta.schema)
         );
@@ -115,7 +115,7 @@ private:
         auto nbTables = 0;
 
         // creation of all tables
-        log.log(LogLevel.INFO, MSG021, outputFeature.sqlInsertPool);
+        log.log(LogLevel.INFO, MSG021, settings.outputConfiguration.sqlInsertPool);
 
         // create all tables = one table per record
         _executeStmt("BEGIN TRANSACTION");
@@ -149,7 +149,7 @@ private:
             // prepare further INSERT statements
             //_prepareInsertCompiledStatement(rec);
             _groupedInsert[rec.name] = [];
-            _groupedInsert[rec.name].reserve(outputFeature.sqlGroupedInsertPool);
+            _groupedInsert[rec.name].reserve(settings.outputConfiguration.sqlGroupedInsertPool);
 
         }
 
@@ -262,7 +262,7 @@ public:
 
         // build grouped statements per record
         _groupedInsert[rec.name] ~= _buildInsertValues(rec);
-        if (_groupedInsert[rec.name].length == outputFeature.sqlGroupedInsertPool)
+        if (_groupedInsert[rec.name].length == settings.outputConfiguration.sqlGroupedInsertPool)
         {
             auto largeInsert = "INSERT INTO %s VALUES %s".format(_tableNames[rec.name], _groupedInsert[rec.name].join(","));
             _executeStmt(largeInsert);
@@ -280,7 +280,7 @@ public:
         _trxCounter++;
 
         // end transaction if needed
-        if (_trxCounter == outputFeature.sqlInsertPool)
+        if (_trxCounter == settings.outputConfiguration.sqlInsertPool)
         {
             // insert using transaction
             _executeStmt("COMMIT TRANSACTION");

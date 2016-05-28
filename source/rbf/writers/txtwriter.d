@@ -47,7 +47,7 @@ public:
     override void prepare(Layout layout) 
     {
         // as separator is known at that time, build formatting string
-        _fmt = "%%-*s%s".format(outputFeature.fieldSeparator);
+        _fmt = "%%-*s%s".format(settings.outputConfiguration.fieldSeparator);
 
         // calculate all lengths in advance
         size_t rulerLength;
@@ -58,7 +58,7 @@ public:
             // length is depending whether we use name or alternateName
             foreach (f; rec) 
             {
-                f.cellLength1 = outputFeature.useAlternateName ? 
+                f.cellLength1 = settings.outputConfiguration.useAlternateName ? 
                     max(f.length, f.context.alternateName.length) : max(f.length, f.name.length);
 
                 // ruler length is the sum of all length
@@ -66,9 +66,9 @@ public:
             }
 
             // set ruler characters
-            if (outputFeature.lineSeparator != "")
+            if (settings.outputConfiguration.lineSeparator != "")
             {
-                rec.meta.ruler = to!string(outputFeature.lineSeparator[0].repeat(rulerLength+rec.size));
+                rec.meta.ruler = to!string(settings.outputConfiguration.lineSeparator[0].repeat(rulerLength+rec.size));
             }
         }
     }
@@ -90,13 +90,13 @@ public:
             _fh.writeln();
 
             // print out names or alternate names depending on chosen option
-            if (outputFeature.useAlternateName)
+            if (settings.outputConfiguration.useAlternateName)
                 rec.each!(f => _write!"context.alternateName"(f));
             else
                 rec.each!(f => _write!"name"(f));
 
             // print line separator if requested
-            if (outputFeature.lineSeparator != "") 
+            if (settings.outputConfiguration.lineSeparator != "") 
             {
                 _fh.writeln; 
                 _fh.writef("%s", rec.meta.ruler);
@@ -106,7 +106,7 @@ public:
         }
 
         // finally write out values
-        if (outputFeature.useRawValue) 
+        if (settings.outputConfiguration.useRawValue) 
             rec.each!(f => 	_write!"rawValue"(f));
         else
             rec.each!(f => 	_write!"value"(f));
@@ -145,10 +145,10 @@ unittest {
 	auto reader = new Reader("./test/world.data", layout);
 
 	auto writer = writerFactory("./test/world_data.txt", OutputFormat.txt);
-	writer.outputFeature.fieldSeparator = "!";
-	writer.outputFeature.fieldDescription = true;
-	writer.outputFeature.lineSeparator = "$";
-	writer.outputFeature.useAlternateName = true;
+	writer.settings.outputConfiguration.fieldSeparator = "!";
+	writer.settings.outputConfiguration.fieldDescription = true;
+	writer.settings.outputConfiguration.lineSeparator = "$";
+	writer.settings.outputConfiguration.useAlternateName = true;
 
 	writer.prepare(layout);
 

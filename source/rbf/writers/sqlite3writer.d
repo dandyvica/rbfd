@@ -39,7 +39,7 @@ private:
     sqlite3* _db;                                     /// sqlite3 database handle
     int _sqlCode;                                     /// sqlite3 API return code
     compiledSqlStatement[string] _compiledInsertStmt; /// list of pre-build INSERT statements
-    typeof(outputFeature.sqlInsertPool) _trxCounter;  /// pool counter for grouping INSERTs
+    typeof(settings.outputConfiguration.sqlInsertPool) _trxCounter;  /// pool counter for grouping INSERTs
     ushort[string] _recordCounter;                    /// aa to store the sequence of each record
     string[string] _tableNames;                       /// aa to store record names vs table names
 
@@ -234,7 +234,7 @@ public:
         auto nbTables = 0;
 
         // creation of all tables
-        log.log(LogLevel.INFO, MSG021, outputFeature.sqlInsertPool);
+        log.log(LogLevel.INFO, MSG021, settings.outputConfiguration.sqlInsertPool);
 
         // create all tables = one table per record
         _executeStmt("BEGIN IMMEDIATE TRANSACTION");
@@ -273,10 +273,10 @@ public:
         _executeStmt("COMMIT TRANSACTION");
 
         // if any, execute pre file statement
-        if (outputFeature.sqlPreFile != "")
+        if (settings.outputConfiguration.sqlPreFile != "")
         { 
-            log.log(LogLevel.INFO, MSG075, outputFeature.sqlPreFile);
-            _execStmtFile(outputFeature.sqlPreFile);
+            log.log(LogLevel.INFO, MSG075, settings.outputConfiguration.sqlPreFile);
+            _execStmtFile(settings.outputConfiguration.sqlPreFile);
         }
     }
 
@@ -330,7 +330,7 @@ public:
         _trxCounter++;
 
         // end transaction if needed
-        if (_trxCounter == outputFeature.sqlInsertPool)
+        if (_trxCounter == settings.outputConfiguration.sqlInsertPool)
         {
             // insert using transaction
             _executeStmt("COMMIT TRANSACTION");
@@ -355,10 +355,10 @@ public:
         _compiledInsertStmt.each!(stmt => sqlite3_finalize(stmt));
 
         // if any, execute post file statement
-        if (outputFeature.sqlPostFile != "")
+        if (settings.outputConfiguration.sqlPostFile != "")
         {
-            log.log(LogLevel.INFO, MSG076, outputFeature.sqlPostFile);
-            _execStmtFile(outputFeature.sqlPostFile);
+            log.log(LogLevel.INFO, MSG076, settings.outputConfiguration.sqlPostFile);
+            _execStmtFile(settings.outputConfiguration.sqlPostFile);
         }
 
         // finally, close connection to DB

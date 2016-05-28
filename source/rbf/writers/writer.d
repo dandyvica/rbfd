@@ -14,6 +14,7 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.config;
+import rbf.settings;
 import rbf.writers.boxwriter;
 import rbf.writers.csvwriter;
 import rbf.writers.htmlwriter;
@@ -26,12 +27,11 @@ import rbf.writers.txtwriter;
 import rbf.writers.xlsx1writer;
 import rbf.writers.xlsx2writer;
 import rbf.writers.xsdwriter;
-
-import args;
+import rbf.args;
 
 // list of all possible output formats. For those formats, the settings XML file
 // should define their 
-enum OutputFormat { box, csv, html, ident, sql, postgres, tag, txt, excel1, excel2, xml, temp }
+enum OutputFormat { box, csv, html, ident, sqlite3, postgres, tag, txt, excel1, excel2, xml, temp }
 
 /*********************************************
  * writer base class for writing to various ouput formats
@@ -52,10 +52,8 @@ package:
 
 public:
 
-    Config configFromXMLFile;       /// configuration already read from configuration file
-    CommandLineOption cmdLineOptions;
-    string inputFileName;
-	OutputFeature outputFeature;    /// specific data for chosen output format
+    Settings settings;
+    //string inputFileName;
 
 
 	/**
@@ -112,17 +110,17 @@ Writer writerFactory(in string output, in OutputFormat fmt)
 {
 	final switch(fmt)
 	{
-		case OutputFormat.box   : return new BoxWriter(output);
-		case OutputFormat.csv   : return new CSVWriter(output);
-		case OutputFormat.excel1: return new XLSX1Writer(output);
-		case OutputFormat.excel2: return new XLSX2Writer(output);
-		case OutputFormat.html  : return new HTMLWriter(output);
-		case OutputFormat.ident : return new IdentWriter(output);
-		case OutputFormat.sql   : return new Sqlite3Writer(output);
+		case OutputFormat.box      : return new BoxWriter(output);
+		case OutputFormat.csv      : return new CSVWriter(output);
+		case OutputFormat.excel1   : return new XLSX1Writer(output);
+		case OutputFormat.excel2   : return new XLSX2Writer(output);
+		case OutputFormat.html     : return new HTMLWriter(output);
+		case OutputFormat.ident    : return new IdentWriter(output);
+		case OutputFormat.sqlite3  : return new Sqlite3Writer(output);
 		case OutputFormat.postgres : return new SqlPGWriter(output);
-		case OutputFormat.tag   : return new TAGWriter(output);
-		case OutputFormat.temp  : return new TemplateWriter(output);
-		case OutputFormat.txt   : return new TXTWriter(output);
-		case OutputFormat.xml   : return new XmlWriter(output);
+		case OutputFormat.tag      : return new TAGWriter(output);
+		case OutputFormat.temp     : return new TemplateWriter(output);
+		case OutputFormat.txt      : return new TXTWriter(output);
+		case OutputFormat.xml      : return new XmlWriter(output);
 	}
 }
