@@ -27,10 +27,11 @@ extern (C) {
     // from specific lib
     void rbfPGConnect(const char *);
     void rbfPGExit();
-    int rbfGetPGStatus();
-    char *rbfGetErrorMsg();
-    int rbfExecStmt(const char *stmt);
-    char *rbfGetSeq();
+    int  rbfPGGetStatus();
+    char *rbfPGGetErrorMsg();
+    int  rbfPGExecStmt(const char *stmt);
+    int  rbfPGPrepare(const char *stmt, ulong nbCols);
+    char *rbfPGGetSeq();
 }
 
 /*********************************************
@@ -47,6 +48,8 @@ private:
     string[][string] _groupedInsert;
     string _lastSeq;
 
+    string[string] _insertPreparedStmt;
+
     // connect to PG
     void _connect()
     {
@@ -55,15 +58,16 @@ private:
         // connect to PG
         rbfPGConnect(toStringz(settings.outputConfiguration.connectionString));
 
-        auto status = rbfGetPGStatus();
+        auto status = rbfPGGetStatus();
         if (status != 0)
         {
             // get error message
-            auto error_msg = fromStringz(rbfGetErrorMsg()).dup.strip;
+            auto error_msg = fromStringz(rbfPGGetErrorMsg()).dup.strip;
 
             // end up gracefully
             rbfPGExit();
 
+            // log error and abort
             log.log(LogLevel.FATAL, MSG047, error_msg);
             throw new Exception(MSG093.format(status, settings.outputConfiguration.connectionString, error_msg));
         }
@@ -76,6 +80,25 @@ private:
         foreach (rec; layout)
         {
             _insertStmt[rec.name] = SQL_INSERT_WITH_ID.format(_tableNames[rec.name], _lastSeq, "%s");
+        }
+    }
+
+    // build all INSERT statements
+    void _buildPreparedInsertStatements(Layout layout)
+    {
+        immutable SQL_INSERT_WITH_ID = "INSERT INTO %s VALUES (%s)";
+
+        // now build insert prepared stmt
+        foreach (rec; layout)
+        {
+            string[] vars;
+            // end up with +1 because we need to add the ID variable
+            foreach (i; 1..rec.size+1) { vars ~= "$" ~ to!string(i); }
+
+            _insertPreparedStmt[rec.name] = SQL_INSERT_WITH_ID.format(_tableNames[rec.name], vars.join(","));
+
+            rbfPGPrepare(_insertPreparedStmt[rec.name].toStringz, rec.size+1);
+            writeln(_insertPreparedStmt[rec.name]);
         }
     }
 
@@ -105,7 +128,7 @@ private:
         );
 
         // get back ID
-        _lastSeq = fromStringz(rbfGetSeq()).idup;
+        _lastSeq = fromStringz(rbfPGGetSeq()).idup;
         _executeStmt("COMMIT TRANSACTION");
     }
 
@@ -173,24 +196,39 @@ private:
             }
             else
             {
-                // depending on type, inserting data in not straightforward
-                final switch (f.type.meta.type)
+                // otherwise, bind value according to its type
+                try 
                 {
-                    case AtomicType.decimal:
-                        fields ~= "%s".format(f.value);
-                        break;
-                    case AtomicType.integer:
-                        fields ~= "%s".format(f.value);
-                        break;
-                    case AtomicType.date:
-                        fields ~= "'%s'".format(f.value);
-                        break;
-                    case AtomicType.time:
-                        fields ~= "'%s'".format(f.value);
-                        break;
-                    case AtomicType.string:
-                        fields ~= "'%s'".format(f.value);
-                        break;
+                    final switch (f.type.meta.type)
+                    {
+                        case AtomicType.decimal:
+                            // try to convert first to binary type. It will handle problems where the data is not as the same type
+                            // of the column (ex: string for a float column). In this case, this is reset to NULL
+                            auto d = to!double(f.value);
+                            fields ~= "%s".format(f.value);
+                            break;
+                        case AtomicType.integer:
+                            auto l = to!long(f.value);
+                            fields ~= "%s".format(f.value);
+                            break;
+                        case AtomicType.date:
+                            fields ~= "'%s'".format(f.value);
+                            break;
+                        case AtomicType.time:
+                            fields ~= "'%s'".format(f.value);
+                            break;
+                        case AtomicType.string:
+                            fields ~= "'%s'".format(f.value);
+                            break;
+                    }
+                }
+                // conversion error catched
+                catch (ConvException e) 
+                {
+                    log.log(LogLevel.INFO, MSG020, rec.meta.sourceLineNumber, rec.name, f.name, f.value, f.type.meta.type);
+
+                    // instead, use a NULL value
+                    fields ~= "NULL";
                 }
             }
 
@@ -202,15 +240,13 @@ private:
     // execute a PG SQL statement
     void _executeStmt(string stmt)
     {
-        auto rc = rbfExecStmt(stmt.toStringz);
+        auto rc = rbfPGExecStmt(stmt.toStringz);
         if (rc != 1)
         {
-            auto error_msg = fromStringz(rbfGetErrorMsg()).dup.strip;
+            auto error_msg = fromStringz(rbfPGGetErrorMsg()).dup.strip;
             log.log(LogLevel.FATAL, MSG094, rc, stmt, error_msg);
         }
     }
-
-
 
 public:
 
@@ -246,6 +282,7 @@ public:
 
         // build INSERT statements to be used
         _buildInsertStatements(layout);
+        //_buildPreparedInsertStatements(layout);
     }
 
     override void build(string outputFileName) {}

@@ -35,7 +35,8 @@ void rbfPGConnect(const char *conn_string)
         error_msg = NULL;
 }
 
-int rbfExecStmt(const char *stmt)
+// exec statement
+int rbfPGExecStmt(const char *stmt)
 {
     res = PQexec(conn, stmt);
 
@@ -48,8 +49,15 @@ int rbfExecStmt(const char *stmt)
     return status;
 }
 
+// prepare statement
+int rbfPGPrepare(const char *stmt, unsigned long nbCols)
+{
+    res = PQprepare(conn, "INSERT", stmt, (int)nbCols, NULL);
+    printf("==========> %s, stmt=<%s>\n ", PQerrorMessage(conn), stmt);
+}
+
 // get the current sequence value
-char *rbfGetSeq()
+char *rbfPGGetSeq()
 {
     PGresult *res = PQexec(conn, "SELECT LASTVAL()");    
 
@@ -63,13 +71,13 @@ char *rbfGetSeq()
 }
 
 // return SQL error code and error message
-int rbfGetPGStatus()
+int rbfPGGetStatus()
 {
     return status;
 }
 
 // get error message fro PG
-char *rbfGetErrorMsg()
+char *rbfPGGetErrorMsg()
 {
     return error_msg;
 }

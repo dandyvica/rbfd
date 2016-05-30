@@ -200,7 +200,7 @@ public:
 
                 // save SQL attributes
                 of.sqlInsertPool        = to!ulong(attr.get("pool", SQL_INSERT_POOL));
-                of.sqlGroupedInsertPool = to!ulong(attr.get("insert_pool", SQL_GROUPED_INSERT_POOL));
+                of.sqlGroupedInsertPool = to!ulong(attr.get("insertChunk", SQL_GROUPED_INSERT_POOL));
                 of.addDataSource        = to!bool(attr.get("addSource", "false"));
                 of.connectionString     = attr.get("conn_string", "");
 

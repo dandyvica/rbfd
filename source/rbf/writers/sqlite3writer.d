@@ -40,7 +40,6 @@ private:
     int _sqlCode;                                     /// sqlite3 API return code
     compiledSqlStatement[string] _compiledInsertStmt; /// list of pre-build INSERT statements
     typeof(settings.outputConfiguration.sqlInsertPool) _trxCounter;  /// pool counter for grouping INSERTs
-    ushort[string] _recordCounter;                    /// aa to store the sequence of each record
     string[string] _tableNames;                       /// aa to store record names vs table names
 
 	/** 
@@ -311,16 +310,6 @@ public:
         else
         {
             sqlite3_reset(_compiledInsertStmt[rec.name]);
-
-            // now write meta index
-            /*
-            auto stmt = SQL_META.format(_tableNames[rec.name], rec.name, ++_recordCounter[rec.name]);
-            _executeStmt(stmt);
-            if (_sqlCode != SQLITE_OK)
-            {
-                stderr.writeln(MSG046.format(_sqlCode, fromStringz(sqlite3_errmsg(_db))));
-            }
-            */
         }
 
         // it's time to clear bindings
