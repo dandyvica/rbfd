@@ -139,25 +139,31 @@ public:
         // during layout creation
         stat.nbRecs[recordName]++;
 
-		// record not found ? So loop
+        // record not found ? So loop
         if (recordName !in _layout) 
         {
-            recordName = _layout.buildFieldNameWhenRoot(recordName, _sectionName);
-            if (recordName !in _layout)
-            {
-                log.warning(MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
-                return null;
-            }
+            /*
+               recordName = _layout.buildFieldNameWhenRoot(recordName, _sectionName);
+               if (recordName !in _layout)
+               {
+               log.warning(MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
+               return null;
+               }
+             */
+            log.warning(MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
+            return null;
         }
 
         // save our record because our hash function has sent back something
         rec = _layout[recordName];
 
         // if this record starts a new section, keep its name
+        /*
         if (rec.meta.section) 
             _sectionName = recordName;
         else
             _sectionName = "";
+        */
 
 		// do we keep this record? sometimes, we skip records when setting record or field filters
 		if (rec.meta.skipRecord) return null;
@@ -191,6 +197,41 @@ public:
 
 	}
 
+    /**
+     * to loop with foreach loop on all clases
+     *
+     * Examples:
+     * --------------
+     * foreach (clause c; all_clauses) { writeln(c); }
+     * --------------
+     */
+    int opApply(int delegate(ref Record) dg)
+    {
+        int result = 0;
+        Record rec;
+
+        // open file
+        char[] buffer;
+
+        foreach (line; File(_rbFile).byLineCopy)
+            //while (fh.readln(buffer) != 0)
+        {
+            // we've read one more line
+            stat.nbReadLines++;
+
+            rec = _getRecordFromLine(line);
+
+            // loop when null records
+            if (rec is null) continue;
+
+            result = dg(rec);
+            if (result)
+                break;
+        }
+        return result;
+    }
+
+    /*
     // inner structure for defining a range for our container
     struct Range 
     {
@@ -272,6 +313,7 @@ public:
     {
 		return Range(_rbFile, this);
 	}
+    */
 
 }
 ///

@@ -1,13 +1,14 @@
 module rbf.field;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
-import std.stdio;
-import std.conv;
-import std.string;
-import std.regex;
+
 import std.algorithm;
-import std.typecons;
+import std.ascii;
+import std.conv;
 import std.exception;
+import std.regex;
+import std.stdio;
+import std.string;
 import std.typecons;
 import std.variant;
 
@@ -34,7 +35,7 @@ struct ContextualInfo
 	size_t lowerBound;				    /// when adding a field to a record, give
 	size_t upperBound;		    		/// absolute position within the line read
 	typeof(Field.name) alternateName;   /// when the field appers more than once, this builds unique 
-                                        ///field name by adding its index
+                                        /// field name by adding its index
 }
 
 /******************************************************************************************************
@@ -284,6 +285,12 @@ public:
 		field1.value = " 50";
 		assert(to!int(field1) == 50);
 	}
+
+    auto sanitize(string s) 
+    { 
+        static immutable controlChars = x"000102030405060708090A0B0C0D0E0F10111213141516171819";
+        return s.removechars(controlChars);
+    }
 
 }
 ///

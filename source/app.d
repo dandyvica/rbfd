@@ -1,16 +1,16 @@
-import std.stdio;
-import std.file;
-import std.string;
-import std.getopt;
 import std.algorithm;
-import std.datetime;
-import std.range;
-import std.conv;
-import std.path;
-import std.traits;
-import std.concurrency;
-import std.parallelism;
 import std.ascii;
+import std.concurrency;
+import std.conv;
+import std.datetime;
+import std.file;
+import std.getopt;
+import std.parallelism;
+import std.path;
+import std.range;
+import std.stdio;
+import std.string;
+import std.traits;
 
 import rbf.errormsg;
 import rbf.log;
@@ -190,17 +190,18 @@ int main(string[] argv)
 		foreach (rec; reader)
 		{
             //---------------------------------------------------------------------------------
-			// one more record read
-            //---------------------------------------------------------------------------------
-			stat.nbReadRecords++;
-
-            //---------------------------------------------------------------------------------
 			// if samples is set, break if line count is reached
             //---------------------------------------------------------------------------------
 			if (settings.cmdLineOptions.cmdLineArgs.samples != 0 && stat.nbReadLines > settings.cmdLineOptions.cmdLineArgs.samples) 
             {
                 break;
             }
+
+            //---------------------------------------------------------------------------------
+			// one more record read
+            //---------------------------------------------------------------------------------
+			stat.nbReadRecords++;
+            //stderr.writefln("%s:%s", stat.nbReadRecords,stat.nbReadLines );
 
             //---------------------------------------------------------------------------------
             // don't want a progress bar?
@@ -270,7 +271,6 @@ int main(string[] argv)
 		auto elapsedtime = Clock.currTime() - starttime;
 
         stderr.writeln();
-		//stderr.writefln(MSG014, reader.nbLinesRead, nbReadRecords, nbWrittenRecords);
         stat.finalStats();
 		log.info(MSG015, elapsedtime);
 

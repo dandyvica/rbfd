@@ -71,6 +71,9 @@ private:
             log.log(LogLevel.FATAL, MSG047, error_msg);
             throw new Exception(MSG093.format(status, settings.outputConfiguration.connectionString, error_msg));
         }
+
+        // set warning message to get rid of NOTICE messages
+        _executeStmt("set client_min_messages to warning");
     }
 
     // build all INSERT statements
@@ -138,7 +141,7 @@ private:
         auto nbTables = 0;
 
         // creation of all tables
-        log.log(LogLevel.INFO, MSG021, settings.outputConfiguration.sqlInsertPool);
+        log.log(LogLevel.INFO, MSG095, settings.outputConfiguration.sqlInsertPool, settings.outputConfiguration.sqlGroupedInsertPool);
 
         // create all tables = one table per record
         _executeStmt("BEGIN TRANSACTION");
@@ -212,13 +215,16 @@ private:
                             fields ~= "%s".format(f.value);
                             break;
                         case AtomicType.date:
-                            fields ~= "'%s'".format(f.value);
-                            break;
                         case AtomicType.time:
-                            fields ~= "'%s'".format(f.value);
+                            // sometimes, time or date is filled with 0. In that case, set to NULL
+                            if (f.value.removechars("0") == "" || f.value.removechars("0123456789") != "")
+                                fields ~= "NULL";
+                            else
+                                fields ~= "'%s'".format(f.value);
                             break;
                         case AtomicType.string:
-                            fields ~= "'%s'".format(f.value);
+                            // new to sanitize string because sometimes, it contains non-printable chars
+                            fields ~= "'%s'".format(f.sanitize(f.value));
                             break;
                     }
                 }
@@ -237,6 +243,12 @@ private:
         return "(%s,%s)".format(_lastSeq, fields.join(","));
     }
 
+    auto _buildLargeInsert(string tableName, string[] data)
+    {
+        static immutable insertStmt = "INSERT INTO %s VALUES %s";
+        return insertStmt.format(tableName, data.join(","));
+    }
+
     // execute a PG SQL statement
     void _executeStmt(string stmt)
     {
@@ -245,6 +257,7 @@ private:
         {
             auto error_msg = fromStringz(rbfPGGetErrorMsg()).dup.strip;
             log.log(LogLevel.FATAL, MSG094, rc, stmt, error_msg);
+            throw new Exception(MSG094.format(rc, stmt, error_msg));
         }
     }
 
@@ -265,7 +278,7 @@ public:
 
 	override void prepare(Layout layout)
     {
-        // first, connect to PG
+        // first, connect to PG. Need to call here in prepare() because we only know settings at this point.
         _connect();
 
         // build table names to reuse if any
@@ -290,6 +303,24 @@ public:
     // identity is just printing out the same values than read
 	override void write(Record rec) 
     {
+        // build grouped statements per record
+        _groupedInsert[rec.name] ~= _buildInsertValues(rec);
+        if (_groupedInsert[rec.name].length == settings.outputConfiguration.sqlGroupedInsertPool)
+        {
+            //auto largeInsert = "INSERT INTO %s VALUES %s".format(_tableNames[rec.name], _groupedInsert[rec.name].join(","));
+            auto largeInsert = _buildLargeInsert(_tableNames[rec.name], _groupedInsert[rec.name]);
+            _executeStmt("BEGIN TRANSACTION");
+            _executeStmt(largeInsert);
+            log.info("stmt for record name %s", rec.name);
+            _executeStmt("COMMIT TRANSACTION");
+            _groupedInsert[rec.name] = [];
+        }
+    }
+
+    // identity is just printing out the same values than read
+    /*
+	override void write(Record rec) 
+    {
         // make a transaction to group INSERTs
         if (_trxCounter == 0)
         {
@@ -301,17 +332,11 @@ public:
         _groupedInsert[rec.name] ~= _buildInsertValues(rec);
         if (_groupedInsert[rec.name].length == settings.outputConfiguration.sqlGroupedInsertPool)
         {
-            auto largeInsert = "INSERT INTO %s VALUES %s".format(_tableNames[rec.name], _groupedInsert[rec.name].join(","));
+            auto largeInsert = _buildLargeInsert(_tableNames[rec.name], _groupedInsert[rec.name]);
             _executeStmt(largeInsert);
-            _groupedInsert.clear;
+            _groupedInsert[rec.name] = [];
         }
 
-
-        // build insert values (after the VALUES keyword of INSERT stmt and insert
-        /*
-        auto finalInsert =  "INSERT INTO %s VALUES %s".format(_tableNames[rec.name], _buildInsertValues(rec)); 
-        _executeStmt(finalInsert);
-        */
 
         // TRX one more
         _trxCounter++;
@@ -326,6 +351,7 @@ public:
             _trxCounter = 0;
         }
     }
+    */
 
 	/** 
      * Close DB. First finish pending operations
@@ -337,8 +363,11 @@ public:
         {
             if (_groupedInsert[recname] != [])
             {
-                auto largeInsert = "INSERT INTO %s VALUES %s".format(_tableNames[recname], _groupedInsert[recname].join(","));
+                //auto largeInsert = "INSERT INTO %s VALUES %s".format(_tableNames[recname], _groupedInsert[recname].join(","));
+                auto largeInsert = _buildLargeInsert(_tableNames[recname], _groupedInsert[recname]);
+                _executeStmt("BEGIN TRANSACTION");
                 _executeStmt(largeInsert);
+                _executeStmt("COMMIT TRANSACTION");
             }
         }
 
