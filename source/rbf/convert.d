@@ -152,7 +152,7 @@ void layout2html(File html, Layout layout)
 
 }
 
-// write out XML layout structure as as C-union
+// write out XML layout structure as as C++-union
 void layout2cstruct(File output, Layout layout) 
 {
     // inclusion watchguard

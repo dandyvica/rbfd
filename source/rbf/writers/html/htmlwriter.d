@@ -1,4 +1,4 @@
-module rbf.writers.htmlwriter;
+module rbf.writers.html.htmlwriter;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;

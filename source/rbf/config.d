@@ -26,7 +26,7 @@ void printMembers(T)(T v)
 {
 	foreach (member; FieldNameTuple!T)
 	{
-		mixin("log.log(LogLevel.INFO, \"%-50.50s : <%s>\", \"" ~ T.stringof ~ "." ~ member ~ "\", v." ~ member ~ ");");
+		mixin("log.info(\"%-50.50s : <%s>\", \"" ~ T.stringof ~ "." ~ member ~ "\", v." ~ member ~ ");");
 	}
 }
 
@@ -43,8 +43,8 @@ version(Windows)
 }
 
 // settings defaults
-immutable SQL_INSERT_POOL         = "3000";
-immutable SQL_GROUPED_INSERT_POOL = "100";
+immutable SQL_DEFAULT_INSERT_POOL         = "3000";
+immutable SQL_DEFAULT_GROUPED_INSERT_POOL = "100";
 
 /*********************************************
  * Orientation for printing out data:
@@ -98,7 +98,8 @@ alias OutputList = NamedItemsContainer!(OutputConfiguration, false);
 /***********************************
 	* class for reading XML definition file
  */
-class ConfigFromXMLFile {
+class ConfigFromXMLFile 
+{
 
 private:
 	LayoutList _layoutList;		/// list of all settings i.e all layout configuration (path, etc)
@@ -113,6 +114,8 @@ public:
 	 */
 	this(string xmlConfigFile = "") 
     {
+        // set logerr
+        logerr = Log(stderr);
 
         // define new container for layouts and formats
         _layoutList = new LayoutList("layouts");
@@ -125,17 +128,19 @@ public:
         // if file name is passed as an argument to the ctor, take it or otherwise try possible locations
         if (xmlConfigFile != "")
         {
-            writefln(MSG071, xmlConfigFile); 
+            logerr.info("MSG071", xmlConfigFile); 
             settingsFile = xmlConfigFile;
         }
         else
+        {
             settingsFile = _getConfigFileName();
+        }
 
         // get settings file path
         auto settingsFilePath = dirName(settingsFile) ~ "/";
 
         // ensure file exists
-        enforce(exists(settingsFile), MSG004.format(settingsFile));
+        enforce(exists(settingsFile), "MSG004".format(settingsFile));
 
         // open XML settings file and load it into a string
         string s = cast(string)std.file.read(settingsFile);
@@ -199,8 +204,8 @@ public:
                 of.orientation = to!Orientation(attr.get("orientation", "horizontal"));
 
                 // save SQL attributes
-                of.sqlInsertPool        = to!ulong(attr.get("pool", SQL_INSERT_POOL));
-                of.sqlGroupedInsertPool = to!ulong(attr.get("insertChunk", SQL_GROUPED_INSERT_POOL));
+                of.sqlInsertPool        = to!ulong(attr.get("pool", SQL_DEFAULT_INSERT_POOL));
+                of.sqlGroupedInsertPool = to!ulong(attr.get("insertChunk", SQL_DEFAULT_GROUPED_INSERT_POOL));
                 of.addDataSource        = to!bool(attr.get("addSource", "false"));
                 of.connectionString     = attr.get("conn_string", "");
 
@@ -215,7 +220,7 @@ public:
         xml.parse();
 
         // log info in configuration file
-        log.log(LogLevel.INFO, MSG027, settingsFile);
+        log.info("MSG027", settingsFile);
 
     }
 
@@ -236,7 +241,7 @@ private:
         auto rbfconf = environment.get(xmlSettingsFileEnvVar, "");
         if (rbfconf != "") 
         {
-            writefln(MSG067, rbfconf, xmlSettingsFileEnvVar);
+            logerr.info("MSG067", rbfconf, xmlSettingsFileEnvVar);
             return rbfconf;
         }
 
@@ -244,9 +249,10 @@ private:
         auto suspectedSettingsFile = buildNormalizedPath(getcwd, xmlSettingsFile);
         if (exists(suspectedSettingsFile)) 
         {
-            writefln(MSG069, suspectedSettingsFile); 
+            logerr.info("MSG069", suspectedSettingsFile); 
             return suspectedSettingsFile;
         }
+        // or path given by an env variable
         else 
         {
             // last possible location is OS-dependent
@@ -263,7 +269,7 @@ private:
             }
         }
 
-        writefln(MSG070, settingsFile); 
+        logerr.info("MSG070", settingsFile); 
         return settingsFile;
 
     }
@@ -271,16 +277,16 @@ private:
 }
 ///
 unittest {
-	writeln("========> testing ", __FILE__);
-	auto c = new ConfigFromXMLFile("./test/config.xml");
+    writeln("========> testing ", __FILE__);
+    auto c = new ConfigFromXMLFile("./test/config.xml");
 
-  assert(c.layoutList["A"].name == "A");
-  assert(c.layoutList["B"].description == "Desc B");
-  assert(c.layoutList["C"].file.canFind("layout/c.xml"));
-  assert(c.layoutList["world"].file.canFind("test/world_data.xml"));
+    assert(c.layoutList["A"].name == "A");
+    assert(c.layoutList["B"].description == "Desc B");
+    assert(c.layoutList["C"].file.canFind("layout/c.xml"));
+    assert(c.layoutList["world"].file.canFind("test/world_data.xml"));
 
-  assert(c.outputList["txt"].name == "txt");
-  assert(c.outputList["txt"].OutputListectory == "/tmp/");
-  assert(c.outputList["txt"].fieldSeparator == "*");
-  assert(!c.outputList["txt"].fieldDescription);
+    assert(c.outputList["txt"].name == "txt");
+    assert(c.outputList["txt"].OutputListectory == "/tmp/");
+    assert(c.outputList["txt"].fieldSeparator == "*");
+    assert(!c.outputList["txt"].fieldDescription);
 }

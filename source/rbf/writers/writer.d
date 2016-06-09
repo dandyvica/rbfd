@@ -15,18 +15,18 @@ import rbf.record;
 import rbf.layout;
 import rbf.config;
 import rbf.settings;
-import rbf.writers.boxwriter;
-import rbf.writers.csvwriter;
-import rbf.writers.htmlwriter;
-import rbf.writers.identwriter;
-import rbf.writers.sqlite3writer;
-import rbf.writers.sqlpostgres;
-import rbf.writers.tagwriter;
-import rbf.writers.templatewriter;
-import rbf.writers.txtwriter;
-import rbf.writers.xlsx1writer;
-import rbf.writers.xlsx2writer;
-import rbf.writers.xsdwriter;
+import rbf.writers.ascii.boxwriter;
+import rbf.writers.ascii.csvwriter;
+import rbf.writers.html.htmlwriter;
+import rbf.writers.ascii.identwriter;
+import rbf.writers.sql.sqlite3writer;
+import rbf.writers.sql.sqlpostgres;
+import rbf.writers.ascii.tagwriter;
+import rbf.writers.ascii.templatewriter;
+import rbf.writers.ascii.txtwriter;
+import rbf.writers.xml.xlsx1writer;
+import rbf.writers.xml.xlsx2writer;
+import rbf.writers.xml.xsdwriter;
 import rbf.args;
 
 // list of all possible output formats. For those formats, the settings XML file
@@ -74,7 +74,7 @@ public:
 			if (create) 
             {
                 _fh = File(_outputFileName, "w");
-                log.log(LogLevel.INFO, MSG019, outputFileName);
+                log.info("MSG019", outputFileName);
             }
 		}
 		else

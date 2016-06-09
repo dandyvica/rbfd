@@ -55,15 +55,9 @@ public:
 		_cellLength1 = max(_length, _name.length);
 		_cellLength2 = max(_length, _description.length, _name.length);
 	}
-	///
-	unittest {
-		assertThrown(new Element!(string, ulong)("","First field", 5));
-		assertThrown(new Element!(string, ulong)("FIELD1","First field", 0));
-		auto e1 = new Element!(string, ulong)("FIELD1", "Field description", 15);
-	}
 
 	// copy an element with all its data
-	Element dup() pure 
+	Element dup() pure immutable
     {
 		auto copied = new Element!(T,U,Context)(_name, _description, _length);
 		return copied;
@@ -71,49 +65,40 @@ public:
 
 	/// read property for name attribute
 	@property T name() { return _name; }
-	///
-	unittest {
-		auto element1 = new Element!(string, ulong)("FIELD1", "This is element #1", 15);
-		assert(element1.name == "FIELD1");
-	}
 
 	/// read property for description attribute
 	@property T description() { return _description; }
-	///
-	unittest {
-		auto element1 = new Element!(string, ulong)("FIELD1", "This is element #1", 15);
-		assert(element1.description == "This is element #1");
-	}
 
 	/// write property for description attribute
-	@property void description(string newDesc) { _description = newDesc; }
+	@property void description(in string newDesc) { _description = newDesc; }
 
 	/// read property for field length
 	@property U length() { return _length; }
-	///
-	unittest {
-		auto element1 = new Element!(string, ulong)("FIELD1", "This is field #1", 15);
-		assert(element1.length == 15);
-	}
 
 	/// read property for cell length when creating ascii tables
 	@property U cellLength1() { return _cellLength1; }
-	@property void cellLength1(U l1) { _cellLength1 = l1; }
+	@property void cellLength1(in U l1) { _cellLength1 = l1; }
 	@property U cellLength2() { return _cellLength2; }
-	@property void cellLength2(U l2) { _cellLength2 = l2; }
-	///
-	unittest {
-		auto element1 = new Element!(string, ulong)("IDENTITY", "Name", 30);
-		assert(element1.cellLength1 == 30);
-		assert(element1.cellLength2 == 30);
-	}
+	@property void cellLength2(in U l2) { _cellLength2 = l2; }
 
 	/**
 	 * return a string of element attributes
 	 */
-	override string toString() 
+	override string toString()
     {
 		return("name=<%s>, description=<%s>, length=<%u>".format(name, description, length));
 	}
 
+}
+///
+unittest {
+    assertThrown(new Element!(string, ulong)("","First field", 5));
+    assertThrown(new Element!(string, ulong)("FIELD1","First field", 0));
+
+    auto element1 = new Element!(string, ulong)("FIELD1", "Field description", 15);
+    assert(element1.name == "FIELD1");
+    assert(element1.description == "Field description");
+    assert(element1.length == 15);
+    assert(element1.cellLength1 == 15);
+    assert(element1.cellLength2 == 17);
 }

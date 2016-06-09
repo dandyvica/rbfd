@@ -13,6 +13,7 @@ import std.exception;
 import std.regex;
 
 import rbf.errormsg;
+import rbf.log;
 
 immutable uint PRE_ALLOC_SIZE = 300;
 
@@ -168,7 +169,7 @@ public:
 		// if no duplicates is allowed, need to test it
 		static if (!allowDuplicates) 
         {
-			enforce(element.name !in _map, MSG032.format(element.name));
+            enforce(element.name !in _map, Log.build_msg("MSG032", element.name));
 		}
 
 		// add element
@@ -222,7 +223,7 @@ public:
 	 */
 	T opIndex(size_t i) 
     {
-		enforce(0 <= i && i < _list.length, MSG033.format(i));
+		enforce(0 <= i && i < _list.length, Log.build_msg("MSG033", i));
 		return _list[i];
 	}
 
@@ -236,7 +237,7 @@ public:
 	 An array of elements of type T
 	 */
 	ref TRETURN opIndex(TNAME name) {
-		enforce(name in this, MSG001.format(name, this.name));
+		enforce(name in this, Log.build_msg("MSG001", name, this.name));
 		return _contextMap(_map, name);
 	}
 
@@ -254,9 +255,9 @@ public:
 	*/
 	T[] opSlice(size_t i, size_t j)
 	{
-		enforce(0 <= i && i < size, MSG007.format(i,size));
-		enforce(0 <= j && j <= size, MSG008.format(j,size));
-		enforce(i <= j, MSG009.format(i,j));
+		enforce(0 <= i && i < size, Log.build_msg("MSG007", i, size));
+		enforce(0 <= j && j < size, Log.build_msg("MSG008", j, size));
+		enforce(i <= j, Log.build_msg("MSG009", i, j));
 
 		return _list[i..j];
 	}
@@ -277,12 +278,12 @@ public:
 	*/
 	T get(TNAME name, ushort index = 0)
     {
-		enforce(name in this, MSG001.format(name, this.name));
-		enforce(0 <= index && index < _map[name].length, MSG005.format(name,index));
+		enforce(name in this, Log.build_msg("MSG001", name, this.name));
+		enforce(0 <= index && index < _map[name].length, Log.build_msg("MSG005", name,index));
 
 		static if (!allowDuplicates) 
         {
-			enforce(index == 0, MSG006.format(index));
+			enforce(index == 0, Log.build_msg("MSG006", index));
 		}
 
 		return _map[name][index];
@@ -290,7 +291,7 @@ public:
 
 	T getUnique(TNAME name)
     {
-		enforce(name in _unique, MSG079.format(name, this.name));
+		enforce(name in _unique, Log.build_msg("MSG079", name, this.name));
 		return _unique[name];
 	}
 
@@ -307,7 +308,7 @@ public:
 	void remove(TNAME name) 
     {
 		// check if name if really in container
-		enforce(name in this, MSG001.format(name, this.name));
+		enforce(name in this, Log.build_msg("MSG001", name, this.name));
 
         // remove all elements matching name
 		_list = _list.remove!(f => f.name == name);
@@ -319,11 +320,11 @@ public:
 	/// remove a single occurence of an element
 	void remove(TNAME name, size_t index) 
     {
-		enforce(name in this, MSG001.format(name));
-		enforce(0 <= index && index < _map[name].length, MSG005.format(name,index));
+		enforce(name in this, Log.build_msg("MSG001", name));
+		enforce(0 <= index && index < _map[name].length, Log.build_msg("MSG005", name,index));
 
 		static if (!allowDuplicates) {
-			enforce(index == 0, MSG006.format(index));
+			enforce(index == 0, Log.build_msg("MSG006", index));
 		}
 
 		// remove from main list. Find its real index in the list array
@@ -343,7 +344,7 @@ public:
     {
 		// check that all element names are in container
 		name.each!(
-			e => enforce(e in this, MSG001.format(e, this.name))
+			e => enforce(e in this, Log.build_msg("MSG001", e, this.name))
 		);
 
 		// rebuild list
@@ -410,7 +411,7 @@ public:
 	//auto count(TNAME name) { return _list.count!("a.name == b")(name); }
 	auto count(TNAME name)
 	{
-		enforce(name in this, MSG001.format(name, this.name));
+		enforce(name in this, Log.build_msg("MSG001", name, this.name));
 		return _map[name].length;
 	}
 

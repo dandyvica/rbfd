@@ -1,4 +1,4 @@
-module rbf.writers.xlsxformat;
+module rbf.writers.xml.xlsxformat;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;

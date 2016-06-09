@@ -83,7 +83,7 @@ struct Settings {
         //---------------------------------------------------------------------------------
 		if (outputFormat !in configFromXMLFile.outputList) 
         {
-			throw new Exception(MSG058.format(configFromXMLFile.outputList.names));
+			throw new Exception(errorMessageList.error_msg["MSG058"].format(configFromXMLFile.outputList.names));
 		}
 
         //---------------------------------------------------------------------------------

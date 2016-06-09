@@ -88,10 +88,10 @@ public:
 
         // save format if set in field type: this format is the printf-like format string specifier
         _format = type.meta.format;
-	}
-	///
-	unittest {
-		auto field1 = new Field("FIELD1", "Field description", new FieldType("N","decimal"), 15);
+
+        // as field length is known, we can set values length beforehand
+        _rawValue.length = length;
+        _strValue.length = length;
 	}
 
 	/**
@@ -104,19 +104,15 @@ public:
 	this(string[string] attr)
 	{
         // name & description keys should exists
-        enforce("name" in attr, MSG084);
-        enforce("description" in attr, MSG085);
-        enforce("length" in attr, MSG086);
-        enforce("type" in attr, MSG087);
+        enforce("name" in attr, "MSG084");
+        enforce("description" in attr, "MSG085");
+        enforce("length" in attr, "MSG086");
+        enforce("type" in attr, "MSG087");
 
         // just call regular ctor
         this(attr["name"], attr["description"], new FieldType(attr["type"], "string"), to!size_t(attr["length"]));
 	}
 	///
-	unittest {
-		auto field1 = new Field(["name":"FIELD1", "description":"Field description", "type":"AN", "length":"15"]);
-		assert(field1 == tuple("FIELD1", "Field description", "AN", 15UL));
-	}
 	/**
  	 * create a new field object from a CSV string
      * this is another ctor which might be useful
@@ -133,16 +129,10 @@ public:
 	{
         // split string into individual atoms
 		auto f = csvdata.split(delimiter);
-		enforce(f.length == 5, MSG010.format(f.length, 5));
+		enforce(f.length == 5, "MSG010".format(f.length, 5));
 
 		// create object calling the original ctor
 		this(f[0], f[1], new FieldType(f[2],f[3]), to!size_t(f[4]));
-	}
-	///
-	unittest 
-    {
-		auto field1 = new Field("FIELD1;Field description;N;decimal;15");
-		assertThrown(new Field("FIELD1;Field description;N;decimal"));
 	}
 
 	/// read property for element type
@@ -160,13 +150,6 @@ public:
 
 	/// read/write property for field string value
 	@property auto value() { return _strValue; }
-	///
-	unittest 
-    {
-		auto field1 = new Field("IDENTITY", "Person's name", new FieldType("S","string"), 30);
-		field1.value = "  John Doe   ";
-		assert(field1.value == "John Doe");
-	}
 
     /// set a value by filling-in formatted data
     void setFormattedValue(char[] s)
@@ -178,16 +161,9 @@ public:
 
 	/// convert value to type T
 	@property T value(T)() { return to!T(_strValue) * sign; }
-	///
-	unittest 
-    {
-		auto field1 = new Field("AGE", "Person's age", new FieldType("N","decimal"), 3);
-		field1.value = "50";
-		assert(field1.value!int == 50);
-	}
 
     // set the value of a field
-	@property void value(TVALUE s)
+	@property void value(in TVALUE s)
 	{
         // raw value is exactly copied asis
 		_rawValue = s;
@@ -200,33 +176,20 @@ public:
 			_strValue = type.meta.preConv(s.strip);
 		}
 		else
+        {
 			_strValue = s.strip;
-	}
-	///
-	unittest 
-    {
-		auto field1 = new Field("AGE", "Person's age", new FieldType("I","integer"), 3);
-		field1.value = "50";
-		assert(field1.value == "50");
+        }
 	}
 
 	/// read property for field raw value. Raw value is not stripped
 	@property auto rawValue() { return _rawValue; }
-	///
-	unittest 
-    {
-		auto field1 = new Field("IDENTITY", "Person's name", new FieldType("CHAR","string"), 30);
-		field1.value = "       John Doe      ";
-		assert(field1.value == "John Doe");
-		assert(field1.rawValue == "       John Doe      ");
-	}
 
 	/// read/write property for the sign field
 	@property auto sign() { return _valueSign; }
 	@property void sign(in byte new_sign) { _valueSign = new_sign; }
 
     /// build XML tag definition
-    string asXML()
+    auto asXML()
     {
         XmlAttribute[] attributes;
 
@@ -239,12 +202,6 @@ public:
         // build XML
         return buildXmlTag("field", attributes);
     }
-	unittest 
-    {
-		auto field1 = new Field("IDENTITY", "Person's name", new FieldType("CHAR","string"), 30);
-        writeln(field1.asXML);
-		assert(field1.asXML == `<field name="IDENTITY" description="Person's name" length="30" type="CHAR"/>`);
-	}
 
 	/**
 	 * return a string of Field attributes
@@ -253,7 +210,7 @@ public:
     {
 		with(context) 
         {
-			return(MSG003.format(name, description, length, type, lowerBound, upperBound, rawValue, value, offset, index));
+			return("MSG003".format(name, description, length, type, lowerBound, upperBound, rawValue, value, offset, index));
 		}
 	}
     auto contextualInfo()
@@ -270,23 +227,12 @@ public:
 			type.meta.name == t[2] &&
 			length         == t[3];
 	}
-	///
-	unittest 
-    {
-		auto field1 = new Field("AGE", "Person's age", new FieldType("INT","integer"), 3);
-		assert(field1 == tuple("AGE", "Person's age", "INT", 3UL));
-	}
 
+    /// convert string value to type T
 	T opCast(T)() { return to!T(_strValue); }
-	///
-	unittest 
-    {
-		auto field1 = new Field("AGE", "Person's age", new FieldType("I","integer"), 3);
-		field1.value = " 50";
-		assert(to!int(field1) == 50);
-	}
 
-    auto sanitize(string s) 
+    /// get rid of ascci char having value < 32
+    auto sanitize(in string s) pure const
     { 
         static immutable controlChars = x"000102030405060708090A0B0C0D0E0F10111213141516171819";
         return s.removechars(controlChars);
@@ -297,20 +243,47 @@ public:
 unittest 
 {
 
-		writeln("========> testing ", __FILE__);
+    writeln("========> testing ", __FILE__);
 
-		auto ft = new FieldType("N","decimal");
-		ft.meta.pattern = r"^\d{1,2}$";
-		auto f1 = new Field("AGE", "Person's age", ft, 13);
+    auto ft = new FieldType("N","decimal");
+    auto f1 = new Field("AGE", "Person's age", ft, 13);
 
-		f1.value = "   123   ";
-		assert(!f1.matchPattern);
-		f1.value = "   12   ";
-		assert(f1.matchPattern);
-		// set new pattern independantly from field type pattern
-		// and now it works
-		f1.pattern = r"^\d{1,3}$";
-		f1.value = "   123   ";
-		assert(f1.matchPattern);
+    f1.value = "   123   ";
+    assert(!f1.matchPattern);
+    f1.value = "   12   ";
+    assert(f1.matchPattern);
+    f1.value = "   123   ";
+    assert(f1.matchPattern);
 
+    auto field1 = new Field("FIELD1", "Field description", new FieldType("N","decimal"), 15);
+    assert(field1 == tuple("FIELD1", "Field description", "AN", 15UL));
+    auto field1 = new Field("IDENTITY", "Person's name", new FieldType("S","string"), 30);
+    field1.value = "  John Doe   ";
+    assert(field1.value == "John Doe");
+
+    field1 = new Field("IDENTITY", "Person's name", new FieldType("CHAR","string"), 30);
+    assert(field1.asXML == `<field name="IDENTITY" description="Person's name" length="30" type="CHAR"/>`);
+
+    field1 = new Field("AGE", "Person's age", new FieldType("INT","integer"), 3);
+    assert(field1 == tuple("AGE", "Person's age", "INT", 3UL));
+
+    field1 = new Field("AGE", "Person's age", new FieldType("I","integer"), 3);
+    field1.value = " 50";
+    assert(to!int(field1) == 50);
+
+    field1 = new Field("AGE", "Person's age", new FieldType("I","integer"), 3);
+    field1.value = "50";
+    assert(field1.value == "50");
+
+    field1 = new Field("IDENTITY", "Person's name", new FieldType("CHAR","string"), 30);
+    field1.value = "       John Doe      ";
+    assert(field1.value == "John Doe");
+    assert(field1.rawValue == "       John Doe      ");
+
+    field1 = new Field("AGE", "Person's age", new FieldType("N","decimal"), 3);
+    field1.value = "50";
+    assert(field1.value!int == 50);
+
+    field1 = new Field("FIELD1;Field description;N;decimal;15");
+    assertThrown(new Field("FIELD1;Field description;N;decimal"));
 }

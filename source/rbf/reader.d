@@ -39,14 +39,12 @@ private:
 	Regex!char _ignoreRegex;                /// regex ignore pattern: don't read those lines matching this regex
 	                                        /// regex include pattern: read only those lines matching this regex
 	Regex!char _lineRegex;                  /// but previous one comes first
-	//STRING_MAPPER _mapper;                  /// mapper function which can be defined to transform a record
-	//ulong _nbLinesRead;                     /// size read
 	ulong _inputFileSize;                   /// input file size
-    Counter _guessedRecordNumber;             /// guessed number of records (in case of a lauyout having reclength!=0)
+    Counter _guessedRecordNumber;           /// guessed number of records (in case of a lauyout having reclength!=0)
     bool _checkPattern;                     /// do we want to check field pattern for each record?
     ulong _nbBadCheck;                      /// counter for those bad formatted fields
 
-    string _sectionName;                     /// last fetched record name
+    string _sectionName;                    /// last fetched record name
 
 public:
 	/**
@@ -57,10 +55,10 @@ public:
 	 *  layout = layout object
 	 *  recIndentifier = function used to map each record
 	 */
-	this(string rbFile, Layout layout, MapperFunc recIndentifier = null)
+	this(in string rbFile, Layout layout, MapperFunc recIndentifier = null)
 	{
-		// record-based file must exist
-		enforce(exists(rbFile), MSG051.format(rbFile));
+		// record-based input file must exist
+		enforce(exists(rbFile), Log.build_msg("MSG051", rbFile));
 
 		// save file name and opens file for reading
 		_rbFile = rbFile;
@@ -75,11 +73,17 @@ public:
         // this is used to print out progression of reading. But it is only meaningful when
         // each line of the input file has the same length
 		_inputFileSize = getSize(rbFile);
-        if (layout.meta.length != 0) _guessedRecordNumber = _inputFileSize / (layout.meta.length+1);
+
+        if (layout.meta.length != 0) 
+        {
+            _guessedRecordNumber = _inputFileSize / (layout.meta.length+1);
+        }
 
 		// set regex if any
 		if (layout.meta.ignoreLinePattern != "")
+        {
 			_ignoreRegex = regex(layout.meta.ignoreLinePattern);
+        }
 	}
 
 	/**
@@ -98,19 +102,14 @@ public:
 	/**
 	 * register a callback function which will be called for each fetched record
 	 */
-	//@property void recordTransformer(STRING_MAPPER func) { _mapper = func; }
-
-	@property Layout layout() { return _layout; }
-
-	//@property ulong nbLinesRead() { return _nbLinesRead; }
+	@property auto layout() { return _layout; }
 
 	/// return the file size of the input file in bytes
 	@property ulong inputFileSize() { return _inputFileSize; }
-
 	@property ulong nbBadCheck() { return _nbBadCheck; }
-
 	@property void checkPattern(in bool check) { _checkPattern = check; }
 
+    // map a record from the input line
 	Record _getRecordFromLine(in char[] lineReadFromFile) 
     {
         // current record found
@@ -146,11 +145,11 @@ public:
                recordName = _layout.buildFieldNameWhenRoot(recordName, _sectionName);
                if (recordName !in _layout)
                {
-               log.warning(MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
+               log.warning("MSG018", stat.nbReadLines, recordName, 50, line[0..50]);
                return null;
                }
              */
-            log.warning(MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
+            log.warning("MSG018", stat.nbReadLines, recordName, 50, line[0..50]);
             return null;
         }
 
@@ -175,9 +174,6 @@ public:
 		// set record value (and fields)
 		rec.value = line;
 
-		// is a mapper registered? so we need to call it
-		//if (_mapper) _mapper(rec);
-
         // do we need to check field patterns?
         if (_checkPattern)
         {
@@ -186,7 +182,7 @@ public:
             {
                 if (f.value != "" && !f.matchPattern) 
                 {
-                    log.log(LogLevel.WARNING, MSG002, stat.nbReadLines, recordName, f.contextualInfo, f.value, f.pattern);
+                    log.warning("MSG002", stat.nbReadLines, recordName, f.contextualInfo, f.value, f.pattern);
                     _nbBadCheck++;
                 }
             }
@@ -211,22 +207,26 @@ public:
         Record rec;
 
         // open file
-        char[] buffer;
+        auto fh = File(_rbFile);
+        char[] line;
 
-        foreach (line; File(_rbFile).byLineCopy)
-            //while (fh.readln(buffer) != 0)
+        //foreach (line; File(_rbFile).byLineCopy)
+        while (fh.readln(line) != 0)
         {
             // we've read one more line
             stat.nbReadLines++;
 
-            rec = _getRecordFromLine(line);
+            // get rid of terminating \n
+            rec = _getRecordFromLine(line[0..$-2]);
 
             // loop when null records
             if (rec is null) continue;
 
             result = dg(rec);
             if (result)
+            {
                 break;
+            }
         }
         return result;
     }

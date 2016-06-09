@@ -1,4 +1,4 @@
-module rbf.writers.boxwriter;
+module rbf.writers.ascii.boxwriter;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;

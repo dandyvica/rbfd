@@ -6,6 +6,7 @@
 	"license": "GPL-3.0",
 	"targetPath": "bin",
 	"targetType": "executable",
+    "versions": ["checkBounds"],
 	"libs-linux": ["sqlite3", "pq", "rbfpg"],
 	"libs-windows": ["..\\..\\tools\\sqlite3\\sqlite3"],
 	"importPaths": ["source"],

@@ -3,10 +3,12 @@ pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
 import std.file;
+import std.format;
 import std.conv;
 import std.algorithm: sort;
 
 import rbf.errormsg;
+import rbf.log;
 
 
 // alias for all counters (nb lines, records, ...)
@@ -23,35 +25,24 @@ struct Statistics
 
     Counter[string] nbRecs;            // keep number of records in the file per record
 
-    void finalStats(File fh=stdout)
+    void finalStats(ref Log log)
     {
-		fh.writefln(MSG014, nbReadLines, nbReadRecords, nbWrittenRecords);
+		log.info("MSG014", nbReadLines, nbReadRecords, nbWrittenRecords);
     }
 
-    void progressBarStats(Counter nbGuessedRecords, File fh=stdout)
+    void progressBarStats(Counter nbGuessedRecords, ref Log log)
     {
-        fh.writef(MSG066, nbReadRecords, nbGuessedRecords, to!float(nbReadRecords)/nbGuessedRecords*100, nbMatchedRecords);
-        fh.flush;
+        stderr.writef(errorMessageList.error_msg["MSG066"].format(nbReadRecords, nbGuessedRecords, to!float(nbReadRecords)/nbGuessedRecords*100, nbMatchedRecords));
     }
 
-    void detailedStats(File fh=stdout)
+    void detailedStats(ref Log log)
     {
-        fh.writeln;
-
-        fh.writeln("Detailed stats:");
-        fh.writeln("---------------------------------------");
-        fh.writefln("number of lines read:      %d", nbReadLines);
-        fh.writefln("number of records read:    %d", nbReadRecords);
-        fh.writefln("number of records written: %d", nbWrittenRecords);
-        fh.writefln("number of matched records: %d", nbMatchedRecords);
-
-        fh.writeln;
-
-        fh.writeln("List of records:");
-        fh.writeln("---------------------------------------");
         foreach (recname; sort(nbRecs.keys))
         {
-            if (nbRecs[recname] != 0) fh.writefln("%s : %d", recname, nbRecs[recname]);
+            if (nbRecs[recname] != 0) 
+            {
+                log.info("MSG096", recname, nbRecs[recname]);
+            }
         }
     }
 

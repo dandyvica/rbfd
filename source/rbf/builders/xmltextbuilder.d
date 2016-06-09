@@ -48,7 +48,7 @@ class RbfTextBuilder : RbfBuilder
         //builder = new RbfBuilder();
 
 		// check for XML file existence
-		enforce(exists(xmlFile), MSG088.format(xmlFile));
+		enforce(exists(xmlFile), Log.build_msg("MSG088", xmlFile));
 
 		// open XML file and load it into a string
 		string xmlData = cast(string)std.file.read(xmlFile);
@@ -141,7 +141,7 @@ class RbfTextBuilder : RbfBuilder
                         }
                         break;
                     default:
-                        log.error(MSG056, option, tag, attr);
+                        log.error("MSG056", option, tag, attr);
                         break;
                 }
             }
@@ -168,7 +168,7 @@ class RbfTextBuilder : RbfBuilder
         FieldType[string] ftype;
 
 		// check for XML file existence
-		enforce(exists(inputFile), MSG089.format(inputFile));
+        enforce(exists(inputFile), Log.build_msg("MSG089", inputFile));
 
         // process each of the input file
         foreach (string line; lines(File(inputFile, "r")))

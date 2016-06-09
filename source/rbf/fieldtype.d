@@ -57,7 +57,8 @@ alias Conv = TVALUE function(TVALUE);
 /***********************************
  * all possible field types for a field in a record-based file
  */
-enum AtomicType {
+enum AtomicType 
+{
 	decimal,
 	integer,
 	date,
@@ -66,7 +67,8 @@ enum AtomicType {
 }
 
 // list of all possible operators for filtering records
-enum Operator:string {
+enum Operator:string 
+{
     EQUAL = "=",
     NOT_EQUAL = "!=",
     GREATER_THAN = ">",
@@ -85,7 +87,8 @@ enum Operator:string {
  * extra information for a field type
 * in a record-based file
  */
-struct FieldTypeMeta {
+struct FieldTypeMeta 
+{
 	string name;                    /// name of the field type to refer to
 	AtomicType type;                /// field type converted to enum type
 	string stringType;              /// field type as read in the XML layout file
@@ -100,7 +103,8 @@ struct FieldTypeMeta {
 /***********************************
  * This field type class represents possible field types
  */
-class FieldType {
+class FieldType 
+{
 
 public:
 
@@ -182,24 +186,13 @@ public:
         // test if operator is in the admissible list of all operators
 		return meta.filterTestCallback(lvalue, cast(Operator)(op), rvalue);
 	}
-	///
-	unittest {
-		auto ft = new FieldType("D","decimal");
-		assert(ft.isFieldFilterMatched("50", ">", "40"));
-		assert(ft.isFieldFilterMatched("40", "=", "40"));
-		//assertThrown(ft.isFieldFilterMatched("40", "~", "40"));
-
-		ft = new FieldType("STRING","string");
-		assert(ft.isFieldFilterMatched("AABBBBB", "~", "^AA"));
-		assert(ft.isFieldFilterMatched("AABBBBB", "!~", "^BA"));
-	}
 
 	// templated tester for testing a value against a filter and an operator
 	static string testFilter(T)(string op) 
     {
 		return "condition = (to!T(lvalue)" ~ op ~ "to!T(rvalue));";
 	}
-	bool matchFilter(T)(in TVALUE lvalue, in Operator operator, in TVALUE rvalue) 
+	bool matchFilter(T)(in TVALUE lvalue, in Operator operator, in TVALUE rvalue) const
     {
         // resulting boolean condition
 		bool condition;
@@ -238,7 +231,7 @@ public:
 		}
 		catch (ConvException e) 
         {
-            throw new Exception(MSG031.format(rvalue, T.stringof)); 
+            throw new Exception(errorMessageList.error_msg["MSG031"].format(rvalue, T.stringof)); 
 		}
 
 		return condition;
@@ -299,13 +292,21 @@ public:
 ///
 unittest {
 
-	FieldType[string] map;
+    FieldType[string] map;
 
-	map["I"]   = new FieldType("I","decimal");
-	map["I"].meta.pattern = r"\d+";
-	map["A/N"] = new FieldType("A/N","string");
-	map["A/N"].meta.pattern = r"\w+";
+    map["I"]   = new FieldType("I","decimal");
+    map["I"].meta.pattern = r"\d+";
+    map["A/N"] = new FieldType("A/N","string");
+    map["A/N"].meta.pattern = r"\w+";
 
     assert(map["A/N"].asXML == `<fieldtype name="A/N" type="string"/>`);
 
+    auto ft = new FieldType("D","decimal");
+    assert(ft.isFieldFilterMatched("50", ">", "40"));
+    assert(ft.isFieldFilterMatched("40", "=", "40"));
+    //assertThrown(ft.isFieldFilterMatched("40", "~", "40"));
+
+    ft = new FieldType("STRING","string");
+    assert(ft.isFieldFilterMatched("AABBBBB", "~", "^AA"));
+    assert(ft.isFieldFilterMatched("AABBBBB", "!~", "^BA"));
 }

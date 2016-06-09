@@ -1,4 +1,4 @@
-module rbf.writers.identwriter;
+module rbf.writers.ascii.identwriter;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;

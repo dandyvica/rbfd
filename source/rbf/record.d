@@ -20,6 +20,7 @@ import rbf.errormsg;
 import rbf.field;
 import rbf.nameditems;
 import rbf.recordfilter;
+import rbf.log;
 import rbf.builders.xmlcore;
 
 struct RecordMeta 
@@ -58,7 +59,7 @@ public:
     this(in string name, in string description)
     {
         // name shouldn't be empty but description could be
-        enforce(name != "", MSG081);
+        enforce(name != "", Log.build_msg("MSG081"));
 
         // pre-allocate array of fields by calling the container's ctor
         super(name);
@@ -82,8 +83,8 @@ public:
     this(string[string] attr)
     {
         // name & description keys should exists
-        enforce("name" in attr, MSG082);
-        enforce("description" in attr, MSG083);
+        enforce("name" in attr, Log.build_msg("MSG082"));
+        enforce("description" in attr, Log.build_msg("MSG083"));
 
         this(attr["name"], attr["description"]);
     }
@@ -99,17 +100,18 @@ public:
 	 * record.value = "AAAAA0001000020DDDDDEEEEEFFFFFGGGGGHHHHHIIIIIJJJJJKKKKKLLLLLMMMMMNNNNN00010"
 	 * --------------
 	 */
-	@property void value(TVALUE s)
+	@property void value(TVALUE s) 
 	{
 		// add or strip chars from string if s has not the same length as record length
 		if (s.length < _length) 
         {
 			s = s.leftJustify(_length);
 		}
+        /*
 		else if (s.length > _length) 
         {
 			s = s[0.._length];
-		}
+		}*/
 
 		// assign each field to it's corresponding slice of s
 		this.each!(f => f.value = s[f.context.lowerBound..f.context.upperBound]);
@@ -170,7 +172,7 @@ public:
 	/**
 	 * concatenate field values for the fields having the same name
 	 */
-	@property TVALUE concat(string name)
+	@property TVALUE concat(in string name)
 	{
         auto values = array(this[name].map!(f => f.value));
         return values.reduce!((a,b) => a ~ b);
@@ -215,8 +217,11 @@ public:
                 auto i=1;
                 foreach(f1; list)
                 {
-                    //f1.context.alternateName = f1.name ~ to!string(i++);
-                    f1.context.alternateName = "%s%d".format(f1.name, i++);
+                    // build alternate name if not already specified in the layout file
+                    if (f1.context.alternateName == f1.name)
+                    {
+                        f1.context.alternateName = "%s%d".format(f1.name, i++);
+                    }
                 }
             }
         }
@@ -386,7 +391,6 @@ public:
         tag ~= newline ~ buildXmlTag("record", [], true);
 
         return tag;
-
     }
 }
 

@@ -24,6 +24,7 @@ import rbf.convert;
 import rbf.writers.writer : OutputFormat;
 import rbf.builders.xmltextbuilder;
 
+// import of some static text
 immutable helpString = import("help.txt");
 immutable authorString = import("author.txt");
 immutable IAformat = "%-50.50s : ";
@@ -89,7 +90,8 @@ struct CommandLineArgument
 /***********************************
  * This class is holding command line arguments
  */
-struct CommandLineOption {
+struct CommandLineOption 
+{
 
 public:
 
@@ -103,7 +105,8 @@ public:
 /***********************************
  * Process command line arguments
  */
- 	this(string[] argv) {
+ 	this(string[] argv) 
+    {
 
 		// print-out help
 		if (argv.length == 1)
@@ -152,7 +155,7 @@ public:
             // check arguments
             if (convOptions.convFormat == Format.temp && convOptions.templateFile == "")
             {
-                stderr.writeln(MSG090);
+                stderr.writeln("MSG090");
             }
             else
             {
@@ -181,7 +184,7 @@ public:
         {
             if (cmdLineArgs.outputFormat != OutputFormat.txt && cmdLineArgs.outputFormat != OutputFormat.box)
             {
-                stderr.writefln(MSG044);
+                stderr.writefln("MSG044");
                 exit(3);
             }
         }
@@ -190,7 +193,7 @@ public:
 		// append the suffix
 		if (cmdLineArgs.fieldFilterFile != "") 
         {
-			enforce(exists(cmdLineArgs.fieldFilterFile), MSG041.format(cmdLineArgs.fieldFilterFile));
+			enforce(exists(cmdLineArgs.fieldFilterFile), "MSG041".format(cmdLineArgs.fieldFilterFile));
 			filteredFields = cast(string)std.file.read(cmdLineArgs.fieldFilterFile);
 		} else if (cmdLineArgs.fieldFilter != "") 
         {
@@ -201,7 +204,7 @@ public:
 		if (cmdLineArgs.recordFilterFile != "") 
         {
             // file should exist though
-			enforce(exists(cmdLineArgs.recordFilterFile), MSG042.format(cmdLineArgs.recordFilterFile));
+			enforce(exists(cmdLineArgs.recordFilterFile), "MSG042".format(cmdLineArgs.recordFilterFile));
 			filteredRecords = new RecordFilter(cast(string)std.file.read(cmdLineArgs.recordFilterFile));
 		} 
         else if (cmdLineArgs.recordFilter != "") 
@@ -247,7 +250,7 @@ public:
             }
             catch (ConvException e) 
             {
-                stderr.writefln(MSG043, possibleValues);
+                stderr.writefln("MSG043", possibleValues);
                 exit(2);
             }
         }

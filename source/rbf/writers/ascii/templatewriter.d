@@ -1,4 +1,4 @@
-module rbf.writers.templatewriter;
+module rbf.writers.ascii.templatewriter;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
@@ -48,7 +48,7 @@ class TemplateWriter : Writer
          _layout = layout; 
 
 		// check for template file existence
-		enforce(exists(settings.outputConfiguration.templateFile), MSG078.format(settings.outputConfiguration.templateFile));
+		enforce(exists(settings.outputConfiguration.templateFile), Log.build_msg("MSG078", settings.outputConfiguration.templateFile));
 
         // open file and load data into string
 		_tempData = cast(string)std.file.read(settings.outputConfiguration.templateFile);
@@ -72,7 +72,7 @@ class TemplateWriter : Writer
                 }
             }
         }
-        log.info(MSG080, settings.outputConfiguration.templateFile);
+        log.info("MSG080", settings.outputConfiguration.templateFile);
 	}
 
     override void build(string outputFileName) {}

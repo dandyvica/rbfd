@@ -1,4 +1,4 @@
-module rbf.writers.sqlpostgres;
+module rbf.writers.sql.sqlpostgres;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
@@ -18,7 +18,7 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
-import rbf.writers.sqlcommon;
+import rbf.writers.sql.sqlcommon;
 
 extern (C) {
     // from PG standard lib
@@ -42,8 +42,9 @@ class SqlPGWriter : Writer
 
 private:
 
-    string[string] _insertStmt;         /// list of SQL INSERT statements for each record
-    string[string] _tableNames;         /// aa to store record names vs table names
+    string[string] _insertStmt;          /// list of SQL INSERT statements for each record
+    string[string] _copyStmt;            /// list of SQL INSERT statements for each record
+    string[string] _tableNames;          /// aa to store record names vs table names
     typeof(settings.outputConfiguration.sqlInsertPool) _trxCounter;     /// pool counter for grouping INSERTs
     string[][string] _groupedInsert;
     string _lastSeq;
@@ -53,7 +54,7 @@ private:
     // connect to PG
     void _connect()
     {
-        log.log(LogLevel.INFO, MSG092, PQlibVersion(), settings.outputConfiguration.connectionString);
+        log.info("MSG092", PQlibVersion(), settings.outputConfiguration.connectionString);
 
         // connect to PG
         rbfPGConnect(toStringz(settings.outputConfiguration.connectionString));
@@ -62,14 +63,14 @@ private:
         if (status != 0)
         {
             // get error message
-            auto error_msg = fromStringz(rbfPGGetErrorMsg()).dup.strip;
+            auto sql_error_msg = fromStringz(rbfPGGetErrorMsg()).dup.strip;
 
             // end up gracefully
             rbfPGExit();
 
             // log error and abort
-            log.log(LogLevel.FATAL, MSG047, error_msg);
-            throw new Exception(MSG093.format(status, settings.outputConfiguration.connectionString, error_msg));
+            log.fatal("MSG047", sql_error_msg);
+            throw new Exception(errorMessageList.error_msg["MSG093"].format(status, settings.outputConfiguration.connectionString, sql_error_msg));
         }
 
         // set warning message to get rid of NOTICE messages
@@ -83,6 +84,16 @@ private:
         foreach (rec; layout)
         {
             _insertStmt[rec.name] = SQL_INSERT_WITH_ID.format(_tableNames[rec.name], _lastSeq, "%s");
+        }
+    }
+
+    // build all INSERT statements
+    void _buildCopyStatements(Layout layout)
+    {
+        immutable SQL_COPY_WITH_ID = "COPY %s FROM STDIN WITH FORMAT CSV ";
+        foreach (rec; layout)
+        {
+            _copyStmt[rec.name] = SQL_COPY_WITH_ID.format(_tableNames[rec.name]);
         }
     }
 
@@ -141,7 +152,7 @@ private:
         auto nbTables = 0;
 
         // creation of all tables
-        log.log(LogLevel.INFO, MSG095, settings.outputConfiguration.sqlInsertPool, settings.outputConfiguration.sqlGroupedInsertPool);
+        log.info("MSG095", settings.outputConfiguration.sqlInsertPool, settings.outputConfiguration.sqlGroupedInsertPool);
 
         // create all tables = one table per record
         _executeStmt("BEGIN TRANSACTION");
@@ -152,10 +163,10 @@ private:
 
             // build statement
             auto stmt = SqlCommon.buildCreateTableStatement(rec, layout.meta.schema);
-            log.log(LogLevel.TRACE, MSG028, stmt);
+            log.trace("MSG028", stmt);
 
             // execute statement
-            log.log(LogLevel.INFO, MSG025, rec.name);
+            log.info("MSG025", rec.name);
             _executeStmt(stmt);
 
             // one more table created
@@ -180,7 +191,7 @@ private:
         }
 
         // log tables creation
-        log.log(LogLevel.INFO, MSG022, nbTables);
+        log.info("MSG022", nbTables);
 
         // create all tables now!
         _executeStmt("COMMIT TRANSACTION");
@@ -231,7 +242,7 @@ private:
                 // conversion error catched
                 catch (ConvException e) 
                 {
-                    log.log(LogLevel.INFO, MSG020, rec.meta.sourceLineNumber, rec.name, f.name, f.value, f.type.meta.type);
+                    log.info("MSG020", rec.meta.sourceLineNumber, rec.name, f.name, f.value, f.type.meta.type);
 
                     // instead, use a NULL value
                     fields ~= "NULL";
@@ -249,15 +260,35 @@ private:
         return insertStmt.format(tableName, data.join(","));
     }
 
+    void _writeWithInsert(Record rec)
+    {
+        // build grouped statements per record
+        _groupedInsert[rec.name] ~= _buildInsertValues(rec);
+        if (_groupedInsert[rec.name].length == settings.outputConfiguration.sqlGroupedInsertPool)
+        {
+            //auto largeInsert = "INSERT INTO %s VALUES %s".format(_tableNames[rec.name], _groupedInsert[rec.name].join(","));
+            auto largeInsert = _buildLargeInsert(_tableNames[rec.name], _groupedInsert[rec.name]);
+            _executeStmt("BEGIN TRANSACTION");
+            _executeStmt(largeInsert);
+            //log.info("stmt for record name %s", rec.name);
+            _executeStmt("COMMIT TRANSACTION");
+            _groupedInsert[rec.name] = [];
+        }
+    }
+
+    void _writeWithCopy(Record rec)
+    {
+    }
+
     // execute a PG SQL statement
     void _executeStmt(string stmt)
     {
         auto rc = rbfPGExecStmt(stmt.toStringz);
         if (rc != 1)
         {
-            auto error_msg = fromStringz(rbfPGGetErrorMsg()).dup.strip;
-            log.log(LogLevel.FATAL, MSG094, rc, stmt, error_msg);
-            throw new Exception(MSG094.format(rc, stmt, error_msg));
+            auto sql_error_msg = fromStringz(rbfPGGetErrorMsg()).dup.strip;
+            log.fatal("MSG094", rc, stmt, sql_error_msg);
+            throw new Exception(errorMessageList.error_msg["MSG094"].format(rc, stmt, sql_error_msg));
         }
     }
 
@@ -303,18 +334,7 @@ public:
     // identity is just printing out the same values than read
 	override void write(Record rec) 
     {
-        // build grouped statements per record
-        _groupedInsert[rec.name] ~= _buildInsertValues(rec);
-        if (_groupedInsert[rec.name].length == settings.outputConfiguration.sqlGroupedInsertPool)
-        {
-            //auto largeInsert = "INSERT INTO %s VALUES %s".format(_tableNames[rec.name], _groupedInsert[rec.name].join(","));
-            auto largeInsert = _buildLargeInsert(_tableNames[rec.name], _groupedInsert[rec.name]);
-            _executeStmt("BEGIN TRANSACTION");
-            _executeStmt(largeInsert);
-            log.info("stmt for record name %s", rec.name);
-            _executeStmt("COMMIT TRANSACTION");
-            _groupedInsert[rec.name] = [];
-        }
+        _writeWithInsert(rec);
     }
 
     // identity is just printing out the same values than read

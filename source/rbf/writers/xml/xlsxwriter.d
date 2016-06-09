@@ -1,4 +1,4 @@
-module rbf.writers.xlsxwriter;
+module rbf.writers.xml.xlsxwriter;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
@@ -20,7 +20,7 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
-import rbf.writers.xlsxformat;
+import rbf.writers.xml.xlsxformat;
 
 class XLSXWriter : Writer 
 {
@@ -34,30 +34,6 @@ package:
 	Workbook _workbookFile;
 	Rels _relsFile;
 	WorkbookRels _workbookRelsFile;
-
-	/** 
-     * Creation of a zip file (xlsx = zip file) from all created files
-     *
-	 */
-    /*
-	void _createZip() 
-    {
-		// ch dir to XLSX directory
-		chdir(_xlsxDir);
-
-        // log
-        stderr.writeln(MSG011.format(_xlsxFilename));
-
-		// create zip
-		auto result = std.process.execute([outputFeature.zipper, "-r", "../" ~ _xlsxFilename, "."]);
-		if (result.status != 0)
-			throw new Exception("zip command failed:\n", result.output);
-
-		// now it's time to remove all files
-		chdir("..");
-		rmdirRecurse(_xlsxDir);
-	}
-    */
 
     // create a zip file from a list of files
     void _buildZip()
@@ -90,7 +66,7 @@ package:
         auto entries = dirEntries("xl/worksheets", "*.xml", SpanMode.shallow);
         foreach (f; entries)
         {
-            log.log(LogLevel.INFO, MSG059, f.name);
+            log.info("MSG059", f.name);
             zip.addMember(_addArchive(f.name));
         }
 
@@ -102,10 +78,10 @@ package:
 
         // finally create zip
         std.file.write(_xlsxFilename, compressedData);
-        log.log(LogLevel.INFO, MSG011, _xlsxFilename);
+        log.info("MSG011", _xlsxFilename);
 
 		// now it's time to remove all files
-        log.log(LogLevel.INFO, MSG060);
+        log.info("MSG060");
 		rmdirRecurse(_xlsxDir);
     }
 
@@ -162,8 +138,8 @@ public:
 		super(excelFileName, false);
 
         // log
-        //stderr.writeln(MSG012);
-        log.log(LogLevel.INFO, MSG012);
+        //stderr.writeln("MSG012");
+        log.info("MSG012");
 
 		// save file name
 		_xlsxFilename = baseName(excelFileName);

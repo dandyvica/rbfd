@@ -1,4 +1,4 @@
-module rbf.writers.txtwriter;
+module rbf.writers.ascii.txtwriter;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;

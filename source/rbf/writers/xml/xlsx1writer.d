@@ -1,4 +1,4 @@
-module rbf.writers.xlsx1writer;
+module rbf.writers.xml.xlsx1writer;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
@@ -17,8 +17,8 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
-import rbf.writers.xlsxformat;
-import rbf.writers.xlsxwriter;
+import rbf.writers.xml.xlsxformat;
+import rbf.writers.xml.xlsxwriter;
 
 class XLSX1Writer : XLSXWriter 
 {

@@ -1,4 +1,4 @@
-module rbf.writers.xlsx2writer;
+module rbf.writers.xml.xlsx2writer;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;
@@ -18,10 +18,11 @@ import rbf.field;
 import rbf.record;
 import rbf.layout;
 import rbf.writers.writer;
-import rbf.writers.xlsxformat;
-import rbf.writers.xlsxwriter;
+import rbf.writers.xml.xlsxformat;
+import rbf.writers.xml.xlsxwriter;
 
-class XLSX2Writer : XLSXWriter {
+class XLSX2Writer : XLSXWriter 
+{
 private:
 
 	string _xlsxSheetName;	  /// Excel worksheet only sheet name

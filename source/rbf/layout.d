@@ -96,7 +96,7 @@ private:
 				break;
 
 			default:
-				throw new Exception(MSG036.format(funcType, meta.file));
+                throw new Exception(errorMessageList.error_msg["MSG036"].format(funcType, meta.file));
 		}
 	}
 
@@ -115,7 +115,7 @@ public:
 	this(string xmlFile)
 	{
 		// check for XML file existence
-		enforce(exists(xmlFile), MSG037.format(xmlFile));
+		enforce(exists(xmlFile), "MSG037".format(xmlFile));
 
 		// save layout metadata
 		meta.file = xmlFile;
@@ -154,7 +154,7 @@ public:
             // build mapper which must exist othetwise we can't read a rb-file
             if ("mapper" !in xml.tag.attr || xml.tag.attr["mapper"] == "") 
             {
-                throw new Exception(MSG038);
+                throw new Exception("MSG038");
             }
 
             // now we can build the mapper hash function
@@ -183,7 +183,7 @@ public:
                 // log creation of field types
                 with(ftype[ftName].meta) 
                 {
-                    log.log(LogLevel.INFO, MSG056, name, stringType, pattern, format);
+                    log.info("MSG056", name, stringType, pattern, format);
                 }
 			}
 		};
@@ -233,7 +233,7 @@ public:
 			// the field type must be defined otherwise it's not possible to continue
 			if (type !in ftype) 
             {
-				throw new Exception(MSG062.format(type, xml.tag.attr["name"]));
+				throw new Exception("MSG062".format(type, xml.tag.attr["name"]));
 			}
 
 			// now create field object with <field> attributes 
@@ -252,6 +252,9 @@ public:
             // if a specific format defined for this field, override the one of the field type
             if ("format" in xml.tag.attr) field.fieldFormat = xml.tag.attr["format"];
 
+            // we can override alternate name
+            if ("alternateName" in xml.tag.attr) field.context.alternateName = xml.tag.attr["alternateName"];
+
 			// finally, add field to our record
 			this[recName] ~= field;
 		};
@@ -266,7 +269,7 @@ public:
 		}
 
         // log creation of layout
-        log.log(LogLevel.INFO, MSG023, xmlFile, this.size);
+        log.info("MSG023", xmlFile, this.size);
 	}
 	///
 	unittest {
@@ -380,7 +383,7 @@ public:
                 // check if record name is in layout
                 if (recName !in this)
                 {
-                    throw new Exception(MSG055.format(recName));
+                    throw new Exception("MSG055".format(recName));
                 }
 
 				// build field list
@@ -411,7 +414,7 @@ public:
 
 			// call overloaded func
 			keepOnly(recordMap);
-            log.info(MSG077, recordMap);
+            log.info("MSG077", recordMap);
 
 	}
 	///
@@ -442,7 +445,7 @@ public:
     {
 		// check first if all fields are in layout
 		fieldList.each!(
-			name => enforce(isFieldInLayout(name), MSG054.format(name, meta.file))
+			name => enforce(isFieldInLayout(name), "MSG054".format(name, meta.file))
 		);
 
 		// a field might not belong to a record. As the remove() method from container
@@ -507,7 +510,7 @@ public:
                 if (rec.length != meta.length) 
                 {
                     validates = false;
-                    log.warning(MSG034, rec.name, rec.length, meta.length);
+                    log.warning("MSG034", rec.name, rec.length, meta.length);
                 }
             }
         }
@@ -519,12 +522,12 @@ public:
                 if (rec.length != rec.meta.declateLength) 
                 {
                     validates = false;
-                    log.warning(MSG034, rec.name, rec.length, rec.meta.declateLength);
+                    log.warning("MSG034", rec.name, rec.length, rec.meta.declateLength);
                 }
             }
         }
         if (validates) 
-            log.info(MSG035, meta.file);
+            log.info("MSG035", meta.file);
     }
 
 	/**

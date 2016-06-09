@@ -1,4 +1,4 @@
-module rbf.writers.tagwriter;
+module rbf.writers.ascii.tagwriter;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;

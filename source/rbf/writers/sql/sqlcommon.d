@@ -1,4 +1,4 @@
-module rbf.writers.sqlcommon;
+module rbf.writers.sql.sqlcommon;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
 import std.stdio;

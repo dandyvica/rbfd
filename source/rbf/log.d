@@ -1,20 +1,20 @@
 module rbf.log;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
-import std.stdio;
-import std.file;
-import std.string;
-import std.conv;
 import std.algorithm;
-import std.range;
+import std.conv;
 import std.datetime;
-import std.process;
 import std.exception;
+import std.file;
+import std.process;
+import std.range;
+import std.stdio;
+import std.string;
 
 import rbf.errormsg;
 
 // global log variable
-Log log;
+Log log, logerr;
 
 // log file name if not possible to get it from configuration or not possible to open
 // the location
@@ -31,6 +31,27 @@ private:
     File _logHandle;            // handle on log file
     string _trace;              // to enable trace, need to define RBF_LOG environment variable
 
+    // log with flexible list of arguments
+    void _log(LogLevel, string, A...)(LogLevel level, string index, string msg, A args)
+    {
+        if (level != LogLevel.TRACE || _trace != "")
+        {
+            // don't write out log header when console output
+            if (_logHandle != stdout && _logHandle != stderr)
+            {
+                _logHandle.writef("%-28.28s - [%s - %s] - ", to!string(Clock.currTime), to!string(level), index);
+            }
+            // just output message index and text
+            else
+            {
+                _logHandle.writef("%s - ", index);
+            }
+            _logHandle.writefln(msg, args);
+            _logHandle.flush;
+        }
+    }
+
+
 public:
 
     // create log file
@@ -44,7 +65,7 @@ public:
         catch (ErrnoException)
         {
             _logHandle = File(defaultLogFile, "a");
-            writefln(MSG068, defaultLogFile);
+            logerr.info("MSG068", defaultLogFile);
         }
         _trace = environment.get("RBF_TRACE", "");
     }
@@ -55,23 +76,20 @@ public:
         _logHandle = fh;
     }
 
-    // log with flexible list of arguments
-    void log(LogLevel, string, A...)(LogLevel level, string msg, A args)
-    {
-        if (level != LogLevel.TRACE || _trace != "")
-        {
-            _logHandle.writef("%-28.28s - [%s] - ", to!string(Clock.currTime), to!string(level));
-            _logHandle.writefln(msg, args);
-            _logHandle.flush;
-        }
-    }
-
     // useful helpers
-    void trace(string, A...)(string msg, A args) { log(LogLevel.TRACE, msg, args); }
-    void info(string, A...)(string msg, A args) { log(LogLevel.INFO, msg, args); }
-    void warning(string, A...)(string msg, A args) { log(LogLevel.WARNING, msg, args); }
-    void error(string, A...)(string msg, A args) { log(LogLevel.ERROR, msg, args); }
-    void fatal(string, A...)(string msg, A args) { log(LogLevel.FATAL, msg, args); }
+    void trace(string, A...)(string message_index, A args)   { _log(LogLevel.TRACE, message_index, errorMessageList.error_msg[message_index], args); }
+    void info(string, A...)(string message_index, A args)    { _log(LogLevel.INFO, message_index, errorMessageList[message_index], args); }
+    void warning(string, A...)(string message_index, A args) { _log(LogLevel.WARNING, message_index, errorMessageList.error_msg[message_index], args); }
+    void error(string, A...)(string message_index, A args)   { _log(LogLevel.ERROR, message_index, errorMessageList.error_msg[message_index], args); }
+    void fatal(string, A...)(string message_index, A args)   { _log(LogLevel.FATAL, message_index, errorMessageList.error_msg[message_index], args); }
+
+    // special use for enforcing conditions
+    static auto build_msg(string, A...)(string message_index, A args)
+    {
+        // build message
+        auto msg = errorMessageList.error_msg[message_index].format(args);
+        return "%s: %s".format(message_index, msg);
+    }
 
     // close log file
     ~this() 

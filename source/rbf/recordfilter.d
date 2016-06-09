@@ -14,6 +14,7 @@ import rbf.errormsg;
 import rbf.fieldtype;
 import rbf.field;
 import rbf.options;
+import rbf.log;
 
 // useful structure mapping a filter clause. Ex: FIELD == this is my field
 struct RecordClause 
@@ -47,33 +48,6 @@ public:
                 r")\s*(.+)$"
         );
 
-        /*
-        // split according to separator
-        auto splitted = (separator == std.ascii.newline) ? array(recordFilter.lineSplitter) : recordFilter.split(separator);
-
-        // read filter file
-        foreach (cond; splitted.filter!(s => s.strip != "").filter!(s => !s.startsWith("#")))
-        {
-            // split filter clause into individual data
-            auto m = matchAll(cond, reg);
-
-            // create clause if we have matched is condition
-            if (!m.empty)
-            {
-                // check if operator is supported
-                auto op = m.captures[2].strip();
-
-                if (!canFind(cast(string[])[ EnumMembers!Operator ], op))
-                {
-                    throw new Exception(MSG030.format(op, cast(string[])[ EnumMembers!Operator ]));
-                }
-
-                // build list of clauses
-                _recordFitlerClause ~= RecordClause(m.captures[1].strip(), op, m.captures[3].strip());
-            }
-        }
-        */
-
         // get each match and create clause
         foreach (m; splitIntoAtoms(recordFilter, separator, reg))
         {
@@ -85,7 +59,7 @@ public:
 
                 if (!canFind(cast(string[])[ EnumMembers!Operator ], op))
                 {
-                    throw new Exception(MSG030.format(op, cast(string[])[ EnumMembers!Operator ]));
+                    throw new Exception(errorMessageList.error_msg["MSG030"].format(op, cast(string[])[ EnumMembers!Operator ]));
                 }
 
                 // build list of clauses
