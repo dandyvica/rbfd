@@ -59,7 +59,7 @@ public:
     this(in string name, in string description)
     {
         // name shouldn't be empty but description could be
-        enforce(name != "", Log.build_msg("MSG081"));
+        enforce(name != "", Log.build_msg(Message.MSG081));
 
         // pre-allocate array of fields by calling the container's ctor
         super(name);
@@ -83,8 +83,8 @@ public:
     this(string[string] attr)
     {
         // name & description keys should exists
-        enforce("name" in attr, Log.build_msg("MSG082"));
-        enforce("description" in attr, Log.build_msg("MSG083"));
+        enforce("name" in attr, Log.build_msg(Message.MSG082));
+        enforce("description" in attr, Log.build_msg(Message.MSG083));
 
         this(attr["name"], attr["description"]);
     }

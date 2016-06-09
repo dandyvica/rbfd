@@ -66,7 +66,7 @@ package:
         auto entries = dirEntries("xl/worksheets", "*.xml", SpanMode.shallow);
         foreach (f; entries)
         {
-            log.info("MSG059", f.name);
+            log.info(Message.MSG059, f.name);
             zip.addMember(_addArchive(f.name));
         }
 
@@ -78,10 +78,10 @@ package:
 
         // finally create zip
         std.file.write(_xlsxFilename, compressedData);
-        log.info("MSG011", _xlsxFilename);
+        log.info(Message.MSG011, _xlsxFilename);
 
 		// now it's time to remove all files
-        log.info("MSG060");
+        log.info(Message.MSG060);
 		rmdirRecurse(_xlsxDir);
     }
 
@@ -138,8 +138,7 @@ public:
 		super(excelFileName, false);
 
         // log
-        //stderr.writeln("MSG012");
-        log.info("MSG012");
+        log.info(Message.MSG012);
 
 		// save file name
 		_xlsxFilename = baseName(excelFileName);

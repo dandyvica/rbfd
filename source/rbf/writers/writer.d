@@ -74,7 +74,7 @@ public:
 			if (create) 
             {
                 _fh = File(_outputFileName, "w");
-                log.info("MSG019", outputFileName);
+                log.info(Message.MSG019, outputFileName);
             }
 		}
 		else

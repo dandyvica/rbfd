@@ -128,7 +128,7 @@ public:
         // if file name is passed as an argument to the ctor, take it or otherwise try possible locations
         if (xmlConfigFile != "")
         {
-            logerr.info("MSG071", xmlConfigFile); 
+            logerr.info(Message.MSG071, xmlConfigFile); 
             settingsFile = xmlConfigFile;
         }
         else
@@ -140,7 +140,7 @@ public:
         auto settingsFilePath = dirName(settingsFile) ~ "/";
 
         // ensure file exists
-        enforce(exists(settingsFile), "MSG004".format(settingsFile));
+        enforce(exists(settingsFile), Message.MSG004.format(settingsFile));
 
         // open XML settings file and load it into a string
         string s = cast(string)std.file.read(settingsFile);
@@ -220,7 +220,7 @@ public:
         xml.parse();
 
         // log info in configuration file
-        log.info("MSG027", settingsFile);
+        log.info(Message.MSG027, settingsFile);
 
     }
 
@@ -241,7 +241,7 @@ private:
         auto rbfconf = environment.get(xmlSettingsFileEnvVar, "");
         if (rbfconf != "") 
         {
-            logerr.info("MSG067", rbfconf, xmlSettingsFileEnvVar);
+            logerr.info(Message.MSG067, rbfconf, xmlSettingsFileEnvVar);
             return rbfconf;
         }
 
@@ -249,7 +249,7 @@ private:
         auto suspectedSettingsFile = buildNormalizedPath(getcwd, xmlSettingsFile);
         if (exists(suspectedSettingsFile)) 
         {
-            logerr.info("MSG069", suspectedSettingsFile); 
+            logerr.info(Message.MSG069, suspectedSettingsFile); 
             return suspectedSettingsFile;
         }
         // or path given by an env variable
@@ -269,7 +269,7 @@ private:
             }
         }
 
-        logerr.info("MSG070", settingsFile); 
+        logerr.info(Message.MSG070, settingsFile); 
         return settingsFile;
 
     }

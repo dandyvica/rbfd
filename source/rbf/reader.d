@@ -58,7 +58,7 @@ public:
 	this(in string rbFile, Layout layout, MapperFunc recIndentifier = null)
 	{
 		// record-based input file must exist
-		enforce(exists(rbFile), Log.build_msg("MSG051", rbFile));
+		enforce(exists(rbFile), Log.build_msg(Message.MSG051, rbFile));
 
 		// save file name and opens file for reading
 		_rbFile = rbFile;
@@ -145,11 +145,11 @@ public:
                recordName = _layout.buildFieldNameWhenRoot(recordName, _sectionName);
                if (recordName !in _layout)
                {
-               log.warning("MSG018", stat.nbReadLines, recordName, 50, line[0..50]);
+               log.warning(Message.MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
                return null;
                }
              */
-            log.warning("MSG018", stat.nbReadLines, recordName, 50, line[0..50]);
+            log.warning(Message.MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
             return null;
         }
 
@@ -182,7 +182,7 @@ public:
             {
                 if (f.value != "" && !f.matchPattern) 
                 {
-                    log.warning("MSG002", stat.nbReadLines, recordName, f.contextualInfo, f.value, f.pattern);
+                    log.warning(Message.MSG002, stat.nbReadLines, recordName, f.contextualInfo, f.value, f.pattern);
                     _nbBadCheck++;
                 }
             }

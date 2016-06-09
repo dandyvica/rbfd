@@ -27,12 +27,12 @@ struct Statistics
 
     void finalStats(ref Log log)
     {
-		log.info("MSG014", nbReadLines, nbReadRecords, nbWrittenRecords);
+		log.info(Message.MSG014, nbReadLines, nbReadRecords, nbWrittenRecords);
     }
 
     void progressBarStats(Counter nbGuessedRecords, ref Log log)
     {
-        stderr.writef(errorMessageList.error_msg["MSG066"].format(nbReadRecords, nbGuessedRecords, to!float(nbReadRecords)/nbGuessedRecords*100, nbMatchedRecords));
+        stderr.writef(Message.MSG066.format(nbReadRecords, nbGuessedRecords, to!float(nbReadRecords)/nbGuessedRecords*100, nbMatchedRecords));
     }
 
     void detailedStats(ref Log log)
@@ -41,7 +41,7 @@ struct Statistics
         {
             if (nbRecs[recname] != 0) 
             {
-                log.info("MSG096", recname, nbRecs[recname]);
+                log.info(Message.MSG096, recname, nbRecs[recname]);
             }
         }
     }

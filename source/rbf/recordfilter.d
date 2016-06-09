@@ -59,7 +59,7 @@ public:
 
                 if (!canFind(cast(string[])[ EnumMembers!Operator ], op))
                 {
-                    throw new Exception(errorMessageList.error_msg["MSG030"].format(op, cast(string[])[ EnumMembers!Operator ]));
+                    throw new Exception(Message.MSG030.format(op, cast(string[])[ EnumMembers!Operator ]));
                 }
 
                 // build list of clauses

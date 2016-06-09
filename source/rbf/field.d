@@ -104,10 +104,10 @@ public:
 	this(string[string] attr)
 	{
         // name & description keys should exists
-        enforce("name" in attr, "MSG084");
-        enforce("description" in attr, "MSG085");
-        enforce("length" in attr, "MSG086");
-        enforce("type" in attr, "MSG087");
+        enforce("name" in attr, Message.MSG084);
+        enforce("description" in attr, Message.MSG085);
+        enforce("length" in attr, Message.MSG086);
+        enforce("type" in attr, Message.MSG087);
 
         // just call regular ctor
         this(attr["name"], attr["description"], new FieldType(attr["type"], "string"), to!size_t(attr["length"]));
@@ -129,7 +129,7 @@ public:
 	{
         // split string into individual atoms
 		auto f = csvdata.split(delimiter);
-		enforce(f.length == 5, "MSG010".format(f.length, 5));
+		enforce(f.length == 5, Message.MSG010.format(f.length, 5));
 
 		// create object calling the original ctor
 		this(f[0], f[1], new FieldType(f[2],f[3]), to!size_t(f[4]));
@@ -210,7 +210,7 @@ public:
     {
 		with(context) 
         {
-			return("MSG003".format(name, description, length, type, lowerBound, upperBound, rawValue, value, offset, index));
+			return(Message.MSG003.format(name, description, length, type, lowerBound, upperBound, rawValue, value, offset, index));
 		}
 	}
     auto contextualInfo()

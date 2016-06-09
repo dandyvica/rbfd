@@ -54,7 +54,7 @@ private:
         _sqlCode = sqlite3_exec(_db, toStringz(stmt), null, null, null); 
         if (_sqlCode != SQLITE_OK) 
         {
-            logerr.info("MSG063", stmt, _sqlCode, fromStringz(sqlite3_errmsg(_db)));
+            logerr.info(Message.MSG063, stmt, _sqlCode, fromStringz(sqlite3_errmsg(_db)));
         }
     }
 
@@ -69,13 +69,13 @@ private:
     {
         auto bind = array(repeat("?", rec.size));
         auto stmt = SQL_INSERT.format(SqlCommon.buildTableName(rec.name), bind.join(","));
-        log.trace("MSG028", stmt);
+        log.trace(Message.MSG028, stmt);
 
         sqlite3_stmt *compiledStmt;
         _sqlCode = sqlite3_prepare_v2(_db, toStringz(stmt), to!int(stmt.length+1), &compiledStmt, null);
         if (_sqlCode != SQLITE_OK) 
         {
-            logerr.info("MSG029", _sqlCode, stmt, fromStringz(sqlite3_errmsg(_db)));
+            logerr.info(Message.MSG029, _sqlCode, stmt, fromStringz(sqlite3_errmsg(_db)));
         }
         else
         {
@@ -126,7 +126,7 @@ private:
             // conversion error catched
             catch (ConvException e) 
             {
-                log.info("MSG020", rec.meta.sourceLineNumber, rec.name, f.name, f.value, f.type.meta.type);
+                log.info(Message.MSG020, rec.meta.sourceLineNumber, rec.name, f.name, f.value, f.type.meta.type);
 
                 // instead, use a NULL value
                 _sqlCode = sqlite3_bind_null(_compiledInsertStmt[rec.name], to!int(f.context.index+1));
@@ -135,7 +135,7 @@ private:
             // test successful bind()
             if (_sqlCode != SQLITE_OK)
             {
-                logerr.info("MSG064".format(_sqlCode, fromStringz(sqlite3_errmsg(_db))));
+                logerr.info(Message.MSG064.format(_sqlCode, fromStringz(sqlite3_errmsg(_db))));
             }
         }
     }
@@ -150,8 +150,8 @@ private:
     void _execStmtFile(string sqlStmtFile)
     {
 		// check for SQL file existence
-		enforce(exists(sqlStmtFile), Log.build_msg("MSG073", sqlStmtFile));
-        log.info("MSG074", sqlStmtFile);
+		enforce(exists(sqlStmtFile), Log.build_msg(Message.MSG073, sqlStmtFile));
+        log.info(Message.MSG074, sqlStmtFile);
 
         // begin transaction
         _executeStmt("BEGIN IMMEDIATE TRANSACTION");
@@ -208,13 +208,13 @@ public:
 	{
         // call root class (overwrite the file)
 		super(databaseName);
-        log.info("MSG052", fromStringz(sqlite3_libversion()));
+        log.info(Message.MSG052, fromStringz(sqlite3_libversion()));
 
         _sqlCode = sqlite3_open(toStringz(databaseName), &_db);
         if(_sqlCode != SQLITE_OK)
         {
-            log.fatal("MSG047", sqlite3_errmsg(_db));
-            throw new Exception(errorMessageList.error_msg["MSG048"].format(_sqlCode, databaseName, sqlite3_errmsg(_db)));
+            log.fatal(Message.MSG047, sqlite3_errmsg(_db));
+            throw new Exception(Message.MSG048.format(_sqlCode, databaseName, sqlite3_errmsg(_db)));
         }
 	}
 
@@ -233,7 +233,7 @@ public:
         auto nbTables = 0;
 
         // creation of all tables
-        log.info("MSG021", settings.outputConfiguration.sqlInsertPool);
+        log.info(Message.MSG021, settings.outputConfiguration.sqlInsertPool);
 
         // create all tables = one table per record
         _executeStmt("BEGIN IMMEDIATE TRANSACTION");
@@ -244,10 +244,10 @@ public:
 
             // build statement
             auto stmt = SqlCommon.buildCreateTableStatement(rec);
-            log.trace("MSG028", stmt);
+            log.trace(Message.MSG028, stmt);
 
             // execute statement
-            log.info("MSG025", rec.name);
+            log.info(Message.MSG025, rec.name);
             _executeStmt(stmt);
 
             // one more table created
@@ -261,12 +261,12 @@ public:
         _executeStmt(SQL_LAYOUT);
 
         // log tables creation
-        log.info("MSG025", "LAYOUT");
-        log.info("MSG022", nbTables+1);
+        log.info(Message.MSG025, "LAYOUT");
+        log.info(Message.MSG022, nbTables+1);
 
         // now populate LAYOUT table for layout object
         _fillLayout(layout);
-        log.info("MSG072", "LAYOUT");
+        log.info(Message.MSG072, "LAYOUT");
 
         // create all tables now!
         _executeStmt("COMMIT TRANSACTION");
@@ -274,7 +274,7 @@ public:
         // if any, execute pre file statement
         if (settings.outputConfiguration.sqlPreFile != "")
         { 
-            log.info("MSG075", settings.outputConfiguration.sqlPreFile);
+            log.info(Message.MSG075, settings.outputConfiguration.sqlPreFile);
             _execStmtFile(settings.outputConfiguration.sqlPreFile);
         }
     }
@@ -305,7 +305,7 @@ public:
         log.trace("%s", _compiledInsertStmt[rec.name]);
         if (_sqlCode != SQLITE_DONE) 
         {
-            logerr.info("MSG046", _sqlCode, fromStringz(sqlite3_errmsg(_db)));
+            logerr.info(Message.MSG046, _sqlCode, fromStringz(sqlite3_errmsg(_db)));
         }
         else
         {
@@ -346,7 +346,7 @@ public:
         // if any, execute post file statement
         if (settings.outputConfiguration.sqlPostFile != "")
         {
-            log.info("MSG076", settings.outputConfiguration.sqlPostFile);
+            log.info(Message.MSG076, settings.outputConfiguration.sqlPostFile);
             _execStmtFile(settings.outputConfiguration.sqlPostFile);
         }
 

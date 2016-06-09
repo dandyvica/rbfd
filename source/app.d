@@ -48,8 +48,8 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// start logging data
         //---------------------------------------------------------------------------------
-        log.info("MSG061", argv);
-        log.info("MSG050", totalCPUs);
+        log.info(Message.MSG061, argv);
+        log.info(Message.MSG050, totalCPUs);
 
         //---------------------------------------------------------------------------------
 		// define new layout corresponding to the requested layout given from the command line
@@ -65,7 +65,7 @@ int main(string[] argv)
 			// only keep specified fields
             //---------------------------------------------------------------------------------
 			layout.keepOnly(settings.cmdLineOptions.filteredFields, newline);
-            log.info("MSG026", layout.size);
+            log.info(Message.MSG026, layout.size);
 		}
         // list of records/fields given from the command line
 		if (settings.cmdLineOptions.isFieldFilterSet) 
@@ -74,7 +74,7 @@ int main(string[] argv)
 			// only keep specified fields
             //---------------------------------------------------------------------------------
 			layout.keepOnly(settings.cmdLineOptions.filteredFields, ";");
-            log.info("MSG026", layout.size);
+            log.info(Message.MSG026, layout.size);
 		}
 
         //---------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ int main(string[] argv)
 		// line and the configuration found in XML properties file
         //---------------------------------------------------------------------------------
 		auto reader = new Reader(settings.cmdLineOptions.cmdLineArgs.inputFileName, layout);
-        log.info("MSG016", settings.cmdLineOptions.cmdLineArgs.inputFileName, reader.inputFileSize);
+        log.info(Message.MSG016, settings.cmdLineOptions.cmdLineArgs.inputFileName, reader.inputFileSize);
 
         //---------------------------------------------------------------------------------
 		// check field patterns?
@@ -123,7 +123,7 @@ int main(string[] argv)
             {
                 if (!layout.isFieldInLayout(rf.fieldName))
                 {
-                    throw new Exception("MSG024".format(rf.fieldName));
+                    throw new Exception(Message.MSG024.format(rf.fieldName));
                 }
             }
         }
@@ -157,7 +157,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		if (settings.cmdLineOptions.cmdLineArgs.bBreakRecord || settings.cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
 		{
-            log.info("MSG039");
+            log.info(Message.MSG039);
 
             // try to identify those fields which are repeated
 			layout.each!(r => r.identifyRepeatedFields);
@@ -166,7 +166,7 @@ int main(string[] argv)
 				if (rec.meta.repeatingPattern.length != 0)
                 {
                     rec.meta.repeatingPattern.each!(rp => rec.findRepeatedFields(rp));
-                    rec.meta.repeatingPattern.each!(rp => log.info("MSG040", rec.name, rp));
+                    rec.meta.repeatingPattern.each!(rp => log.info(Message.MSG040, rec.name, rp));
 
                     // we just want to print out repeated fields
                     if (settings.cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
@@ -213,7 +213,7 @@ int main(string[] argv)
                 }
                 else
                 {
-                    logerr.info("MSG065", stat.nbReadRecords);
+                    logerr.info(Message.MSG065, stat.nbReadRecords);
                 }
             }
 
@@ -269,13 +269,13 @@ int main(string[] argv)
         stat.finalStats(log);
         stat.finalStats(logerr);
 
-		log.info("MSG015", elapsedtime);
-		logerr.info("MSG015", elapsedtime);
+		log.info(Message.MSG015, elapsedtime);
+		logerr.info(Message.MSG015, elapsedtime);
 
 		if (!settings.cmdLineOptions.cmdLineArgs.bJustRead && 
              settings.cmdLineOptions.cmdLineArgs.outputFormat != OutputFormat.postgres)
         {
-			logerr.info("MSG013", settings.cmdLineOptions.outputFileName, getSize(settings.cmdLineOptions.outputFileName));
+			logerr.info(Message.MSG013, settings.cmdLineOptions.outputFileName, getSize(settings.cmdLineOptions.outputFileName));
         }
 
         //---------------------------------------------------------------------------------
@@ -283,7 +283,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
         if (settings.cmdLineOptions.cmdLineArgs.bCheckPattern)
         {
-            logerr.info("MSG053", reader.nbBadCheck);
+            logerr.info(Message.MSG053, reader.nbBadCheck);
         }
 
         //---------------------------------------------------------------------------------
@@ -302,15 +302,22 @@ int main(string[] argv)
 
         if (seconds != 0) 
         {
-            log.info("MSG017", to!float(stat.nbReadRecords/seconds));
-            logerr.info("MSG017", to!float(stat.nbReadRecords/seconds));
+            log.info(Message.MSG017, to!float(stat.nbReadRecords/seconds));
+            logerr.info(Message.MSG017, to!float(stat.nbReadRecords/seconds));
         }
 	}
+    /*
 	catch (Exception e) 
     {
 		stderr.writeln(e.msg);
 		return 1;
 	}
+    */
+    catch (RbfException e)
+    {
+		stderr.writeln(e.msg);
+		return 1;
+    }
 
     //---------------------------------------------------------------------------------
 	// return successful code to OS

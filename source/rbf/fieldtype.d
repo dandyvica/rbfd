@@ -231,7 +231,7 @@ public:
 		}
 		catch (ConvException e) 
         {
-            throw new Exception(errorMessageList.error_msg["MSG031"].format(rvalue, T.stringof)); 
+            throw new Exception(Message.MSG031.format(rvalue, T.stringof)); 
 		}
 
 		return condition;

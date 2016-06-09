@@ -36,7 +36,7 @@ File _xsd;
         // create XSD file
         _xsdFileName = stripExtension(outputFileName) ~ ".xsd";
         _xsd = File(_xsdFileName, "w");
-        log.info("MSG019", _xsdFileName);
+        log.info(Message.MSG019, _xsdFileName);
 
         // prepare XML file header
         _fh.writeln(`<?xml version="1.0" encoding="UTF-8" ?>`);

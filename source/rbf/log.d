@@ -31,9 +31,10 @@ private:
     File _logHandle;            // handle on log file
     string _trace;              // to enable trace, need to define RBF_LOG environment variable
 
-    // log with flexible list of arguments
-    void _log(LogLevel, string, A...)(LogLevel level, string index, string msg, A args)
+    void _log_msg(LogLevel, Message, A...)(LogLevel level, Message m, A args)
     {
+        auto index = to!string(m);
+
         if (level != LogLevel.TRACE || _trace != "")
         {
             // don't write out log header when console output
@@ -46,12 +47,12 @@ private:
             {
                 _logHandle.writef("%s - ", index);
             }
-            _logHandle.writefln(msg, args);
+            //_logHandle.writefln(m.format(args));
+            _logHandle.writefln(m, args);
             _logHandle.flush;
         }
     }
-
-
+        
 public:
 
     // create log file
@@ -77,18 +78,18 @@ public:
     }
 
     // useful helpers
-    void trace(string, A...)(string message_index, A args)   { _log(LogLevel.TRACE, message_index, errorMessageList.error_msg[message_index], args); }
-    void info(string, A...)(string message_index, A args)    { _log(LogLevel.INFO, message_index, errorMessageList[message_index], args); }
-    void warning(string, A...)(string message_index, A args) { _log(LogLevel.WARNING, message_index, errorMessageList.error_msg[message_index], args); }
-    void error(string, A...)(string message_index, A args)   { _log(LogLevel.ERROR, message_index, errorMessageList.error_msg[message_index], args); }
-    void fatal(string, A...)(string message_index, A args)   { _log(LogLevel.FATAL, message_index, errorMessageList.error_msg[message_index], args); }
+    void trace(Message, A...)(Message m, A args)   { _log_msg(LogLevel.TRACE, m, args); }
+    void info(Message, A...)(Message m, A args)    { _log_msg(LogLevel.INFO, m, args); }
+    void warning(Message, A...)(Message m, A args) { _log_msg(LogLevel.WARNING, m, args); }
+    void error(Message, A...)(Message m, A args)   { _log_msg(LogLevel.ERROR, m, args); }
+    void fatal(Message, A...)(Message m, A args)   { _log_msg(LogLevel.FATAL, m, args); }
 
     // special use for enforcing conditions
-    static auto build_msg(string, A...)(string message_index, A args)
+    static auto build_msg(Message, A...)(Message m, A args)
     {
         // build message
-        auto msg = errorMessageList.error_msg[message_index].format(args);
-        return "%s: %s".format(message_index, msg);
+        auto msg = m.format(args);
+        return "%s - %s".format(to!string(m), msg);
     }
 
     // close log file
