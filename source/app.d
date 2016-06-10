@@ -306,16 +306,10 @@ int main(string[] argv)
             logerr.info(Message.MSG017, to!float(stat.nbReadRecords/seconds));
         }
 	}
-    /*
-	catch (Exception e) 
+    catch (Exception e)
     {
-		stderr.writeln(e.msg);
-		return 1;
-	}
-    */
-    catch (RbfException e)
-    {
-		stderr.writeln(e.msg);
+        logerr.exception(e);
+        log.exception(e);
 		return 1;
     }
 

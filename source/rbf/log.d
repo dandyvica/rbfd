@@ -18,7 +18,8 @@ Log log, logerr;
 
 // log file name if not possible to get it from configuration or not possible to open
 // the location
-immutable defaultLogFile = "rbf.log";
+enum defaultLogFile = "rbf.log";
+enum defaultHeaderFormat = "%-28.28s - %s - ";
 
 // list of all possible values for log level
 // TRACE is enabled by setting the RBF_TRACE variable
@@ -31,26 +32,37 @@ private:
     File _logHandle;            // handle on log file
     string _trace;              // to enable trace, need to define RBF_LOG environment variable
 
-    void _log_msg(LogLevel, Message, A...)(LogLevel level, Message m, A args)
+    // build header of each line in the log
+    auto _header(LogLevel level)
     {
-        auto index = to!string(m);
+        return defaultHeaderFormat.format(to!string(Clock.currTime),  to!string(level));
+    }
 
+    // core logger
+    void _log_core(LogLevel level, string msg)
+    {
         if (level != LogLevel.TRACE || _trace != "")
         {
             // don't write out log header when console output
             if (_logHandle != stdout && _logHandle != stderr)
             {
-                _logHandle.writef("%-28.28s - [%s - %s] - ", to!string(Clock.currTime), to!string(level), index);
-            }
-            // just output message index and text
-            else
-            {
-                _logHandle.writef("%s - ", index);
+                _logHandle.writef(_header(level));
             }
             //_logHandle.writefln(m.format(args));
-            _logHandle.writefln(m, args);
+            _logHandle.writefln(msg);
             _logHandle.flush;
         }
+    }
+
+    // write message in the log
+    void _log_msg(LogLevel, Message, A...)(LogLevel level, Message m, A args)
+    {
+        _log_core(level, build_msg(m, args));
+    }
+
+    void _log_msg(LogLevel level, string msg)
+    {
+        _log_core(level, msg);
     }
         
 public:
@@ -66,7 +78,7 @@ public:
         catch (ErrnoException)
         {
             _logHandle = File(defaultLogFile, "a");
-            logerr.info("MSG068", defaultLogFile);
+            logerr.info(Message.MSG068, defaultLogFile);
         }
         _trace = environment.get("RBF_TRACE", "");
     }
@@ -83,6 +95,12 @@ public:
     void warning(Message, A...)(Message m, A args) { _log_msg(LogLevel.WARNING, m, args); }
     void error(Message, A...)(Message m, A args)   { _log_msg(LogLevel.ERROR, m, args); }
     void fatal(Message, A...)(Message m, A args)   { _log_msg(LogLevel.FATAL, m, args); }
+
+    void exception(Exception e)
+    {
+        auto message = Message.MSG098.format(e.msg, e.file, e.line);
+        _log_msg(LogLevel.FATAL, message);
+    }
 
     // special use for enforcing conditions
     static auto build_msg(Message, A...)(Message m, A args)

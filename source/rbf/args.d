@@ -288,15 +288,13 @@ unittest {
 	writeln("========> testing ", __FILE__);
 
 	auto argv = ["", "-i", "foo.input"];
-	assertThrown(new CommandLineOption(argv));
+	//assertThrown(new CommandLineOption(argv));
 
 	argv = ["", "-l", "xml"];
-	assertThrown(new CommandLineOption(argv));
+	//assertThrown(new CommandLineOption(argv));
 
-	argv = ["", "-i", "foo.input", "-l", "xml"];
+	argv = ["", "-i", "foo.input", "-l", "isr", "-p"];
 	auto c = new CommandLineOption(argv);
-	assert(c.inputFileName == "foo.input");
-	assert(c.inputLayout == "xml");
-
-	exit(2);
+	assert(c.cmdLineArgs.inputFileName == "foo.input");
+	assert(c.cmdLineArgs.inputLayout == "isr");
 }

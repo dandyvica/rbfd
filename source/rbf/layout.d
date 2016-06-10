@@ -21,10 +21,6 @@ import rbf.options;
 import rbf.nameditems;
 import rbf.stat;
 
-version(unittest) 
-{
-	immutable test_file = "./test/world_data.xml";
-}
 
 /// useful alias for defining mapper
 alias MapperFunc = string delegate(TVALUE);
@@ -271,19 +267,6 @@ public:
         // log creation of layout
         log.info(Message.MSG023, xmlFile, this.size);
 	}
-	///
-	unittest {
-		auto l = new Layout(test_file);
-		assertThrown(new Layout("foo.xml"));
-	}
-
-	///
-	unittest {
-		auto l = new Layout(test_file);
-		assert("COUN" in l);
-		assert("CONT" in l);
-		assert("FOO" !in l);
-	}
 
 	/**
 	 * used to create field name when root attribute is found
@@ -330,27 +313,6 @@ public:
 			// for all other records not provided, just get rid of them
 			this[].filter!(e => e.name !in recordMap).each!(e => e.meta.skipRecord = true);
 	}
-	///
-	unittest {
-		auto l = new Layout(test_file);
-		l.keepOnly(["CONT": ["NAME", "POPULATION"], "COUN": ["CAPITAL"]]);
-		assert(l["CONT"] == ["NAME", "POPULATION"]);
-		assert(l["COUN"] == ["CAPITAL"]);
-
-		l = new Layout(test_file);
-		l.keepOnly(["CONT": ["NAME", "POPULATION"]]);
-		assert(l["CONT"] == ["NAME", "POPULATION"]);
-		assert(l["COUN"].meta.skipRecord);
-
-		l = new Layout(test_file);
-		l.keepOnly(["CONT": ["*"]]);
-		assert(l["CONT"] == ["NAME", "AREA", "POPULATION", "DENSITY", "CITY"]);
-		assert(l["COUN"].meta.skipRecord);
-
-		l = new Layout(test_file);
-		assertThrown(l.keepOnly(["CONT": ["FOO", "POPULATION"], "COUN": ["CAPITAL"]]));
-		assertThrown(l.keepOnly(["FOO": ["NAME", "POPULATION"], "COUN": ["CAPITAL"]]));
-	}
 
 	/**
 	 * keep only fields specified for each record:field in the string
@@ -383,7 +345,7 @@ public:
                 // check if record name is in layout
                 if (recName !in this)
                 {
-                    throw new RbfException(Message.MSG055, recName);
+                    throw new Exception(Log.build_msg(Message.MSG055, recName));
                 }
 
 				// build field list
@@ -417,23 +379,6 @@ public:
             log.info(Message.MSG077, recordMap);
 
 	}
-	///
-	unittest {
-		auto l = new Layout(test_file);
-		l.keepOnly("CONT: NAME , POPULATION;  COUN: CAPITAL", ";");
-		assert(l["CONT"] == ["NAME", "POPULATION"]);
-		assert(l["COUN"] == ["CAPITAL"]);
-
-		l = new Layout(test_file);
-		l.keepOnly(cast(string)std.file.read("./test/test_fields.lst"), "\n");
-		assert(l["CONT"] == ["NAME", "POPULATION"]);
-		assert(l["COUN"] == ["CAPITAL"]);
-
-		l = new Layout(test_file);
-		l.keepOnly("CONT: NAME , POPULATION;  COUN: CAPITAL", ";");
-		assert(l["CONT"] == ["NAME", "POPULATION"]);
-		assert(l["COUN"] == ["CAPITAL"]);
-	}
 
 	/**
 	 * for each record, remove each field in the list.
@@ -458,14 +403,6 @@ public:
 				if (name in rec) rec.remove(name);
 			}
 		}
-	}
-	///
-	unittest {
-		auto l = new Layout(test_file);
-		l.removeFieldsByNameFromAllRecords(["NAME", "CAPITAL", "POPULATION"]);
-		assertThrown(l.removeFieldsByNameFromAllRecords(["FOO"]));
-		assert(l["CONT"] == ["AREA", "DENSITY", "CITY"]);
-		assert(l["COUN"] == []);
 	}
 
 	/**
@@ -545,19 +482,69 @@ public:
 }
 ///
 unittest {
-	writeln("========> testing ", __FILE__);
+    writeln("========> testing ", __FILE__);
 
-	auto l = new Layout(test_file);
+    assertThrown(new Layout("foo.xml"));
 
-	assert(l.meta.description == "Continents, countries, cities");
-	assert(l.meta.layoutVersion == "1.0");
+    enum test_file = "./test/world_data.xml";
+    auto l = new Layout(test_file);
 
-	// ID field is not there
-	assert(l.meta.skipField == ["ID"]);
-	assert(!l.isFieldInLayout("ID"));
-	assert(!l.isFieldInLayout("ID2"));
+    assert(l.meta.description == "Continents, countries, cities");
+    assert(l.meta.layoutVersion == "1.0");
 
-	l.removeFieldsByNameFromAllRecords(["NAME", "POPULATION"]);
-	assert(l.isFieldInLayout("DENSITY"));
-	assert(!l.isFieldInLayout("FOO"));
+    assert("COUN" in l);
+    assert("CONT" in l);
+    assert("FOO" !in l);
+
+    // ID field is not there
+    assert(l.meta.skipField == ["ID"]);
+    assert(!l.isFieldInLayout("ID"));
+    assert(!l.isFieldInLayout("ID2"));
+
+    l = new Layout(test_file);
+    l.removeFieldsByNameFromAllRecords(["NAME", "POPULATION"]);
+    assert(l.isFieldInLayout("DENSITY"));
+    assert(!l.isFieldInLayout("FOO"));
+    ///
+
+    ///
+    ///
+    l = new Layout(test_file);
+    l.keepOnly(["CONT": ["NAME", "POPULATION"], "COUN": ["CAPITAL"]]);
+    assert(l["CONT"] == ["NAME", "POPULATION"]);
+    assert(l["COUN"] == ["CAPITAL"]);
+
+    l = new Layout(test_file);
+    l.keepOnly(["CONT": ["NAME", "POPULATION"]]);
+    assert(l["CONT"] == ["NAME", "POPULATION"]);
+    assert(l["COUN"].meta.skipRecord);
+
+    l = new Layout(test_file);
+    l.keepOnly(["CONT": ["*"]]);
+    assert(l["CONT"] == ["NAME", "AREA", "POPULATION", "DENSITY", "CITY"]);
+    assert(l["COUN"].meta.skipRecord);
+
+    l = new Layout(test_file);
+    assertThrown(l.keepOnly(["CONT": ["FOO", "POPULATION"], "COUN": ["CAPITAL"]]));
+    assertThrown(l.keepOnly(["FOO": ["NAME", "POPULATION"], "COUN": ["CAPITAL"]]));
+    ///
+    l.keepOnly("CONT: NAME , POPULATION;  COUN: CAPITAL", ";");
+    assert(l["CONT"] == ["NAME", "POPULATION"]);
+    assert(l["COUN"] == ["CAPITAL"]);
+
+    l = new Layout(test_file);
+    l.keepOnly(cast(string)std.file.read("./test/test_fields.lst"), "\n");
+    assert(l["CONT"] == ["NAME", "POPULATION"]);
+    assert(l["COUN"] == ["CAPITAL"]);
+
+    l = new Layout(test_file);
+    l.keepOnly("CONT: NAME , POPULATION;  COUN: CAPITAL", ";");
+    assert(l["CONT"] == ["NAME", "POPULATION"]);
+    assert(l["COUN"] == ["CAPITAL"]);
+    ///
+    l = new Layout(test_file);
+    l.removeFieldsByNameFromAllRecords(["NAME", "CAPITAL", "POPULATION"]);
+    assertThrown(l.removeFieldsByNameFromAllRecords(["FOO"]));
+    assert(l["CONT"] == ["AREA", "DENSITY", "CITY"]);
+    assert(l["COUN"] == []);
 }

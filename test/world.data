@@ -1,0 +1,207 @@
+# data taken from http://www.nationsonline.org/oneworld/asia.htm
+# inspired from https://en.wikipedia.org/wiki/List_of_continents_by_GDP_28nominal29
+CONTAsia           43820000            16920000            29.5     Shanghai            
+COUNChina                         1338100000          Beijing             
+COUNChina Hong Kong SAR           7000000             Hong KongR
+COUNChina Macau SAR               500000              Macau City          
+COUNChina Tibet                   2620000             Lhasa               
+COUNJapan                         127400000           Tokyo               
+COUNKorea (North)                 22800000            P'yongyang          
+COUNKorea (South)                 48900000            Seoul               
+COUNMongolia                      2800000             Ulaanbaatar         
+COUNTaiwan                        23200000            Taipei              
+COUNRussian Federation            141900000           Moscow              
+COUNAfghanistan                   29100000            Kabul               
+COUNBangladesh                    164400000           Dhaka               
+COUNBhutan                        700000              Thimphu             
+COUNIndia                         1188800000          New Delhi           
+COUNIran                          75100000            Tehran              
+COUNKazakhstan                    16300000            Astana              
+COUNKyrgyzstan                    5300000             Bishkek             
+COUNMaldives                      300000              Male                
+COUNNepal                         28000000            Kathmandu           
+COUNPakistan                      184800000           Islamabad           
+COUNSri Lanka                     20700000            Colombo             
+COUNTajikistan                    7600000             Dushanbe            
+COUNTurkmenistan                  5200000             Ashgabat            
+COUNUzbekistan                    28100000            Tashkent            
+COUNBrunei Darussalam             400000              Bandar Seri Begawan 
+COUNCambodia                      15100000            Phnom Penh          
+COUNIndonesia                     235500000           Jakarta             
+COUNLao PDR                       6400000             Vientiane           
+COUNMalaysia                      29000000            Kuala Lumpur        
+COUNMyanmar (Burma)               53400000            Yangon (Rangoon)    
+COUNPhilippines                   94000000            Manila              
+COUNSingapore                     5100000             Singapore           
+COUNThailand                      68100000            Bangkok             
+COUNTimor-Leste (East Timor)      1200000             Dili                
+COUNVietnam                       89000000            Hanoi               
+COUNArmenia                       3100000             Yerevan             
+COUNAzerbaijan                    9500000             Baku                
+COUNBahrain                       1300000             Manama              
+COUNCyprus                        1100000             Nicosia (Lefkosia)  
+COUNGeorgia                       4600000             T'bilisi            
+COUNIraq                          31500000            Baghdad             
+COUNIsrael                        7600000             Jerusalem (claimed) 
+COUNJordan                        6500000             Amman               
+COUNKuwait                        3100000             Kuwait (City)       
+COUNLebanon                       4300000             Beirut              
+COUNOman                          3100000             Muscat              
+COUNPalestinian territories       4000000             Jerusalem (claimed) 
+COUNQatar                         1700000             Doha (Al-Dawhah)    
+COUNSaudi Arabia                  29200000            Riyadh              
+COUNSyria                         22500000            Damascus            
+COUNTurkey                        73600000            Ankara              
+COUNUnited Arab Emirates          5400000             Abu Dhabi           
+COUNYemen                         23600000            Sanaa               
+CONTAfrica         30370000          11730000          20.4     Lagos               
+COUNBurundi                       8500000             Bujumbura           
+COUNComoros                       727000              Moroni              
+COUNDjibouti                      900000              Djibouti            
+COUNEritrea                       5200000             Asmara              
+COUNEthiopia                      85000000            Addis Ababa         
+COUNKenya                         40000000            Nairobi             
+COUNMadagascar                    20100000            Antananarivo        
+COUNMalawi                        15400000            Lilongwe            
+COUNMauritius                     1300000             Port Louis          
+COUNMozambique                    23400000            Maputo              
+COUNRéunion                       800000              Saint-Denis         
+COUNRwanda                        10400000            Kigali              
+COUNSeychelles                    100000              Victoria            
+COUNSomalia                       9400000             Mogadishu           
+COUNTanzania                      45000000            Dodoma Dar es Salaam
+COUNUganda                        33800000            Kampala             
+COUNZambia                        13300000            Lusaka              
+COUNZimbabwe                      12600000            Harare              
+COUNAngola                        19000000            Luanda              
+COUNCameroon                      20000000            Yaoundé             
+COUNCentral African Republic      4800000             Bangui              
+COUNChad                          11500000            N'Djamena           
+COUNCongo Rep. (Brazzaville)      3900000             Brazzaville         
+COUNCongo Dem. Rep. (Kinshasa)    67800000            Kinshasa            
+COUNEquatorial Guinea             700000              Malabo              
+COUNGabon                         1500000             Libreville          
+COUNSão Tomé and Príncipe         200000              São Tomé            
+COUNAlgeria                       36000000            Algiers             
+COUNEgypt                         80400000            Cairo               
+COUNLibya                         6500000             Tripoli             
+COUNMorocco                       31900000            Rabat               
+COUNSouth Sudan                   9000000             Juba                
+COUNSudan                         36000000            Khartoum            
+COUNTunisia                       10500000            Tunis               
+COUNWestern Sahara                500000              (El Aaiún)          
+COUNBotswana                      1800000             Gaborone            
+COUNLesotho                       1900000             Maseru              
+COUNNamibia                       2200000             Windhoek            
+COUNSouth Africa                  49900000            Cape Town
+COUNSwaziland                     1200000             Mbabane Lobamba    
+COUNBenin                         9800000             Porto-Novo Cotonou 
+COUNBurkina Faso                  16200000            Ouagadougou         
+COUNCape Verde                    500000              Praia               
+COUNCôte d'Ivoire (Ivory Coast)   22000000            Yamoussoukro Abidjan
+COUNGambia The                    1800000             Banjul              
+COUNGhana                         24000000            Accra               
+COUNGuinea                        10800000            Conakry             
+COUNGuinea-Bissau                 1600000             Bissau              
+COUNLiberia                       4100000             Monrovia            
+COUNMali                          15200000            Bamako              
+COUNMauritania                    3400000             Nouakchott          
+COUNNiger                         15900000            Niamey              
+COUNNigeria                       158300000           Abuja               
+COUNSaint Helena                  6000                Jamestown           
+COUNSenegal                       12500000            Dakar               
+COUNSierra Leone                  5800000             Freetown            
+COUNTogo                          6800000             Lomé                
+CONTNorth America  24709000          9540000           16.5     Mexico City         
+COUNCanada                        3400000             Ottawa - Toronto    
+COUNMexico                        112000000           Mexico (City)       
+COUNUnited States                 313000000           Washington - New York
+CONTSouth America  17840000          6890000           12.0     São Paulo           
+COUNArgentina                     40500000            Buenos Aires        
+COUNBolivia                       10400000            La Paz Sucre       
+COUNBrazil                        193300000           Brasilia - São Paulo
+COUNChile                         17100000            Santiago            
+COUNColombia                      45500000            Bogotá D.C.         
+COUNEcuador                       14200000            Quito               
+COUNFrench Guiana                 200000              Cayenne             
+COUNGuyana                        800000              Georgetown          
+COUNParaguay                      6500000             Asunción            
+COUNPeru                          29500000            Lima                
+COUNSuriname                      500000              Paramaribo          
+COUNUruguay                       3400000             Montevideo          
+COUNVenezuela                     28800000            Caracas             
+CONTAntarctica     13720000          5300000           9.2      Villa Las Estrellas 
+CONTEurope         10180000          3930000           6.8      Moscow              
+COUNBelarus                       9500000             Minsk               
+COUNBulgaria                      7500000             Sofia               
+COUNCzech Republic                10500000            Prague              
+COUNHungary                       10000000            Budapest            
+COUNMoldova                       4100000             Chisinau            
+COUNPoland                        38200000            Warsaw              
+COUNRomania                       21500000            Bucharest           
+COUNRussian Federation            141900000           Moscow              
+COUNSlovakia                      5400000             Bratislava          
+COUNUkraine                       46000000            Hryvnia             
+COUNDenmark                       5500000             Copenhagen          
+COUNEstonia                       1300000             Tallinn             
+COUNFaroe Islands (DK)            43000               Tórshavn            
+COUNFinland                       5400000             Helsinki            
+COUNGreenland (DK)                56854               Nuuk (Godthab)      
+COUN+ Iceland                     300000              Reykjavik           
+COUNIreland                       4500000             Dublin (City)       
+COUNLatvia                        2200000             Riga                
+COUNLithuania                     3300000             Vilnius             
+COUNNorthern Ireland (UK)         1690000             Belfast             
+COUN+ Norway                      4900000             Oslo                
+COUNScotland (UK)                 5200000             EdinburghGlasgow    
+COUNSweden                        9400000             Stockholm           
+COUNUnited Kingdom                62200000            London              
+COUNWales (UK)                    2750000             Cardiff             
+COUNAlbania                       3200000             Tirana              
+COUNAndorra                       100000              Andorra la Vella    
+COUNBosnia & Herzegovina          3800000             Sarajevo            
+COUNCroatia (Hrvatska)            4400000             Zagreb              
+COUNCyprus                        1100000             Nicosia (Lefkosia)  
+COUNGibraltar (UK)                25000               Gibraltar           
+COUNGreece                        11300000            Athens              
+COUNVatican City State            1000                Vatican City        
+COUNItaly                         60500000            Rome        
+COUNMacedonia Rep. of             2100000             Skopje              
+COUNMalta                         400000              Valletta            
+COUNMontenegro                    600000              Podgorica           
+COUNPortugal                      10700000            Lisbon              
+COUNSan Marino                    30000               San Marino          
+COUNSerbia                        7300000             Belgrade            
+COUNSlovenia                      2100000             Ljubljana           
+COUNSpain                         47100000            Madrid              
+COUNAustria                       8400000             Vienna (Wien)       
+COUNBelgium                       10800000            Brussels            
+COUNFrance                        63000000            Paris               
+COUNGermany                       81600000            Berlin              
+COUNLiechtenstein                 40000               Vaduz               
+COUNLuxembourg                    500000              Luxembourg          
+COUNMonaco                        40000               Monaco              
+COUNNetherlands                   16600000            The Hague
+COUNSwitzerland                   7800000             Bern - Zürich       
+CONTOceania        9008500           3478200           5.9      Sydney              
+COUNAustralia                     22400000            Canberra - Sydney   
+COUNNew Zealand                   4400000             Wellington - Auckland
+COUNFiji                          900000              Suva                
+COUNNew Caledonia                 300000              Nouméa              
+COUNPapua New Guinea              6800000             Port Moresby        
+COUNSolomon Islands               500000              Honiara             
+COUNVanuatu                       200000              Port-Vila           
+COUNGuam                          200000              Hagåtña (Agana)     
+COUNKiribati                      100000              Tarawa              
+COUNMarshall Islands              100000              Majuro              
+COUNMicronesia                    100000              Palikir             
+COUNNauru                         12000               ---                 
+COUNNorthern Mariana Islands      78000               Saipan              
+COUNPalau                         20000               Ngerulmud Melekeok 
+COUNAmerican Samoa                68000               Pago Pago           
+COUNCook Islands                  20000               Avarua              
+COUNFrench Polynesia (Tahiti)     300000              Papeete             
+COUNNiue                          2000                Alofi               
+COUNSamoa                         200000              Apia                
+COUNTonga                         100000              Nuku'alofa          
+COUNTuvalu                        10000               Funafuti            

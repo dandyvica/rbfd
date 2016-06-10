@@ -126,15 +126,4 @@ struct Settings {
 ///
 unittest {
 	writeln("========> testing ", __FILE__);
-	auto c = new ConfigFromXMLFile("./test/config.xml");
-
-  assert(c.layoutList["A"].name == "A");
-  assert(c.layoutList["B"].description == "Desc B");
-  assert(c.layoutList["C"].file.canFind("layout/c.xml"));
-  assert(c.layoutList["world"].file.canFind("test/world_data.xml"));
-
-  assert(c.outputList["txt"].name == "txt");
-  assert(c.outputList["txt"].OutputListectory == "/tmp/");
-  assert(c.outputList["txt"].fieldSeparator == "*");
-  assert(!c.outputList["txt"].fieldDescription);
 }

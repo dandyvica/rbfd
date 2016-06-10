@@ -286,7 +286,7 @@ unittest {
     assert(c.layoutList["world"].file.canFind("test/world_data.xml"));
 
     assert(c.outputList["txt"].name == "txt");
-    assert(c.outputList["txt"].OutputListectory == "/tmp/");
+    assert(c.outputList["txt"].outputDirectory == "/tmp/");
     assert(c.outputList["txt"].fieldSeparator == "*");
     assert(!c.outputList["txt"].fieldDescription);
 }

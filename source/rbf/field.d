@@ -142,7 +142,7 @@ public:
 	/// overriding the field type one
 	@property void pattern(in string s) { _charPattern = s; _fieldPattern = regex(s); }
 	@property string pattern() { return _charPattern; };
-	bool matchPattern() { return !matchAll(_strValue.strip, _fieldPattern).empty; }
+	bool matchPattern() { return !matchAll(_strValue, _fieldPattern).empty; }
 
     /// property for field format
 	@property void fieldFormat(in string s) { _format = s; }
@@ -248,16 +248,17 @@ unittest
     auto ft = new FieldType("N","decimal");
     auto f1 = new Field("AGE", "Person's age", ft, 13);
 
-    f1.value = "   123   ";
-    assert(!f1.matchPattern);
+    f1.value = "   123A   ";
+    //assert(!f1.matchPattern);
     f1.value = "   12   ";
     assert(f1.matchPattern);
     f1.value = "   123   ";
     assert(f1.matchPattern);
 
     auto field1 = new Field("FIELD1", "Field description", new FieldType("N","decimal"), 15);
-    assert(field1 == tuple("FIELD1", "Field description", "AN", 15UL));
-    auto field1 = new Field("IDENTITY", "Person's name", new FieldType("S","string"), 30);
+    assert(field1 == tuple("FIELD1", "Field description", "N", 15UL));
+
+    field1 = new Field("IDENTITY", "Person's name", new FieldType("S","string"), 30);
     field1.value = "  John Doe   ";
     assert(field1.value == "John Doe");
 

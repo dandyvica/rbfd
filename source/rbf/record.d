@@ -102,7 +102,7 @@ public:
 	 */
 	@property void value(TVALUE s) 
 	{
-		// add or strip chars from string if s has not the same length as record length
+		// add chars from string if s has not the same length as record length
 		if (s.length < _length) 
         {
 			s = s.leftJustify(_length);

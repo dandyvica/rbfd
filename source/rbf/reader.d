@@ -322,11 +322,6 @@ unittest {
 	auto layout = new Layout("./test/world_data.xml");
 	auto reader = new Reader("./test/world.data", layout);
 
-	//reader[].filter!(e => e.name == "CONT").each!(e => writeln(e["NAME"][0].value));
-	auto list = array(reader[].filter!(e => e.name == "CONT").map!(e => e["NAME"][0].value));
-	assert(list == ["Asia", "Africa", "North America", "South America", "Antarctica", "Europe", "Oceania"]);
-	//foreach (r; reader) { writeln(r.name, " ", r.NAME); }
-
 	// foreach is as always
 	/*
 	foreach (rec; reader) {
