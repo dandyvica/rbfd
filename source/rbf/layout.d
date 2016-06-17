@@ -45,6 +45,8 @@ struct LayoutMeta
 	MapperFunc mapper;						    /// function which identifies a record name from a string
 	string mapperDefinition;			        /// mapper as declared in the XML file
     string schema;                              /// PostgreSQL schema name if any
+
+    bool beStrict;                              /// whether we exit if record is not found in layout
 }
 
 /***********************************
@@ -265,6 +267,7 @@ public:
 		}
 
         // log creation of layout
+        logerr.info(Message.MSG023, xmlFile, this.size);
         log.info(Message.MSG023, xmlFile, this.size);
 	}
 
@@ -274,7 +277,7 @@ public:
 	 */
 	string buildFieldNameWhenRoot(string recName, string rootName)
     {
-        immutable fmt = "%s_%s";
+        enum fmt = "%s_%s";
         return fmt.format(recName, rootName);
 	}
 

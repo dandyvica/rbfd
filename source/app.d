@@ -40,6 +40,12 @@ int main(string[] argv)
     //---------------------------------------------------------------------------------
 	auto starttime = Clock.currTime();
 
+    //---------------------------------------------------------------------------------
+	// initialize minimal log environment
+    //---------------------------------------------------------------------------------
+    logerr = Log(stderr);
+    log = Log(stdout);
+
 	try 
     {
         // get global settings from config file and args
@@ -55,6 +61,11 @@ int main(string[] argv)
 		// define new layout corresponding to the requested layout given from the command line
         //---------------------------------------------------------------------------------
 		auto layout = new Layout(settings.layoutConfiguration.file);
+
+        //---------------------------------------------------------------------------------
+		// copy strict mode
+        //---------------------------------------------------------------------------------
+		layout.meta.beStrict = settings.cmdLineOptions.cmdLineArgs.strictRun;
 
         //---------------------------------------------------------------------------------
 		// need to get rid of some fields ?
@@ -309,7 +320,8 @@ int main(string[] argv)
     catch (Exception e)
     {
         logerr.exception(e);
-        log.exception(e);
+        // log only if we've defined a file logger
+        if (log.logHandle != stdout) log.exception(e);
 		return 1;
     }
 

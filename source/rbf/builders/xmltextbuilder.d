@@ -48,7 +48,7 @@ class RbfTextBuilder : RbfBuilder
         //builder = new RbfBuilder();
 
 		// check for XML file existence
-		enforce(exists(xmlFile), Log.build_msg("MSG088", xmlFile));
+		enforce(exists(xmlFile), Message.MSG088.format(xmlFile));
 
 		// open XML file and load it into a string
 		string xmlData = cast(string)std.file.read(xmlFile);
@@ -168,7 +168,7 @@ class RbfTextBuilder : RbfBuilder
         FieldType[string] ftype;
 
 		// check for XML file existence
-        enforce(exists(inputFile), Log.build_msg("MSG089", inputFile));
+        enforce(exists(inputFile), Message.MSG089.format(inputFile));
 
         // process each of the input file
         foreach (string line; lines(File(inputFile, "r")))

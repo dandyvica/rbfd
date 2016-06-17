@@ -85,6 +85,8 @@ struct CommandLineArgument
 
     @("raw") bool useRawValue;                              /// use raw string values instead of stripped values
 
+    @("strict") bool strictRun;                             /// exit if record is not found in layout
+
 }
 
 /***********************************
@@ -107,7 +109,6 @@ public:
  */
  	this(string[] argv) 
     {
-
 		// print-out help
 		if (argv.length == 1)
 		{
@@ -129,8 +130,6 @@ public:
         }
         else if (argv.length == 3 && argv[1] == "--validate")
         {
-            // new log to stdout
-            log = Log(stdout);
     		auto layout = new Layout(argv[2]);
 			layout.validate;
             exit(2);
@@ -145,9 +144,6 @@ public:
                 @("template") string templateFile;
             }
             CommandLineArgumentConvert convOptions;
-
-            // new log to stdout
-            log = Log(stderr);
 
             // process arguments
             processCommandLineArguments!CommandLineArgumentConvert(argv, convOptions);

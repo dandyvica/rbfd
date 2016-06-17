@@ -22,16 +22,13 @@ enum defaultLogFile = "rbf.log";
 enum defaultHeaderFormat = "%-28.28s - %s - ";
 
 // list of all possible values for log level
-// TRACE is enabled by setting the RBF_TRACE variable
+// TRACE is enabled by setting the RBFtrace variable
 enum LogLevel { TRACE, INFO, WARNING, ERROR, FATAL }
 
 // simple log feature
 struct Log 
 {
 private:
-    File _logHandle;            // handle on log file
-    string _trace;              // to enable trace, need to define RBF_LOG environment variable
-
     // build header of each line in the log
     auto _header(LogLevel level)
     {
@@ -41,16 +38,16 @@ private:
     // core logger
     void _log_core(LogLevel level, string msg)
     {
-        if (level != LogLevel.TRACE || _trace != "")
+        if (level != LogLevel.TRACE || trace_set != "")
         {
             // don't write out log header when console output
-            if (_logHandle != stdout && _logHandle != stderr)
+            if (logHandle != stdout && logHandle != stderr)
             {
-                _logHandle.writef(_header(level));
+                logHandle.writef(_header(level));
             }
-            //_logHandle.writefln(m.format(args));
-            _logHandle.writefln(msg);
-            _logHandle.flush;
+            //logHandle.writefln(m.format(args));
+            logHandle.writefln(msg);
+            logHandle.flush;
         }
     }
 
@@ -67,26 +64,29 @@ private:
         
 public:
 
+    File logHandle;   // handle on log file
+    string trace_set;     // to enable trace, need to define RBF_LOG environment variable
+
     // create log file
     this(string logFileName)
     {
         try
         {
             // append to log file
-            _logHandle = File(logFileName, "a");
+            logHandle = File(logFileName, "a");
         }
         catch (ErrnoException)
         {
-            _logHandle = File(defaultLogFile, "a");
+            logHandle = File(defaultLogFile, "a");
             logerr.info(Message.MSG068, defaultLogFile);
         }
-        _trace = environment.get("RBF_TRACE", "");
+        trace_set = environment.get("RBFtrace", "");
     }
 
     // another ctor if we want to output elsewhere
     this(File fh)
     {
-        _logHandle = fh;
+        logHandle = fh;
     }
 
     // useful helpers
@@ -113,7 +113,7 @@ public:
     // close log file
     ~this() 
     {
-        _logHandle.close;
+        logHandle.close;
     }
 }
 

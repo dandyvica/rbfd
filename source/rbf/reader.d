@@ -22,9 +22,6 @@ import rbf.record;
 import rbf.layout;
 import rbf.stat;
 
-// definition of useful aliases
-//alias STRING_MAPPER = void function(Record);           /// alias to a delegate used to change field values
-
 /***********************************
  * record-base file reader used to loop on each record
  */
@@ -44,7 +41,8 @@ private:
     bool _checkPattern;                     /// do we want to check field pattern for each record?
     ulong _nbBadCheck;                      /// counter for those bad formatted fields
 
-    string _sectionName;                    /// last fetched record name
+    string[] _recList;                      /// list of record names
+
 
 public:
 	/**
@@ -134,6 +132,9 @@ public:
         // using the hash matching method
 		auto recordName = _recordIdentifier(line);
 
+        // 
+        //_recList ~= recordName;
+
         // for statistics, we count the number of records. Entry has been already created
         // during layout creation
         stat.nbRecs[recordName]++;
@@ -141,28 +142,17 @@ public:
         // record not found ? So loop
         if (recordName !in _layout) 
         {
-            /*
-               recordName = _layout.buildFieldNameWhenRoot(recordName, _sectionName);
-               if (recordName !in _layout)
-               {
-               log.warning(Message.MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
-               return null;
-               }
-             */
+            // strict mode? Just exit
+            if (_layout.meta.beStrict)
+            {
+                throw new Exception((Message.MSG018.format(stat.nbReadLines, recordName, 50, line[0..50])));
+            }
             log.warning(Message.MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
             return null;
         }
 
         // save our record because our hash function has sent back something
         rec = _layout[recordName];
-
-        // if this record starts a new section, keep its name
-        /*
-        if (rec.meta.section) 
-            _sectionName = recordName;
-        else
-            _sectionName = "";
-        */
 
 		// do we keep this record? sometimes, we skip records when setting record or field filters
 		if (rec.meta.skipRecord) return null;

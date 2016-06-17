@@ -65,6 +65,8 @@ OPTIONS
 
        --stats: print out detailed statistics on file at the end of conversion.
 
+       --strict: if a record if not found is the layout, exit the program. By default, it just logs a warning in the log
+
        --tempfile: name and path of the template file to use when using temp output format.
 
        --trigger recordName: when using the template option, trigger file output when matching record name is met.

@@ -114,9 +114,6 @@ public:
 	 */
 	this(string xmlConfigFile = "") 
     {
-        // set logerr
-        logerr = Log(stderr);
-
         // define new container for layouts and formats
         _layoutList = new LayoutList("layouts");
         _outputList = new OutputList("outputs");

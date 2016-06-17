@@ -27,7 +27,8 @@ import rbf.writers.writer : OutputFormat;
 /***********************************
 	* class for reading XML definition file
  */
-struct Settings {
+struct Settings 
+{
 
     CommandLineOption cmdLineOptions;
     OutputConfiguration outputConfiguration;
