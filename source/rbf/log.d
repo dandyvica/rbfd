@@ -14,7 +14,7 @@ import std.string;
 import rbf.errormsg;
 
 // global log variable
-Log log, logerr;
+Log logger;
 
 // log file name if not possible to get it from configuration or not possible to open
 // the location
@@ -25,10 +25,29 @@ enum defaultHeaderFormat = "%-28.28s - %s - ";
 // TRACE is enabled by setting the RBFtrace variable
 enum LogLevel { TRACE, INFO, WARNING, ERROR, FATAL }
 
+enum LogType { FILE, CONSOLE, BOTH }
+
 // simple log feature
 struct Log 
 {
 private:
+
+    // return handle depending on log type
+    auto _getHandle()
+    {
+        File handle;
+
+        if (logType == LogType.FILE || logType == LogType.BOTH)
+        {
+            handle = logHandle;
+        }
+        else if (logType == LogType.CONSOLE || logType == LogType.BOTH)
+        {
+            handle = stdout;
+        }
+        return handle;
+    }
+
     // build header of each line in the log
     auto _header(LogLevel level)
     {
@@ -43,10 +62,9 @@ private:
             // don't write out log header when console output
             if (logHandle != stdout && logHandle != stderr)
             {
-                logHandle.writef(_header(level));
+                _getHandle.writef(_header(level));
             }
-            //logHandle.writefln(m.format(args));
-            logHandle.writefln(msg);
+            _getHandle.writefln(msg);
             logHandle.flush;
         }
     }
@@ -64,8 +82,9 @@ private:
         
 public:
 
-    File logHandle;   // handle on log file
-    string trace_set;     // to enable trace, need to define RBF_LOG environment variable
+    File logHandle;       /// handle on log file
+    string trace_set;     /// to enable trace, need to define RBF_LOG environment variable
+    LogType logType;      /// whether print out to file, console or both
 
     // create log file
     this(string logFileName)
@@ -78,7 +97,7 @@ public:
         catch (ErrnoException)
         {
             logHandle = File(defaultLogFile, "a");
-            logerr.info(Message.MSG068, defaultLogFile);
+            Log.console(Message.MSG068, defaultLogFile);
         }
         trace_set = environment.get("RBFtrace", "");
     }
@@ -90,11 +109,11 @@ public:
     }
 
     // useful helpers
-    void trace(Message, A...)(Message m, A args)   { _log_msg(LogLevel.TRACE, m, args); }
-    void info(Message, A...)(Message m, A args)    { _log_msg(LogLevel.INFO, m, args); }
-    void warning(Message, A...)(Message m, A args) { _log_msg(LogLevel.WARNING, m, args); }
-    void error(Message, A...)(Message m, A args)   { _log_msg(LogLevel.ERROR, m, args); }
-    void fatal(Message, A...)(Message m, A args)   { _log_msg(LogLevel.FATAL, m, args); }
+    void trace(LogType, Message, A...)(LogType lt, Message m, A args)   { logType = lt;  _log_msg(LogLevel.TRACE, m, args); }
+    void info(LogType, Message, A...)(LogType lt, Message m, A args)    { logType = lt;  _log_msg(LogLevel.INFO, m, args); }
+    void warning(LogType, Message, A...)(LogType lt, Message m, A args) { logType = lt;  _log_msg(LogLevel.WARNING, m, args); }
+    void error(LogType, Message, A...)(LogType lt, Message m, A args)   { logType = lt;  _log_msg(LogLevel.ERROR, m, args); }
+    void fatal(LogType, Message, A...)(LogType lt, Message m, A args)   { logType = lt; _log_msg(LogLevel.FATAL, m, args); }
 
     void exception(Exception e)
     {
@@ -108,6 +127,12 @@ public:
         // build message
         auto msg = m.format(args);
         return "%s - %s".format(to!string(m), msg);
+    }
+
+    // just used to print out info on the console
+    static void console(Message, A...)(Message m, A args)
+    {
+        stdout.writefln(build_msg(m, args));
     }
 
     // close log file

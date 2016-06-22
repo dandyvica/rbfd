@@ -141,7 +141,7 @@ class RbfTextBuilder : RbfBuilder
                         }
                         break;
                     default:
-                        log.error("MSG056", option, tag, attr);
+                        logger.error(LogType.FILE, "MSG056", option, tag, attr);
                         break;
                 }
             }

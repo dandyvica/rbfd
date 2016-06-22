@@ -33,7 +33,8 @@ struct RecordMeta
     string ruler;                /// when using the text writer, length of the ruler for header vs. data
     ulong sourceLineNumber;      /// line number where this record is found
     bool  section;               /// we want to save this record name
-    typeof(Field.length) declateLength; /// if record tag has a length attribute
+    typeof(Field.length) declaredLength; /// if record tag has a length attribute
+    string tableName;            /// table name supercedes record name when creating SQL tables based on record name
     
 }
 
@@ -177,6 +178,12 @@ public:
         auto values = array(this[name].map!(f => f.value));
         return values.reduce!((a,b) => a ~ b);
 	}
+
+    /* table name property */
+    /*
+    @property auto tableName() { return meta.tableName; }
+    @property void tableName(string tblName) { meta.tableName = tblName; }
+    */
 
 	/**
 	 * find the field name having index i

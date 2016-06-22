@@ -181,7 +181,7 @@ public:
                 // log creation of field types
                 with(ftype[ftName].meta) 
                 {
-                    log.info(Message.MSG056, name, stringType, pattern, "");
+                    logger.info(LogType.FILE, Message.MSG056, name, stringType, pattern, "");
                 }
 			}
 		};
@@ -207,12 +207,16 @@ public:
             // if any, fill-in declared length
             if ("length" in  xml.tag.attr)
             {
-                record.meta.declateLength = to!TLENGTH(xml.tag.attr["length"]);
+                record.meta.declaredLength = to!TLENGTH(xml.tag.attr["length"]);
             }
 
             // sometimes, we need to keep track of the occurence of some records. We use this
             // XML attribute for this purpose
             record.meta.section = to!bool(xml.tag.attr.get("section", "false"));
+
+            // set table name if any
+            record.meta.tableName = xml.tag.attr.get("table", recName);
+
 
             // add new record to layout container
             this ~= record;
@@ -267,8 +271,7 @@ public:
 		}
 
         // log creation of layout
-        logerr.info(Message.MSG023, xmlFile, this.size);
-        log.info(Message.MSG023, xmlFile, this.size);
+        logger.info(LogType.BOTH, Message.MSG023, xmlFile, this.size);
 	}
 
 	/**
@@ -379,7 +382,7 @@ public:
 
 			// call overloaded func
 			keepOnly(recordMap);
-            log.info(Message.MSG077, recordMap);
+            logger.info(LogType.FILE, Message.MSG077, recordMap);
 
 	}
 
@@ -450,7 +453,7 @@ public:
                 if (rec.length != meta.length) 
                 {
                     validates = false;
-                    log.warning(Message.MSG034, rec.name, rec.length, meta.length);
+                    logger.warning(LogType.FILE, Message.MSG034, rec.name, rec.length, meta.length);
                 }
             }
         }
@@ -459,15 +462,15 @@ public:
         {
             foreach (rec; this) 
             {
-                if (rec.length != rec.meta.declateLength) 
+                if (rec.length != rec.meta.declaredLength) 
                 {
                     validates = false;
-                    log.warning(Message.MSG034, rec.name, rec.length, rec.meta.declateLength);
+                    logger.warning(LogType.FILE, Message.MSG034, rec.name, rec.length, rec.meta.declaredLength);
                 }
             }
         }
         if (validates) 
-            log.info(Message.MSG035, meta.file);
+            logger.info(LogType.FILE, Message.MSG035, meta.file);
     }
 
 	/**

@@ -15,6 +15,7 @@ import std.functional;
 import std.regex;
 import std.traits;
 import std.exception;
+import core.stdc.stdlib;
 
 import rbf.errormsg;
 import rbf.log;
@@ -57,6 +58,15 @@ struct Settings
         {
             // take the default configuration file
 		    configFromXMLFile = new ConfigFromXMLFile();
+        }
+
+        //---------------------------------------------------------------------------------
+		// some options need to be set up after XML configuration load
+        //---------------------------------------------------------------------------------
+        if (argv.length == 2 && argv[1] == "--layouts")
+        {
+            configFromXMLFile.listLayouts;
+            exit(1);
         }
 
         //---------------------------------------------------------------------------------

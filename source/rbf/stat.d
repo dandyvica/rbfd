@@ -27,7 +27,7 @@ struct Statistics
 
     void finalStats(ref Log log)
     {
-		log.info(Message.MSG014, nbReadLines, nbReadRecords, nbWrittenRecords);
+		log.info(LogType.FILE, Message.MSG014, nbReadLines, nbReadRecords, nbWrittenRecords);
     }
 
     void progressBarStats(Counter nbGuessedRecords, ref Log log)
@@ -41,7 +41,7 @@ struct Statistics
         {
             if (nbRecs[recname] != 0) 
             {
-                log.info(Message.MSG096, recname, nbRecs[recname]);
+                log.info(LogType.FILE, Message.MSG096, recname, nbRecs[recname]);
             }
         }
     }

@@ -72,7 +72,7 @@ class TemplateWriter : Writer
                 }
             }
         }
-        log.info(Message.MSG080, settings.outputConfiguration.templateFile);
+        logger.info(LogType.FILE, Message.MSG080, settings.outputConfiguration.templateFile);
 	}
 
     override void build(string outputFileName) {}

@@ -147,7 +147,7 @@ public:
             {
                 throw new Exception((Message.MSG018.format(stat.nbReadLines, recordName, 50, line[0..50])));
             }
-            log.warning(Message.MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
+            logger.warning(LogType.FILE, Message.MSG018, stat.nbReadLines, recordName, 50, line[0..50]);
             return null;
         }
 
@@ -172,7 +172,7 @@ public:
             {
                 if (f.value != "" && !f.matchPattern) 
                 {
-                    log.warning(Message.MSG002, stat.nbReadLines, recordName, f.contextualInfo, f.value, f.pattern);
+                    logger.warning(LogType.FILE, Message.MSG002, stat.nbReadLines, recordName, f.contextualInfo, f.value, f.pattern);
                     _nbBadCheck++;
                 }
             }

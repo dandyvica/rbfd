@@ -71,11 +71,11 @@ class SqlCommon
         // no schema? simple table names though
         if (layout.meta.schema == "")
         {
-            foreach (rec; layout) { tableNames[rec.name] = SqlCommon.buildTableName(rec.name); }
+            foreach (rec; layout) { tableNames[rec.name] = SqlCommon.buildTableName(rec.meta.tableName); }
         }
         else
         {
-            foreach (rec; layout) { tableNames[rec.name] = layout.meta.schema ~ "." ~ SqlCommon.buildTableName(rec.name); }
+            foreach (rec; layout) { tableNames[rec.name] = layout.meta.schema ~ "." ~ SqlCommon.buildTableName(rec.meta.tableName); }
         }
 
         return tableNames;
@@ -96,9 +96,9 @@ class SqlCommon
 
         // create with prepend schema if any
         if (schema == "")
-            stmt = SQL_CREATE.format(buildTableName(rec.name), join(cols, ","));
+            stmt = SQL_CREATE.format(buildTableName(rec.meta.tableName), join(cols, ","));
         else
-            stmt = SQL_CREATE_WITH_ID.format(schema ~ "." ~ buildTableName(rec.name), join(cols, ","));
+            stmt = SQL_CREATE_WITH_ID.format(schema ~ "." ~ buildTableName(rec.meta.tableName), join(cols, ","));
         return stmt;
     }
 

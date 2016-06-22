@@ -1,19 +1,19 @@
 module rbf.args;
 
-import std.stdio;
-import std.file;
-import std.string;
-import std.process;
-import std.getopt;
-import std.regex;
-import std.algorithm;
-import std.path;
-import std.exception;
-import std.traits;
-import std.conv;
-import std.typecons;
-import std.ascii;
 import core.stdc.stdlib;
+import std.algorithm;
+import std.ascii;
+import std.conv;
+import std.exception;
+import std.file;
+import std.getopt;
+import std.path;
+import std.process;
+import std.regex;
+import std.stdio;
+import std.string;
+import std.traits;
+import std.typecons;
 
 import rbf.errormsg;
 import rbf.recordfilter;
@@ -40,7 +40,7 @@ template GenInput(string input)
 struct CommandLineArgument 
 {
 	@("i") string inputFileName;                            /// input file name to parse
-	@("l") @(config.required) string inputLayout;		    /// input file layout
+	@("l") string inputLayout;		                        /// input file layout
 	@("o") OutputFormat outputFormat = OutputFormat.txt;	/// output format HTML, TXT, ...
 	@("of") string givenOutputFileName;		                /// name of the final converted file when given in the command line
 

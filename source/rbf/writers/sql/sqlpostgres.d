@@ -54,7 +54,7 @@ private:
     // connect to PG
     void _connect()
     {
-        log.info(Message.MSG092, PQlibVersion(), settings.outputConfiguration.connectionString);
+        logger.info(LogType.FILE, Message.MSG092, PQlibVersion(), settings.outputConfiguration.connectionString);
 
         // connect to PG
         rbfPGConnect(toStringz(settings.outputConfiguration.connectionString));
@@ -69,7 +69,7 @@ private:
             rbfPGExit();
 
             // log error and abort
-            log.fatal(Message.MSG047, sql_error_msg);
+            logger.fatal(LogType.BOTH, Message.MSG047, sql_error_msg);
             throw new Exception(Message.MSG093.format(status, settings.outputConfiguration.connectionString, sql_error_msg));
         }
 
@@ -152,7 +152,7 @@ private:
         auto nbTables = 0;
 
         // creation of all tables
-        log.info(Message.MSG095, settings.outputConfiguration.sqlInsertPool, settings.outputConfiguration.sqlGroupedInsertPool);
+        logger.info(LogType.FILE, Message.MSG095, settings.outputConfiguration.sqlInsertPool, settings.outputConfiguration.sqlGroupedInsertPool);
 
         // create all tables = one table per record
         _executeStmt("BEGIN TRANSACTION");
@@ -163,10 +163,10 @@ private:
 
             // build statement
             auto stmt = SqlCommon.buildCreateTableStatement(rec, layout.meta.schema);
-            log.trace(Message.MSG028, stmt);
+            logger.trace(LogType.FILE, Message.MSG028, stmt);
 
             // execute statement
-            log.info(Message.MSG025, rec.name);
+            logger.info(LogType.FILE, Message.MSG025, rec.name);
             _executeStmt(stmt);
 
             // one more table created
@@ -191,7 +191,7 @@ private:
         }
 
         // log tables creation
-        log.info(Message.MSG022, nbTables);
+        logger.info(LogType.FILE, Message.MSG022, nbTables);
 
         // create all tables now!
         _executeStmt("COMMIT TRANSACTION");
@@ -242,7 +242,7 @@ private:
                 // conversion error catched
                 catch (ConvException e) 
                 {
-                    log.info(Message.MSG020, rec.meta.sourceLineNumber, rec.name, f.name, f.value, f.type.meta.type);
+                    logger.info(LogType.FILE, Message.MSG020, rec.meta.sourceLineNumber, rec.name, f.name, f.value, f.type.meta.type);
 
                     // instead, use a NULL value
                     fields ~= "NULL";
@@ -270,7 +270,7 @@ private:
             auto largeInsert = _buildLargeInsert(_tableNames[rec.name], _groupedInsert[rec.name]);
             _executeStmt("BEGIN TRANSACTION");
             _executeStmt(largeInsert);
-            //log.info("stmt for record name %s", rec.name);
+            //logger.info("stmt for record name %s", rec.name);
             _executeStmt("COMMIT TRANSACTION");
             _groupedInsert[rec.name] = [];
         }
@@ -287,7 +287,7 @@ private:
         if (rc != 1)
         {
             auto sql_error_msg = fromStringz(rbfPGGetErrorMsg()).dup.strip;
-            log.fatal(Message.MSG094, rc, stmt, sql_error_msg);
+            logger.fatal(LogType.BOTH, Message.MSG094, rc, stmt, sql_error_msg);
             throw new Exception(Message.MSG094.format(rc, stmt, sql_error_msg));
         }
     }

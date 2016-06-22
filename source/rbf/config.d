@@ -26,7 +26,7 @@ void printMembers(T)(T v)
 {
 	foreach (member; FieldNameTuple!T)
 	{
-		mixin("log.info(\"%-50.50s : <%s>\", \"" ~ T.stringof ~ "." ~ member ~ "\", v." ~ member ~ ");");
+		mixin("logger.info(LogType.FILE, \"%-50.50s : <%s>\", \"" ~ T.stringof ~ "." ~ member ~ "\", v." ~ member ~ ");");
 	}
 }
 
@@ -125,7 +125,7 @@ public:
         // if file name is passed as an argument to the ctor, take it or otherwise try possible locations
         if (xmlConfigFile != "")
         {
-            logerr.info(Message.MSG071, xmlConfigFile); 
+            Log.console(Message.MSG071, xmlConfigFile); 
             settingsFile = xmlConfigFile;
         }
         else
@@ -150,7 +150,7 @@ public:
         {
             // save global config and create the log handler
             this.logFileName = xml.tag.attr.get("path", "./rbf.log");
-            log = Log(this.logFileName);
+            logger = Log(this.logFileName);
         };
 
         // read <layout> definition tag to build the container of all layouts
@@ -217,9 +217,19 @@ public:
         xml.parse();
 
         // log info in configuration file
-        log.info(Message.MSG027, settingsFile);
+        logger.info(LogType.FILE, Message.MSG027, settingsFile);
 
     }
+
+    /// list all possible layouts
+    void listLayouts()
+    {
+        foreach (s; _layoutList)
+        {
+            writefln(Message.MSG099, s.name, s.description, s.file);
+        }
+    }
+
 
 	@property LayoutList layoutList() { return _layoutList; }
 	@property OutputList outputList() { return _outputList; }
@@ -238,7 +248,7 @@ private:
         auto rbfconf = environment.get(xmlSettingsFileEnvVar, "");
         if (rbfconf != "") 
         {
-            logerr.info(Message.MSG067, rbfconf, xmlSettingsFileEnvVar);
+            Log.console(Message.MSG067, rbfconf, xmlSettingsFileEnvVar);
             return rbfconf;
         }
 
@@ -246,7 +256,7 @@ private:
         auto suspectedSettingsFile = buildNormalizedPath(getcwd, xmlSettingsFile);
         if (exists(suspectedSettingsFile)) 
         {
-            logerr.info(Message.MSG069, suspectedSettingsFile); 
+            Log.console(Message.MSG069, suspectedSettingsFile); 
             return suspectedSettingsFile;
         }
         // or path given by an env variable
@@ -266,7 +276,7 @@ private:
             }
         }
 
-        logerr.info(Message.MSG070, settingsFile); 
+        Log.console(Message.MSG070, settingsFile); 
         return settingsFile;
 
     }

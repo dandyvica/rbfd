@@ -43,8 +43,7 @@ int main(string[] argv)
     //---------------------------------------------------------------------------------
 	// initialize minimal log environment
     //---------------------------------------------------------------------------------
-    logerr = Log(stderr);
-    log = Log(stdout);
+    //logger = Log(stdout);
 
 	try 
     {
@@ -54,8 +53,8 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		// start logging data
         //---------------------------------------------------------------------------------
-        log.info(Message.MSG061, argv);
-        log.info(Message.MSG050, totalCPUs);
+        logger.info(LogType.FILE, Message.MSG061, argv);
+        logger.info(LogType.FILE, Message.MSG050, totalCPUs);
 
         //---------------------------------------------------------------------------------
 		// define new layout corresponding to the requested layout given from the command line
@@ -76,7 +75,7 @@ int main(string[] argv)
 			// only keep specified fields
             //---------------------------------------------------------------------------------
 			layout.keepOnly(settings.cmdLineOptions.filteredFields, newline);
-            log.info(Message.MSG026, layout.size);
+            logger.info(LogType.FILE, Message.MSG026, layout.size);
 		}
         // list of records/fields given from the command line
 		if (settings.cmdLineOptions.isFieldFilterSet) 
@@ -85,7 +84,7 @@ int main(string[] argv)
 			// only keep specified fields
             //---------------------------------------------------------------------------------
 			layout.keepOnly(settings.cmdLineOptions.filteredFields, ";");
-            log.info(Message.MSG026, layout.size);
+            logger.info(LogType.FILE, Message.MSG026, layout.size);
 		}
 
         //---------------------------------------------------------------------------------
@@ -93,7 +92,7 @@ int main(string[] argv)
 		// line and the configuration found in XML properties file
         //---------------------------------------------------------------------------------
 		auto reader = new Reader(settings.cmdLineOptions.cmdLineArgs.inputFileName, layout);
-        log.info(Message.MSG016, settings.cmdLineOptions.cmdLineArgs.inputFileName, reader.inputFileSize);
+        logger.info(LogType.FILE, Message.MSG016, settings.cmdLineOptions.cmdLineArgs.inputFileName, reader.inputFileSize);
 
         //---------------------------------------------------------------------------------
 		// check field patterns?
@@ -168,7 +167,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		if (settings.cmdLineOptions.cmdLineArgs.bBreakRecord || settings.cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
 		{
-            log.info(Message.MSG039);
+            logger.info(LogType.FILE, Message.MSG039);
 
             // try to identify those fields which are repeated
 			layout.each!(r => r.identifyRepeatedFields);
@@ -177,7 +176,7 @@ int main(string[] argv)
 				if (rec.meta.repeatingPattern.length != 0)
                 {
                     rec.meta.repeatingPattern.each!(rp => rec.findRepeatedFields(rp));
-                    rec.meta.repeatingPattern.each!(rp => log.info(Message.MSG040, rec.name, rp));
+                    rec.meta.repeatingPattern.each!(rp => logger.info(LogType.FILE, Message.MSG040, rec.name, rp));
 
                     // we just want to print out repeated fields
                     if (settings.cmdLineOptions.cmdLineArgs.bPrintDuplicatedPattern)
@@ -216,15 +215,19 @@ int main(string[] argv)
             //---------------------------------------------------------------------------------
             // don't want a progress bar?
             //---------------------------------------------------------------------------------
-            if (settings.cmdLineOptions.cmdLineArgs.bProgressBar && stat.nbReadRecords % chunkSize == 0)
+            with(stat)
             {
-                if (reader.nbGuessedRecords != 0)
+                if (settings.cmdLineOptions.cmdLineArgs.bProgressBar && nbReadRecords % chunkSize == 0)
                 {
-                    stat.progressBarStats(reader.nbGuessedRecords, logerr);
-                }
-                else
-                {
-                    logerr.info(Message.MSG065, stat.nbReadRecords);
+                    if (reader.nbGuessedRecords != 0)
+                    {
+                        Log.console(Message.MSG066, nbReadRecords, reader.nbGuessedRecords, 
+                                    to!float(nbReadRecords)/reader.nbGuessedRecords*100, nbMatchedRecords);
+                    }
+                    else
+                    {
+                        Log.console(Message.MSG065, nbReadRecords);
+                    }
                 }
             }
 
@@ -277,16 +280,15 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
 		auto elapsedtime = Clock.currTime() - starttime;
 
-        stat.finalStats(log);
-        stat.finalStats(logerr);
+        stat.finalStats(logger);
+        //stat.finalStats(console);
 
-		log.info(Message.MSG015, elapsedtime);
-		logerr.info(Message.MSG015, elapsedtime);
+		logger.info(LogType.BOTH, Message.MSG015, elapsedtime);
 
 		if (!settings.cmdLineOptions.cmdLineArgs.bJustRead && 
              settings.cmdLineOptions.cmdLineArgs.outputFormat != OutputFormat.postgres)
         {
-			logerr.info(Message.MSG013, settings.cmdLineOptions.outputFileName, getSize(settings.cmdLineOptions.outputFileName));
+			Log.console(Message.MSG013, settings.cmdLineOptions.outputFileName, getSize(settings.cmdLineOptions.outputFileName));
         }
 
         //---------------------------------------------------------------------------------
@@ -294,7 +296,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
         if (settings.cmdLineOptions.cmdLineArgs.bCheckPattern)
         {
-            logerr.info(Message.MSG053, reader.nbBadCheck);
+            Log.console(Message.MSG053, reader.nbBadCheck);
         }
 
         //---------------------------------------------------------------------------------
@@ -302,7 +304,7 @@ int main(string[] argv)
         //---------------------------------------------------------------------------------
         if (settings.cmdLineOptions.cmdLineArgs.bDetailedStats)
         {
-            stat.detailedStats(log);
+            stat.detailedStats(logger);
         }
 
         //---------------------------------------------------------------------------------
@@ -313,15 +315,14 @@ int main(string[] argv)
 
         if (seconds != 0) 
         {
-            log.info(Message.MSG017, to!float(stat.nbReadRecords/seconds));
-            logerr.info(Message.MSG017, to!float(stat.nbReadRecords/seconds));
+            logger.info(LogType.BOTH, Message.MSG017, to!float(stat.nbReadRecords/seconds));
         }
 	}
     catch (Exception e)
     {
-        logerr.exception(e);
+        //Log.exception(e);
         // log only if we've defined a file logger
-        if (log.logHandle != stdout) log.exception(e);
+        if (logger.logHandle != stdout) logger.exception(e);
 		return 1;
     }
 
