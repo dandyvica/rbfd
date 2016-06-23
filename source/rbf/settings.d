@@ -23,7 +23,9 @@ import rbf.config;
 import rbf.nameditems;
 import rbf.layout;
 import rbf.args;
+import rbf.convert;
 import rbf.writers.writer : OutputFormat;
+import rbf.builders.xmltextbuilder;
 
 /***********************************
 	* class for reading XML definition file
@@ -47,7 +49,7 @@ struct Settings
 		cmdLineOptions = CommandLineOption(argv);
 
         //---------------------------------------------------------------------------------
-		// configuration file passed as arugment? Use it if neccessary
+		// configuration file passed as argument? Use it if neccessary
         //---------------------------------------------------------------------------------
         ConfigFromXMLFile configFromXMLFile;
         if (cmdLineOptions.cmdLineArgs.cmdlineConfigFile != "")
@@ -60,6 +62,8 @@ struct Settings
 		    configFromXMLFile = new ConfigFromXMLFile();
         }
 
+        // now, we are sure log is initialized
+
         //---------------------------------------------------------------------------------
 		// some options need to be set up after XML configuration load
         //---------------------------------------------------------------------------------
@@ -67,6 +71,53 @@ struct Settings
         {
             configFromXMLFile.listLayouts;
             exit(1);
+        }
+
+        //--------------------------------------------------------------------
+        // readrbf --buildxml file.xml
+        //--------------------------------------------------------------------
+        with(cmdLineOptions.cmdLineArgs)
+        {
+            if (xmlConfigFile != "")
+            {
+                auto r = new RbfTextBuilder(xmlConfigFile);
+                r.processInputFile;
+                exit(2);
+            }
+        }
+
+        //--------------------------------------------------------------------
+        // readrbf --validate layout.xml
+        //--------------------------------------------------------------------
+        with(cmdLineOptions.cmdLineArgs)
+        {
+            if (layoutFile != "")
+            {
+                auto layout = new Layout(layoutFile);
+                layout.validate;
+                exit(2);
+            }
+        }
+
+        //--------------------------------------------------------------------
+        // readrbf --convert layout.xml --format csv
+        //--------------------------------------------------------------------
+        with(cmdLineOptions.cmdLineArgs)
+        {
+            if (layoutFileToConvert != "")
+            {
+                // check arguments
+                if (convFormat == Format.temp && templateFile == "")
+                {
+                    Log.console(Message.MSG091);
+                }
+                else
+                {
+                    // call conversion function
+                    convertLayout(layoutFileToConvert,  convFormat, templateFile);
+                }
+                exit(2);
+            }
         }
 
         //---------------------------------------------------------------------------------

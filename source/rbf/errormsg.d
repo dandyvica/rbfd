@@ -111,6 +111,7 @@ enum Message: string
         MSG097 = "message index <%s> is not found",
         MSG098 = "%s - file <%s(%d)>",
         MSG099 = "%-10.10s\t%-60.60s\t%s",
+        MSG100 = "unknown argument %s",
 }
 
 // new Exception class to handle rbf errors

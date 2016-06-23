@@ -22,7 +22,6 @@ import rbf.log;
 import rbf.options;
 import rbf.convert;
 import rbf.writers.writer : OutputFormat;
-import rbf.builders.xmltextbuilder;
 
 // import of some static text
 immutable helpString = import("help.txt");
@@ -39,54 +38,38 @@ template GenInput(string input)
 // is the command line option. To add another option, just add it here
 struct CommandLineArgument 
 {
+	@("b") bool bJustRead;					                /// if true, don't write data
+	@("br") bool bBreakRecord;  			                /// if true, break records into individual sub-records
+    @("buildxml") string xmlConfigFile;                     /// creation layout file for text file
+	@("check") bool bCheckPattern;  		                /// if true, check if field values are matching pattern
+    @("conf") string cmdlineConfigFile;                     /// we can also provide configuration file from command line
+    @("convert") string layoutFileToConvert;                /// name of the layout file to convert
+    @("dup") bool bPrintDuplicatedPattern;                  /// write out duplicated patterns for each record
+	@("f") string fieldFilterFile;			               	/// if any, name of the field filter file
+	@("ff") string fieldFilter;				                /// if any, list of records/fields to filter out
+	@("fl") string lineFilter;				                /// if any, define a regex to match lines
+    @("format") Format convFormat = Format.html;            /// output format when converting a layout                    
+	@("fr") string recordFilter;			                /// if any, name of the record filter file
 	@("i") string inputFileName;                            /// input file name to parse
 	@("l") string inputLayout;		                        /// input file layout
 	@("o") OutputFormat outputFormat = OutputFormat.txt;	/// output format HTML, TXT, ...
 	@("of") string givenOutputFileName;		                /// name of the final converted file when given in the command line
-
-	@("f") string fieldFilterFile;			               	/// if any, name of the field filter file
-	@("ff") string fieldFilter;				                /// if any, list of records/fields to filter out
-
-	@("r") string recordFilterFile;			                /// if any, name of the record filter file
-	@("fr") string recordFilter;			                /// if any, name of the record filter file
-    
-    @("patch") string fieldsToPatch;                        /// list of fields to patch
-
-	@("fl") string lineFilter;				                /// if any, define a regex to match lines
-
-	@("trigger") string trigger;				            /// if any, record name which triggers write for templates
-    @("tempfile") string templateFile;                      /// when using the temp output mode, using this file as template
-
-
-	@("v") bool bVerbose;					                /// if true, print out lots of data
-	@("b") bool bJustRead;					                /// if true, don't write data
-	@("p") bool bProgressBar;                               /// print out read record progress bar
 	@("out") bool stdOutput;					            /// if true, print to standard output instead of file
-	@("br") bool bBreakRecord;  			                /// if true, break records into individual sub-records
-	@("check") bool bCheckPattern;  		                /// if true, check if field values are matching pattern
-    @("stats") bool bDetailedStats;                         /// if true, print out detailed statistics on file at the end of conversion         
-
-	@("s") ulong samples;					                /// limit to n first lines (n == samples)
-    @("ua") bool bUseAlternateNames;                        /// in case of field duplication, append field name with index
-
-    //@("") bool bAppendMode;                               /// overwrite the output file
-    @("dup") bool bPrintDuplicatedPattern;                  /// write out duplicated patterns for each record
-
-    @("conf") string cmdlineConfigFile;                     /// we can also provide configuration file from command line
-
-    @("buildxml") string xmlConfigFile;                     /// we can also provide configuration file from command line
-
-    @("presql") string sqlPreFile;                          /// name of the SQL statement file to run after creating tables but 
-                                                            /// before starting to insert data
-
+	@("p") bool bProgressBar;                               /// print out read record progress bar
+    @("patch") string fieldsToPatch;                        /// list of fields to patch
     @("postsql") string sqlPostFile;                        /// name of the SQL statement file to run after inserting data
-
-	@("validate") string layoutFile;				        /// used to validate the layout XML file
-
+    @("presql") string sqlPreFile;                          /// name of the SQL statement file to run after creating tables but 
+	@("r") string recordFilterFile;			                /// if any, name of the record filter file
     @("raw") bool useRawValue;                              /// use raw string values instead of stripped values
-
+	@("s") ulong samples;					                /// limit to n first lines (n == samples)
+    @("stats") bool bDetailedStats;                         /// if true, print out detailed statistics on file at the end of conversion         
     @("strict") bool strictRun;                             /// exit if record is not found in layout
-
+    //@("tempfile") string templateFile;                      /// when using the temp output mode, using this file as template
+    @("template") string templateFile;
+	@("trigger") string trigger;				            /// if any, record name which triggers write for templates
+    @("ua") bool bUseAlternateNames;                        /// in case of field duplication, append field name with index
+	@("v") bool bVerbose;					                /// if true, print out lots of data
+	@("validate") string layoutFile;				        /// used to validate the layout XML file
 }
 
 /***********************************
@@ -109,78 +92,38 @@ public:
  */
  	this(string[] argv) 
     {
-		// print-out help
+
+        //--------------------------------------------------------------------
+        // manage all different cases
+        //--------------------------------------------------------------------
+        try 
+        {
+            // read command line arguments and fetch values in options struct
+            processCommandLineArguments!CommandLineArgument(argv, cmdLineArgs);
+        }
+        catch (Exception e) 
+        {
+            writefln("error: %s", e.msg);
+            exit(2);
+        }
+
+        //--------------------------------------------------------------------
+		// readrbf
+        //--------------------------------------------------------------------
 		if (argv.length == 1)
 		{
             _printHelp();
+            exit(1);
 		}
-        else if (argv.length == 2 && argv[1] == "-h")
-        {
-            _printHelp();
-        }
-        else if (argv.length == 2 && argv[1] == "--lazy")
-        {
-            _interactiveMode();
-        }
-        else if (argv.length == 3 && argv[1] == "--buildxml")
-        {
-            auto r = new RbfTextBuilder(argv[2]);
-            r.processInputFile;
-            exit(2);
-        }
-        else if (argv.length == 3 && argv[1] == "--validate")
-        {
-    		auto layout = new Layout(argv[2]);
-			layout.validate;
-            exit(2);
-        }
-        else if (argv[1] == "--convert" || argv[1] == "--format")
-        {
-            // specific options here
-            struct CommandLineArgumentConvert 
-            {
-                @("convert") @(config.required) string layoutFileToConvert;  /// name of the layout file to convert
-                @("format") @(config.required) Format convFormat = Format.html;             /// output format                     
-                @("template") string templateFile;
-            }
-            CommandLineArgumentConvert convOptions;
 
-            // process arguments
-            processCommandLineArguments!CommandLineArgumentConvert(argv, convOptions);
 
-            // check arguments
-            if (convOptions.convFormat == Format.temp && convOptions.templateFile == "")
-            {
-                stderr.writeln(Message.MSG090);
-            }
-            else
-            {
-                // call conversion function
-                convertLayout(convOptions.layoutFileToConvert,  convOptions.convFormat, convOptions.templateFile);
-            }
-            exit(2);
-        }
-        // deamon mode
-        else
-        {
-            try 
-            {
-                // read command line arguments and fetch values in options struct
-                processCommandLineArguments!CommandLineArgument(argv, cmdLineArgs);
-            }
-            catch (Exception e) 
-            {
-                writefln("error: %s", e.msg);
-                exit(2);
-            }
-        }
 
         // break record option is not compatible with some output formats
         if (cmdLineArgs.bBreakRecord)
         {
             if (cmdLineArgs.outputFormat != OutputFormat.txt && cmdLineArgs.outputFormat != OutputFormat.box)
             {
-                stderr.writefln(Message.MSG044);
+                Log.console(Message.MSG044);
                 exit(3);
             }
         }
@@ -191,7 +134,8 @@ public:
         {
 			enforce(exists(cmdLineArgs.fieldFilterFile), Message.MSG041.format(cmdLineArgs.fieldFilterFile));
 			filteredFields = cast(string)std.file.read(cmdLineArgs.fieldFilterFile);
-		} else if (cmdLineArgs.fieldFilter != "") 
+		} 
+        else if (cmdLineArgs.fieldFilter != "") 
         {
 			filteredFields = cmdLineArgs.fieldFilter;
 		}
