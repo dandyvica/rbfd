@@ -40,14 +40,11 @@ int main(string[] argv)
     //---------------------------------------------------------------------------------
 	auto starttime = Clock.currTime();
 
-    //---------------------------------------------------------------------------------
-	// initialize minimal log environment
-    //---------------------------------------------------------------------------------
-    //logger = Log(stdout);
-
 	try 
     {
-        // get global settings from config file and args
+        //---------------------------------------------------------------------------------
+        // get global settings from config file and command line arguments
+        //---------------------------------------------------------------------------------
         settings.manage(argv);
 
         //---------------------------------------------------------------------------------
@@ -221,12 +218,12 @@ int main(string[] argv)
                 {
                     if (reader.nbGuessedRecords != 0)
                     {
-                        Log.console(Message.MSG066, nbReadRecords, reader.nbGuessedRecords, 
+                        Log.write(Message.MSG066, nbReadRecords, reader.nbGuessedRecords, 
                                     to!float(nbReadRecords)/reader.nbGuessedRecords*100, nbMatchedRecords);
                     }
                     else
                     {
-                        Log.console(Message.MSG065, nbReadRecords);
+                        Log.write(Message.MSG065, nbReadRecords);
                     }
                 }
             }
@@ -300,7 +297,7 @@ int main(string[] argv)
         }
 
         //---------------------------------------------------------------------------------
-		// Detailed statistics on file?
+		// detailed statistics on file?
         //---------------------------------------------------------------------------------
         if (settings.cmdLineOptions.cmdLineArgs.bDetailedStats)
         {

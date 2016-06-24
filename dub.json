@@ -8,9 +8,12 @@
 	"targetType": "executable",
     "versions": ["checkBounds"],
 	"libs-linux": ["sqlite3", "pq", "rbfpg"],
+	"libs-osx": ["sqlite3", "pq", "rbfpg"],
 	"libs-windows": ["..\\..\\tools\\sqlite3\\sqlite3"],
 	"importPaths": ["source"],
 	"stringImportPaths": ["./views", "../../data/local/conf"],
 	"lflags-linux": ["-L/usr/lib/x86_64-linux-gnu", "-L/usr/lib/", "-L./lib"],
-    "preBuildCommands": ["gcc -c ./source/c/rbfpg.c -I/usr/include/postgresql -o ./source/c/rbfpg.o", "ar rcs ./lib/librbfpg.a ./source/c/rbfpg.o"],
+	"lflags-osx": ["-L/usr/lib/", "-L./lib"],
+    "preBuildCommands-linux": ["gcc -c ./source/c/rbfpg.c -I/usr/include/postgresql -o ./source/c/rbfpg.o", "ar rcs ./lib/librbfpg.a ./source/c/rbfpg.o"],
+    "preBuildCommands-osx": ["gcc -c ./source/c/rbfpg.c -I$HOME/PostgreSQL/pg95/include -o ./source/c/rbfpg.o", "ar crv ./lib/librbfpg.a ./source/c/rbfpg.o"],
 }

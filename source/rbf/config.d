@@ -41,6 +41,10 @@ version(Windows)
 {
     immutable xmlSettings = `\rbf\` ~ xmlSettingsFile;
 }
+version(OSX) 
+{
+    immutable xmlSettings = ".rbf/" ~ xmlSettingsFile;
+}
 
 // settings defaults
 immutable SQL_DEFAULT_INSERT_POOL         = "3000";
@@ -89,7 +93,7 @@ struct OutputConfiguration
         ulong sqlGroupedInsertPool;    /// used to group INSERTs into a single INSERT transaction
         string sqlPreFile;        /// name of the SQL file containing statements run before inserting data
         string sqlPostFile;       /// name of the SQL file containing statements run after inserting data
-        bool addDataSource;       /// whether the input file name is added as a source for data in SQL output
+        //bool addDataSource;       /// whether the input file name is added as a source for data in SQL output
         string connectionString;  /// PostgreSQL connection string
     }
 }
@@ -149,7 +153,13 @@ public:
         xml.onStartTag["log"] = (ElementParser xml)
         {
             // save global config and create the log handler
-            this.logFileName = xml.tag.attr.get("path", "./rbf.log");
+            logFileName = xml.tag.attr.get("path", "./rbf.log");
+
+            // manage cases of absolute and relative path
+            if (!isAbsolute(logFileName))
+            {
+                logFileName = settingsFilePath ~ logFileName;
+            }
             logger = Log(this.logFileName);
         };
 
@@ -178,7 +188,7 @@ public:
         xml.onStartTag["output"] = (ElementParser xml)
         {
             // manage attributes
-            auto fdesc = xml.tag.attr.get("fdesc", "false");
+            auto fdesc = xml.tag.attr.get("addFieldDescription", "false");
 
             // save layout metadata
             OutputConfiguration of;
@@ -187,24 +197,24 @@ public:
             {
                 // save common attributes
                 of.name                 = attr["name"];
-                of.outputDirectory      = attr.get("outputDir", "");
-                of.fieldDescription     = to!bool(attr.get("fdesc", "false"));
+                of.outputDirectory      = attr.get("outputDirectory", "");
+                of.fieldDescription     = to!bool(attr.get("addFieldDescription", "false"));
                 of.useAlternateName     = to!bool(attr.get("useAlternateName", "false"));
-                of.alternateNameFmt     = attr.get("alternateNameFmt", "%s(%d)");
+                of.alternateNameFmt     = attr.get("alternateNameFormat", "%s(%d)");
                 of.outputFileExtension  = attr.get("extension", to!string(of.name));
 
                 // save text attributes
-                of.fieldSeparator = attr.get("fsep", "|");
-                of.lineSeparator  = attr.get("lsep", "");
+                of.fieldSeparator = attr.get("fieldSeparator", "|");
+                of.lineSeparator  = attr.get("lineSeparator", "");
 
                 // save HTML attributes
                 of.orientation = to!Orientation(attr.get("orientation", "horizontal"));
 
                 // save SQL attributes
-                of.sqlInsertPool        = to!ulong(attr.get("pool", SQL_DEFAULT_INSERT_POOL));
+                of.sqlInsertPool        = to!ulong(attr.get("insertPool", SQL_DEFAULT_INSERT_POOL));
                 of.sqlGroupedInsertPool = to!ulong(attr.get("insertChunk", SQL_DEFAULT_GROUPED_INSERT_POOL));
-                of.addDataSource        = to!bool(attr.get("addSource", "false"));
-                of.connectionString     = attr.get("conn_string", "");
+                //of.addDataSource        = to!bool(attr.get("addSource", "false"));
+                of.connectionString     = attr.get("connexionString", "");
 
                 // save temp attributes
                 of.templateFile = attr.get("templateFile", "rbf.template");
@@ -224,10 +234,7 @@ public:
     /// list all possible layouts
     void listLayouts()
     {
-        foreach (s; _layoutList)
-        {
-            writefln(Message.MSG099, s.name, s.description, s.file);
-        }
+        _layoutList.each!(s => writefln(Message.MSG099, s.name, s.description, s.file));
     }
 
 
@@ -265,6 +272,11 @@ private:
             // last possible location is OS-dependent
             string _rbfhome;
             version(linux) 
+            {
+                _rbfhome = environment["HOME"];
+                settingsFile = _rbfhome ~ "/" ~ xmlSettings;
+            }
+            version(OSX) 
             {
                 _rbfhome = environment["HOME"];
                 settingsFile = _rbfhome ~ "/" ~ xmlSettings;

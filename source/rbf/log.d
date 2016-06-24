@@ -32,22 +32,6 @@ struct Log
 {
 private:
 
-    // return handle depending on log type
-    auto _getHandle()
-    {
-        File handle;
-
-        if (logType == LogType.FILE || logType == LogType.BOTH)
-        {
-            handle = logHandle;
-        }
-        else if (logType == LogType.CONSOLE || logType == LogType.BOTH)
-        {
-            handle = stdout;
-        }
-        return handle;
-    }
-
     // build header of each line in the log
     auto _header(LogLevel level)
     {
@@ -59,13 +43,21 @@ private:
     {
         if (level != LogLevel.TRACE || trace_set != "")
         {
-            // don't write out log header when console output
-            if (logHandle != stdout && logHandle != stderr)
+            if (logType == LogType.FILE || logType == LogType.BOTH)
             {
-                _getHandle.writef(_header(level));
+                // don't write out log header when console output
+                if (logHandle != stdout && logHandle != stderr)
+                {
+                    logHandle.writef(_header(level));
+                }
+                logHandle.writefln(msg);
+                logHandle.flush;
             }
-            _getHandle.writefln(msg);
-            logHandle.flush;
+            if (logType == LogType.CONSOLE || logType == LogType.BOTH)
+            {
+                stdout.writefln(msg);
+                stdout.flush;
+            }
         }
     }
 
@@ -133,6 +125,14 @@ public:
     static void console(Message, A...)(Message m, A args)
     {
         stdout.writefln(build_msg(m, args));
+        stdout.flush;
+    }
+
+    // just used to print out info on the console
+    static void write(Message, A...)(Message m, A args)
+    {
+        stdout.writef(build_msg(m, args));
+        stdout.flush;
     }
 
     // close log file

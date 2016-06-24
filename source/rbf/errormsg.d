@@ -76,7 +76,7 @@ enum Message: string
         MSG062 = "fatal type <%s> is not defined for field <%s> !!",
         MSG063 = "statement <%s>, error code = <%d>, error msg <%s>",
         MSG064 = "sqlite_bind() API error, error code = <%d>, error msg <%s>",
-        MSG065 = "%d lines processed so far",
+        MSG065 = "%d lines processed so far\r",
         MSG066 = "%d/%d records processed so far (%.0f percent), %d matching record filter condition\r",
         MSG067 = "reading configuration file <%s> from environment variable <%s>",
         MSG068 = "creating/using default log file <%s>",
