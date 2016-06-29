@@ -1,3 +1,4 @@
 .dub/*
 bin/*
 lib/*
+source/c/*.o
