@@ -89,8 +89,8 @@ struct OutputConfiguration
     // SQL specific
     struct
     {
-        ulong sqlInsertPool;     /// used to group INSERTs into a single SQL transaction
-        ulong sqlGroupedInsertPool;    /// used to group INSERTs into a single INSERT transaction
+        size_t sqlInsertPool;     /// used to group INSERTs into a single SQL transaction
+        size_t sqlGroupedInsertPool;    /// used to group INSERTs into a single INSERT transaction
         string sqlPreFile;        /// name of the SQL file containing statements run before inserting data
         string sqlPostFile;       /// name of the SQL file containing statements run after inserting data
         //bool addDataSource;       /// whether the input file name is added as a source for data in SQL output
@@ -211,8 +211,8 @@ public:
                 of.orientation = to!Orientation(attr.get("orientation", "horizontal"));
 
                 // save SQL attributes
-                of.sqlInsertPool        = to!ulong(attr.get("insertPool", SQL_DEFAULT_INSERT_POOL));
-                of.sqlGroupedInsertPool = to!ulong(attr.get("insertChunk", SQL_DEFAULT_GROUPED_INSERT_POOL));
+                of.sqlInsertPool        = to!size_t(attr.get("insertPool", SQL_DEFAULT_INSERT_POOL));
+                of.sqlGroupedInsertPool = to!size_t(attr.get("insertChunk", SQL_DEFAULT_GROUPED_INSERT_POOL));
                 //of.addDataSource        = to!bool(attr.get("addSource", "false"));
                 of.connectionString     = attr.get("connexionString", "");
 

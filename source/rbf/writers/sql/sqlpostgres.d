@@ -1,6 +1,9 @@
 module rbf.writers.sql.sqlpostgres;
 pragma(msg, "========> Compiling module ", __MODULE__);
 
+version(postgres)
+{
+
 import std.stdio;
 import std.file;
 import std.string;
@@ -397,4 +400,5 @@ public:
         // end up gracefully
         rbfPGExit();
     }
+}
 }

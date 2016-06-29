@@ -117,7 +117,7 @@ Writer writerFactory(in string output, in OutputFormat fmt)
 		case OutputFormat.html     : return new HTMLWriter(output);
 		case OutputFormat.ident    : return new IdentWriter(output);
 		case OutputFormat.sqlite3  : return new Sqlite3Writer(output);
-		case OutputFormat.postgres : return new SqlPGWriter(output);
+  		case OutputFormat.postgres : version(postgres) { return new SqlPGWriter(output); } else { return new Sqlite3Writer(output); }
 		case OutputFormat.tag      : return new TAGWriter(output);
 		case OutputFormat.temp     : return new TemplateWriter(output);
 		case OutputFormat.txt      : return new TXTWriter(output);
