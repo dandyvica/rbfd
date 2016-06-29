@@ -14,10 +14,10 @@
 	"libs-linux": ["sqlite3", "pq", "rbfpg"],
 	"libs-osx": ["sqlite3", "pq", "rbfpg"],
 	"libs-x86": ["..\\..\\tools\\sqlite3\\sqlite3"],
-	"libs-x86_64": ["..\\..\\tools\\sqlite3\\x64\\sqlite3", ".\\lib\\rbfpg", "/av/applis/PostgreSQL/pg95/lib/libpq"],
+	"libs-win64": ["..\\..\\tools\\sqlite3\\x64\\sqlite3", ".\\lib\\rbfpg", "/av/applis/PostgreSQL/pg95/lib/libpq"],
 	"lflags-linux": ["-L/usr/lib/x86_64-linux-gnu", "-L/usr/lib/", "-L./lib"],
 	"lflags-osx": ["-L/usr/lib/", "-L./lib"],
-    "preBuildCommands-linux": ["gcc -c ./source/c/rbfpg.c -I/usr/include/postgresql -o ./source/c/rbfpg.o", "ar rcs ./lib/librbfpg.a ./source/c/rbfpg.o"],
     "preBuildCommands-osx": ["gcc -c ./source/c/rbfpg.c -I$HOME/PostgreSQL/pg95/include -o ./source/c/rbfpg.o", "ar crv ./lib/librbfpg.a ./source/c/rbfpg.o"],
-    "preBuildCommands-x86_64": ["gcc -c ./source/c/rbfpg.c -I/av/applis/PostgreSQL/pg95/include -o ./source/c/rbfpg.o", "ar rcs ./lib/rbfpg.lib ./source/c/rbfpg.o"],
+    "preBuildCommands-win64": ["gcc -c ./source/c/rbfpg.c -I/av/applis/PostgreSQL/pg95/include -o ./source/c/rbfpg.o", "ar rcs ./lib/rbfpg.lib ./source/c/rbfpg.o"],
+    "preBuildCommands-linux": ["gcc -c ./source/c/rbfpg.c -I/usr/include/postgresql -o ./source/c/rbfpg.o", "ar rcs ./lib/librbfpg.a ./source/c/rbfpg.o"],
 }
