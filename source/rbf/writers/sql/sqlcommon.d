@@ -120,7 +120,7 @@ class SqlCommon
                 colStmt = f.context.alternateName ~ " FLOAT";
                 break;
             case AtomicType.integer:
-                colStmt = f.context.alternateName ~ " INTEGER";
+                colStmt = f.context.alternateName ~ " BIGINT";
                 break;
             case AtomicType.time:
                 colStmt = f.context.alternateName ~ " TIME";

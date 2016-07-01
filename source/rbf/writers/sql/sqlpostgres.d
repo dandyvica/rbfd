@@ -238,7 +238,17 @@ private:
                             break;
                         case AtomicType.string:
                             // new to sanitize string because sometimes, it contains non-printable chars
-                            fields ~= "'%s'".format(f.sanitize(f.value));
+                            auto value = f.sanitize(f.value);
+
+                            // for SQL, need to escape single quote
+                            if (value.canFind("'")) 
+                            {
+                                value = value.replace("'", "''");
+                            }
+
+                            // now we can safely copy value
+                            fields ~= "'%s'".format(value);
+
                             break;
                     }
                 }
