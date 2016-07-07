@@ -2,3 +2,4 @@
 bin/*
 lib/*
 source/c/*.o
+obj/*
