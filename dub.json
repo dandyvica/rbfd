@@ -1,7 +1,7 @@
 {
 	"name": "readrbf",
 	"description": "A generic record-based file reader",
-	"authors": ["Alain Viguier"],
+	"authors": ["dandyvica"],
 	"homepage": "https://github.com/dandyvica/readrbf",
 	"license": "GPL-3.0",
 	"targetPath": "bin",

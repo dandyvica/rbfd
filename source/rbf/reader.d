@@ -1,5 +1,5 @@
 /**
- * Authors: Alain Viguier
+ * Authors: dandyvica
  * Date: 03/04/2015
  * Version: 0.1
  */
