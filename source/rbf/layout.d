@@ -488,7 +488,7 @@ public:
 }
 ///
 unittest {
-    writeln("========> testing ", __FILE__);
+    writefln("\n========> testing %s", __FILE__);
 
     assertThrown(new Layout("foo.xml"));
 
@@ -553,4 +553,6 @@ unittest {
     assertThrown(l.removeFieldsByNameFromAllRecords(["FOO"]));
     assert(l["CONT"] == ["AREA", "DENSITY", "CITY"]);
     assert(l["COUN"] == []);
+
+    writefln("********> end test %s\n", __FILE__);
 }

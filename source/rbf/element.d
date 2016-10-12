@@ -92,6 +92,8 @@ public:
 }
 ///
 unittest {
+    writefln("\n========> testing %s", __FILE__);
+
     assertThrown(new Element!(string, ulong)("","First field", 5));
     assertThrown(new Element!(string, ulong)("FIELD1","First field", 0));
 
@@ -101,4 +103,6 @@ unittest {
     assert(element1.length == 15);
     assert(element1.cellLength1 == 15);
     assert(element1.cellLength2 == 17);
+
+    writefln("********> end test %s\n", __FILE__);
 }

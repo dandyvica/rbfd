@@ -6,7 +6,7 @@ Asia           !43820000            !16920000            !29.5     !Shanghai    
 NAME                          !POPULATION          !CAPITAL             !
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 China                         !1338100000          !Beijing             !
-China Hong Kong SAR           !7000000             !Hong Kong           !
+China Hong Kong SAR           !7000000             !Hong KongR          !
 China Macau SAR               !500000              !Macau City          !
 China Tibet                   !2620000             !Lhasa               !
 Japan                         !127400000           !Tokyo               !
@@ -79,7 +79,7 @@ Réunion                      !800000              !Saint-Denis         !
 Rwanda                        !10400000            !Kigali              !
 Seychelles                    !100000              !Victoria            !
 Somalia                       !9400000             !Mogadishu           !
-Tanzania                      !45000000            !Dodoma Dar es Salaa !
+Tanzania                      !45000000            !Dodoma Dar es Salaam!
 Uganda                        !33800000            !Kampala             !
 Zambia                        !13300000            !Lusaka              !
 Zimbabwe                      !12600000            !Harare              !
@@ -103,7 +103,7 @@ Western Sahara                !500000              !(El Aaiún)         !
 Botswana                      !1800000             !Gaborone            !
 Lesotho                       !1900000             !Maseru              !
 Namibia                       !2200000             !Windhoek            !
-South Africa                  !49900000            !Cape Tow            !
+South Africa                  !49900000            !Cape Town           !
 Swaziland                     !1200000             !Mbabane Lobamba     !
 Benin                         !9800000             !Porto-Novo Cotonou  !
 Burkina Faso                  !16200000            !Ouagadougou         !
@@ -209,7 +209,7 @@ Germany                       !81600000            !Berlin              !
 Liechtenstein                 !40000               !Vaduz               !
 Luxembourg                    !500000              !Luxembourg          !
 Monaco                        !40000               !Monaco              !
-Netherlands                   !16600000            !The Hagu            !
+Netherlands                   !16600000            !The Hague           !
 Switzerland                   !7800000             !Bern - Zürich      !
 
 NAME           !AREA                !POPULATION          !DENSITY  !CITY                !

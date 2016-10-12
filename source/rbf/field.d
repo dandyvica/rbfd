@@ -242,8 +242,7 @@ public:
 ///
 unittest 
 {
-
-    writeln("========> testing ", __FILE__);
+    writefln("\n========> testing %s", __FILE__);
 
     auto ft = new FieldType("N","decimal");
     auto f1 = new Field("AGE", "Person's age", ft, 13);
@@ -287,4 +286,6 @@ unittest
 
     field1 = new Field("FIELD1;Field description;N;decimal;15");
     assertThrown(new Field("FIELD1;Field description;N;decimal"));
+
+    writefln("********> end test %s\n", __FILE__);
 }

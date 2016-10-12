@@ -296,7 +296,7 @@ private:
 }
 ///
 unittest {
-    writeln("========> testing ", __FILE__);
+    writefln("\n========> testing %s", __FILE__);
     auto c = new ConfigFromXMLFile("./test/config.xml");
 
     assert(c.layoutList["A"].name == "A");
@@ -308,4 +308,6 @@ unittest {
     assert(c.outputList["txt"].outputDirectory == "/tmp/");
     assert(c.outputList["txt"].fieldSeparator == "*");
     assert(!c.outputList["txt"].fieldDescription);
+
+    writefln("********> end test %s\n", __FILE__);
 }

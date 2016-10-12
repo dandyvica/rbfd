@@ -225,7 +225,7 @@ public:
 }
 ///
 unittest {
-	writeln("========> testing ", __FILE__);
+    writefln("\n========> testing %s", __FILE__);
 
 	auto argv = ["", "-i", "foo.input"];
 	//assertThrown(new CommandLineOption(argv));
@@ -237,4 +237,6 @@ unittest {
 	auto c = new CommandLineOption(argv);
 	assert(c.cmdLineArgs.inputFileName == "foo.input");
 	assert(c.cmdLineArgs.inputLayout == "isr");
+
+    writefln("********> end test %s\n", __FILE__);
 }

@@ -42,7 +42,7 @@ OPTIONS
 
        -l layout : Name of the input file layout. This name is found is the configuration file rbf.xml.
 
-       -layouts: list all possible layouts found in the configuration file.
+       --layouts: list all possible layouts found in the configuration file.
 
        -o format : Name of the output file format. Possible values are: %s. 
 	Defaulted to txt if not specified (ident means that the output file format is the same than the input one). Here is an explanation

@@ -53,7 +53,7 @@ private:
                 logHandle.writefln(msg);
                 logHandle.flush;
             }
-            if (logType == LogType.CONSOLE || logType == LogType.BOTH)
+            if ((logType == LogType.CONSOLE || logType == LogType.BOTH) && no_console == "")
             {
                 stdout.writefln(msg);
                 stdout.flush;
@@ -77,6 +77,7 @@ public:
     File logHandle;       /// handle on log file
     string trace_set;     /// to enable trace, need to define RBF_LOG environment variable
     LogType logType;      /// whether print out to file, console or both
+    string no_console;    /// disable console output
 
     // create log file
     this(string logFileName)
@@ -91,7 +92,8 @@ public:
             logHandle = File(defaultLogFile, "a");
             Log.console(Message.MSG068, defaultLogFile);
         }
-        trace_set = environment.get("RBFtrace", "");
+        trace_set = environment.get("RBF_TRACE", "");
+        no_console = environment.get("RBF_NOCONSOLE", "");
     }
 
     // another ctor if we want to output elsewhere

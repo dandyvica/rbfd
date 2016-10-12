@@ -291,6 +291,7 @@ public:
 }
 ///
 unittest {
+    writefln("\n========> testing %s", __FILE__);
 
     FieldType[string] map;
 
@@ -309,4 +310,6 @@ unittest {
     ft = new FieldType("STRING","string");
     assert(ft.isFieldFilterMatched("AABBBBB", "~", "^AA"));
     assert(ft.isFieldFilterMatched("AABBBBB", "!~", "^BA"));
+
+    writefln("********> end test %s\n", __FILE__);
 }

@@ -408,7 +408,7 @@ unittest {
 
 	import rbf.fieldtype;
 
-	writeln("========> testing ", __FILE__);
+    writefln("\n========> testing %s", __FILE__);
 
 	// check wrong arguments
 	assertThrown(new Record("", "Rec description"));
@@ -496,4 +496,6 @@ unittest {
 	assert(rec.meta.subRecord[0].names == ["FIELD2", "FIELD3", "FIELD4", "FIELD5"]);
 	rec.findRepeatedFields(rec.meta.repeatingPattern[1]);
 	assert(rec.meta.subRecord[5].names == ["FIELD6"]);
+
+    writefln("********> end test %s\n", __FILE__);
 }

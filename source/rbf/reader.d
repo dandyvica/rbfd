@@ -117,7 +117,7 @@ public:
 		auto line = lineReadFromFile.idup;
 
 		// if line is matching the ignore pattern, just loop to ignore this line
-		if (layout.meta.ignoreLinePattern != "" && matchFirst(line, _ignoreRegex)) 
+		if (layout.meta.ignoreLinePattern != "" && !matchAll(line, _ignoreRegex).empty) 
         {
 			return null;
 		}
@@ -207,7 +207,7 @@ public:
             stat.nbReadLines++;
 
             // get rid of terminating \n
-            rec = _getRecordFromLine(line[0..$-2]);
+            rec = _getRecordFromLine(line[0..$-1]);
 
             // loop when null records
             if (rec is null) continue;
@@ -308,7 +308,7 @@ public:
 }
 ///
 unittest {
-	writeln("========> testing ", __FILE__);
+    writefln("\n========> testing %s", __FILE__);
 	auto layout = new Layout("./test/world_data.xml");
 	auto reader = new Reader("./test/world.data", layout);
 
@@ -317,4 +317,5 @@ unittest {
 	foreach (rec; reader) {
 		assert("NAME" in rec);
 	}*/
+    writefln("********> end test %s\n", __FILE__);
 }
